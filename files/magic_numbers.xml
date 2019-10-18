@@ -1,0 +1,5 @@
+<MagicNumbers 
+  VIRTUAL_RESOLUTION_X="427" 
+  VIRTUAL_RESOLUTION_Y="242" 
+  > <!-- some magic number defaults could be overridden here -->
+</MagicNumbers>
