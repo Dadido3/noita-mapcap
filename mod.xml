@@ -1,5 +1,3 @@
-<Mod
-	name="Example mod"
-	description="This is an example mod for Noita.\nHave fun modding!"
->
+<Mod name="Capture All" 
+	description="This mod screen-captures a large part of the map, and stores the screenshot in image tiles.">
 </Mod>

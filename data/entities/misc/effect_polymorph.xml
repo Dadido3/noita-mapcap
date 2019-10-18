@@ -1,0 +1,7 @@
+<Entity>
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+
+	<GameEffectComponent >
+	</GameEffectComponent >
+</Entity>
