@@ -14,5 +14,5 @@ function OnPlayerSpawned(player_entity)
 end
 
 -- this code runs when all mods' filesystems are registered
-ModLuaFileAppend("data/scripts/director_init.lua", "mods/capture-all/files/capture.lua")
-ModMagicNumbersFileAdd("mods/capture-all/files/magic_numbers.xml") -- override some game constants
+ModLuaFileAppend("data/scripts/director_init.lua", "mods/noita-mapcap/files/capture.lua")
+ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic_numbers.xml") -- override some game constants
