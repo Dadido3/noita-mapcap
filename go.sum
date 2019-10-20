@@ -1,0 +1,10 @@
+github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802 h1:1BDTz0u9nC3//pOCMdNH+CiXJVYJh5UQNCOBG7jbELc=
+github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
+github.com/gen2brain/shm v0.0.0-20180314170312-6c18ff7f8b90 h1:QagTG5rauLt6pVVEhnVSrlIX4ifhVIZOwmw6x6D8TUw=
+github.com/gen2brain/shm v0.0.0-20180314170312-6c18ff7f8b90/go.mod h1:uF6rMu/1nvu+5DpiRLwusA6xB8zlkNoGzKn8lmYONUo=
+github.com/kbinani/screenshot v0.0.0-20190719135742-f06580e30cdc h1:kGFotla6Dyr6a2ILeExAHlttPgJtnoP/GIw2uVN/4h4=
+github.com/kbinani/screenshot v0.0.0-20190719135742-f06580e30cdc/go.mod h1:f8GY5V3lRzakvEyr49P7hHRYoHtPr8zvj/7JodCoRzw=
+github.com/lxn/win v0.0.0-20190919090605-24c5960b03d8 h1:RVMGIuuNgrpGB7I79f6xfhGCkpN47IaEGh8VTM0p7Xc=
+github.com/lxn/win v0.0.0-20190919090605-24c5960b03d8/go.mod h1:ouWl4wViUNh8tPSIwxTVMuS014WakR1hqvBc2I0bMoA=
+golang.org/x/sys v0.0.0-20190904154756-749cb33beabd h1:DBH9mDw0zluJT/R+nGuV3jWFWLFaHyYZWD4tOT+cjn0=
+golang.org/x/sys v0.0.0-20190904154756-749cb33beabd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

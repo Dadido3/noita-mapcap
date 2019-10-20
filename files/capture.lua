@@ -3,12 +3,19 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-dofile("data/scripts/lib/coroutines.lua")
+dofile("mods/noita-mapcap/files/util.lua")
+dofile("mods/noita-mapcap/files/external.lua")
+dofile("mods/noita-mapcap/files/ws.lua")
+
 --dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/perks/perk_list.lua")
 
-local CAPTURE_GRID_SIZE = 64 -- in ingame pixels
-local CAPTURE_DELAY = 30 -- in frames
+if not async then -- Check if lib is already loaded
+	dofile("data/scripts/lib/coroutines.lua")
+end
+
+local CAPTURE_GRID_SIZE = 128 -- in ingame pixels
+local CAPTURE_DELAY = 15 -- in frames
 local CAPTURE_FORCE_HP = 40 -- * 25HP
 
 local function getPlayer()
@@ -87,20 +94,14 @@ local function resetPlayer()
 	setPlayerHP(CAPTURE_FORCE_HP)
 end
 
-local function doCapture()
+local function startCapturing()
 	local ox, oy = getPlayerPos()
+	ox, oy = math.floor(ox / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE, math.floor(oy / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE
 	local x, y = ox, oy
 
 	preparePlayer()
 
-	-- Coroutine to force player to x, y coordinate
-	async_loop(
-		function()
-			teleportPlayer(x, y)
-			resetPlayer()
-			wait(0)
-		end
-	)
+	GameSetCameraFree(true)
 
 	-- Coroutine to calculate next coordinate, and trigger screenshots
 	local i = 1
@@ -108,23 +109,31 @@ local function doCapture()
 		function()
 			-- +x
 			for i = 1, i, 1 do
+				TriggerCapture(x, y)
 				x, y = x + CAPTURE_GRID_SIZE, y
+				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			-- +y
 			for i = 1, i, 1 do
+				TriggerCapture(x, y)
 				x, y = x, y + CAPTURE_GRID_SIZE
+				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			i = i + 1
 			-- -x
 			for i = 1, i, 1 do
+				TriggerCapture(x, y)
 				x, y = x - CAPTURE_GRID_SIZE, y
+				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			-- -y
 			for i = 1, i, 1 do
+				TriggerCapture(x, y)
 				x, y = x, y - CAPTURE_GRID_SIZE
+				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			i = i + 1
@@ -143,12 +152,19 @@ async_loop(
 
 			GuiLayoutBeginVertical(gui, 50, 20)
 			if GuiButton(gui, 0, 0, "Start capturing map", 1) then
-				doCapture()
+				startCapturing()
 				GuiDestroy(gui)
 				gui = nil
 			end
 			GuiTextCentered(gui, 0, 0, "Don't do anything while the capturing process is running!")
 			GuiTextCentered(gui, 0, 0, "Use ESC and close the game to stop the process.")
+			--[[if GuiButton(gui, 0, 0, "DEBUG globals", 1) then
+				local file = io.open("mods/noita-mapcap/output/globals.txt", "w")
+				for i, v in pairs(_G) do
+					file:write(i .. "\n")
+				end
+				file:close()
+			end]]
 			GuiLayoutEnd(gui)
 		end
 

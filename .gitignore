@@ -1,7 +1,28 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.gitignore.io/api/visualstudiocode,windows,lua
-# Edit at https://www.gitignore.io/?templates=visualstudiocode,windows,lua
+# Created by https://www.gitignore.io/api/lua,visualstudiocode,windows,go
+# Edit at https://www.gitignore.io/?templates=lua,visualstudiocode,windows,go
+
+### Go ###
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+### Go Patch ###
+/vendor/
+/Godeps/
 
 ### Lua ###
 # Compiled Lua sources
@@ -32,14 +53,9 @@ luac.out
 *.exp
 
 # Shared objects (inc. Windows DLLs)
-*.dll
-*.so
 *.so.*
-*.dylib
 
 # Executables
-*.exe
-*.out
 *.app
 *.i*86
 *.x86_64
@@ -83,7 +99,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/visualstudiocode,windows,lua
+# End of https://www.gitignore.io/api/lua,visualstudiocode,windows,go
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
+/libs/
+output/
