@@ -14,6 +14,7 @@ if not async then -- Check if lib is already loaded
 	dofile("data/scripts/lib/coroutines.lua")
 end
 
+local CAPTURE_PIXEL_SIZE = 2 -- in FullHD a ingame pixel is expected to be 2 real pixels
 local CAPTURE_GRID_SIZE = 128 -- in ingame pixels
 local CAPTURE_DELAY = 15 -- in frames
 local CAPTURE_FORCE_HP = 40 -- * 25HP
@@ -109,14 +110,14 @@ local function startCapturing()
 		function()
 			-- +x
 			for i = 1, i, 1 do
-				TriggerCapture(x, y)
+				TriggerCapture(x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE)
 				x, y = x + CAPTURE_GRID_SIZE, y
 				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			-- +y
 			for i = 1, i, 1 do
-				TriggerCapture(x, y)
+				TriggerCapture(x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE)
 				x, y = x, y + CAPTURE_GRID_SIZE
 				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
@@ -124,14 +125,14 @@ local function startCapturing()
 			i = i + 1
 			-- -x
 			for i = 1, i, 1 do
-				TriggerCapture(x, y)
+				TriggerCapture(x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE)
 				x, y = x - CAPTURE_GRID_SIZE, y
 				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
 			end
 			-- -y
 			for i = 1, i, 1 do
-				TriggerCapture(x, y)
+				TriggerCapture(x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE)
 				x, y = x, y - CAPTURE_GRID_SIZE
 				GameSetCameraPos(x, y)
 				wait(CAPTURE_DELAY)
