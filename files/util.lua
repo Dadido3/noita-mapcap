@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-function splitStringByLength(string, length)
+function SplitStringByLength(string, length)
 	local chunks = {}
 	for i = 1, #string, length do
 		table.insert(chunks, string:sub(i, i + length - 1))
@@ -12,7 +12,8 @@ function splitStringByLength(string, length)
 end
 
 -- Improved version of GamePrint, that behaves more like print.
-function IngamePrint(...)
+local oldGamePrint = GamePrint
+function GamePrint(...)
 	local arg = {...}
 
 	local result = ""
@@ -23,22 +24,66 @@ function IngamePrint(...)
 
 	for line in result:gmatch("[^\r\n]+") do
 		for i, v in ipairs(splitStringByLength(line, 100)) do
-			GamePrint(v)
+			oldGamePrint(v)
 		end
 	end
 end
 
--- Globally overwrite print function and write output into a logfile
-local logFile = io.open("lualog.txt", "w")
-function print(...)
-	local arg = {...}
-
-	local result = ""
-	for i, v in ipairs(arg) do
-		result = result .. tostring(v) .. "\t"
+function getPlayer()
+	local players = EntityGetWithTag("player_unit")
+	if players == nil or #players < 1 then
+		return nil
 	end
-	result = result .. "\n"
+	return players[1]
+end
 
-	logFile:write(result)
-	logFile:flush()
+function getPlayerPos()
+	return EntityGetTransform(getPlayer())
+end
+
+function teleportPlayer(x, y)
+	EntitySetTransform(getPlayer(), x, y)
+end
+
+function setPlayerHP(hp)
+	local damagemodels = EntityGetComponent(getPlayer(), "DamageModelComponent")
+
+	if damagemodels ~= nil then
+		for i, damagemodel in ipairs(damagemodels) do
+			ComponentSetValue(damagemodel, "max_hp", hp)
+			ComponentSetValue(damagemodel, "hp", hp)
+		end
+	end
+end
+
+function addEffectToEntity(entity, gameEffect)
+	local gameEffectComp = GetGameEffectLoadTo(entity, gameEffect, true)
+	if gameEffectComp ~= nil then
+		ComponentSetValue(gameEffectComp, "frames", "-1")
+	end
+end
+
+function addPerkToPlayer(perkID)
+	local playerEntity = getPlayer()
+	local x, y = getPlayerPos()
+	local perkData = get_perk_with_id(perk_list, perkID)
+
+	-- Add effect
+	addEffectToEntity(playerEntity, perkData.game_effect)
+
+	-- Add ui icon etc
+	local perkIcon = EntityCreateNew("")
+	EntityAddComponent(
+		perkIcon,
+		"UIIconComponent",
+		{
+			name = perkData.ui_name,
+			description = perkData.ui_description,
+			icon_sprite_file = perkData.ui_icon
+		}
+	)
+	EntityAddChild(playerEntity, perkIcon)
+
+	--local effect = EntityLoad("data/entities/misc/effect_protection_all.xml", x, y)
+	--EntityAddChild(playerEntity, effect)
 end

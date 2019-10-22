@@ -1,3 +1,4 @@
 <Mod name="MapCapture" 
-	description="This mod screen-captures a large part of the map, and stores the screenshot as image.">
+	description="This mod screen-captures a large part of the map, and stores the screenshot as image." 
+	request_no_api_restrictions="1">
 </Mod>
