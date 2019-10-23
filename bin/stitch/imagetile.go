@@ -15,8 +15,8 @@ import (
 type imageTile struct {
 	fileName string
 
-	originalRect image.Rectangle // Rectangle of the original position. Determined by the file name, the real coordinates may differ a few pixels.
-	image        image.Image     // Either a rectangle or an RGBA image. The bounds of this image represent the real and corrected coordinates.
+	offset image.Point // Correction offset of the image, so that it aligns pixel perfect with other images. Determined by image matching.
+	image  image.Image // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
 }
 
 func (it *imageTile) loadImage() error {
@@ -54,4 +54,8 @@ func (it *imageTile) loadImage() error {
 
 func (it *imageTile) unloadImage() {
 	it.image = it.image.Bounds()
+}
+
+func (it *imageTile) String() string {
+	return fmt.Sprintf("<ImageTile \"%v\">", it.fileName)
 }
