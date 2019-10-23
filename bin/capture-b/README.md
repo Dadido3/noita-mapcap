@@ -4,4 +4,4 @@ A dynamically linked library, that supplies a single function to take a screensh
 
 ## State
 
-Works, not as fast as the go version, but ok.
+Works, not as fast as the go version, but fast enough.

@@ -17,6 +17,8 @@ ProcedureDLL AttachProcess(Instance)
 	Global Semaphore = CreateSemaphore()
 	Global Mutex = CreateMutex()
 	Global NewList Queue.QueueElement()
+	
+	ExamineDesktops()
 
 	For i = 1 To 4
 		CreateThread(@Worker(), #Null)
@@ -44,9 +46,7 @@ EndProcedure
 
 ProcedureDLL Capture(px.i, py.i)
 	; Get dimensions of main screen
-
-	ExamineDesktops()
-
+	
 	x = DesktopX(0)
 	y = DesktopY(0)
 	w = DesktopWidth(0)
@@ -59,14 +59,23 @@ ProcedureDLL Capture(px.i, py.i)
 
 	; Get DC of whole screen
 	screenDC = GetDC_(#Null)
-
-	hDC = StartDrawing(ImageOutput(imageID))
-	If Not hDC
-		ReleaseDC_(#Null, screenDC)
+	If Not screenDC
 		FreeImage(imageID)
 		ProcedureReturn
 	EndIf
-	BitBlt_(hDC, 0, 0, w, h, screenDC, x, y, #SRCCOPY)
+
+	hDC = StartDrawing(ImageOutput(imageID))
+	If Not hDC
+		FreeImage(imageID)
+		ReleaseDC_(#Null, screenDC)
+		ProcedureReturn
+	EndIf
+	If Not BitBlt_(hDC, 0, 0, w, h, screenDC, x, y, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
+		FreeImage(imageID)
+		ReleaseDC_(#Null, screenDC)
+		StopDrawing()
+		ProcedureReturn
+	EndIf
 	StopDrawing()
 
 	ReleaseDC_(#Null, screenDC)
@@ -91,7 +100,8 @@ EndProcedure
 
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 15
+; CursorPosition = 72
+; FirstLine = 32
 ; Folding = -
 ; EnableThread
 ; EnableXP
