@@ -10,19 +10,26 @@ import (
 	"image"
 	_ "image/png"
 	"os"
+	"sync"
+	"time"
 )
 
 type imageTile struct {
 	fileName string
 
 	offset image.Point // Correction offset of the image, so that it aligns pixel perfect with other images. Determined by image matching.
-	image  image.Image // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
+
+	image      image.Image // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
+	imageMutex *sync.Mutex
 }
 
-func (it *imageTile) loadImage() error {
+func (it *imageTile) GetImage() (*image.RGBA, error) {
+	it.imageMutex.Lock()
+	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+
 	// Check if the image is already loaded
-	if _, ok := it.image.(*image.RGBA); ok {
-		return nil
+	if img, ok := it.image.(*image.RGBA); ok {
+		return img, nil
 	}
 
 	// Store rectangle of the old image
@@ -30,18 +37,18 @@ func (it *imageTile) loadImage() error {
 
 	file, err := os.Open(it.fileName)
 	if err != nil {
-		return err
+		return &image.RGBA{}, err
 	}
 	defer file.Close()
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		return err
+		return &image.RGBA{}, err
 	}
 
 	imgRGBA, ok := img.(*image.RGBA)
 	if !ok {
-		return fmt.Errorf("Expected an RGBA image, got %T instead", img)
+		return &image.RGBA{}, fmt.Errorf("Expected an RGBA image, got %T instead", img)
 	}
 
 	// Restore the position of the image rectangle
@@ -49,11 +56,30 @@ func (it *imageTile) loadImage() error {
 
 	it.image = imgRGBA
 
-	return nil
+	// Free the image after some time
+	go func() {
+		time.Sleep(5 * time.Second)
+
+		it.imageMutex.Lock()
+		defer it.imageMutex.Unlock()
+		it.image = it.image.Bounds()
+	}()
+
+	return imgRGBA, nil
 }
 
-func (it *imageTile) unloadImage() {
-	it.image = it.image.Bounds()
+func (it *imageTile) OffsetBounds() image.Rectangle {
+	it.imageMutex.Lock()
+	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+
+	return it.image.Bounds().Add(it.offset)
+}
+
+func (it *imageTile) Bounds() image.Rectangle {
+	it.imageMutex.Lock()
+	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+
+	return it.image.Bounds()
 }
 
 func (it *imageTile) String() string {

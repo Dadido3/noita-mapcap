@@ -62,9 +62,22 @@ func getImageDifferenceValue(a, b *image.RGBA, offsetA image.Point) float64 {
 	return float64(value) / float64(intersectionWidth*intersectionHeight)
 }
 
+func gridifyRectangle(rect image.Rectangle, gridSize int) (result []image.Rectangle) {
+	for y := divideFloor(rect.Min.Y, gridSize); y < divideCeil(rect.Max.Y, gridSize); y++ {
+		for x := divideFloor(rect.Min.X, gridSize); x < divideCeil(rect.Max.X, gridSize); x++ {
+			tempRect := image.Rect(x*gridSize, y*gridSize, (x+1)*gridSize, (y+1)*gridSize)
+			if tempRect.Overlaps(rect) {
+				result = append(result, tempRect)
+			}
+		}
+	}
+
+	return
+}
+
 func drawLabel(img *image.RGBA, x, y int, label string) {
 	col := color.RGBA{200, 100, 0, 255}
-	point := fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
+	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
 
 	d := &font.Drawer{
 		Dst:  img,
@@ -90,4 +103,26 @@ func pointAbs(p image.Point) image.Point {
 		p.Y = -p.Y
 	}
 	return p
+}
+
+// Integer division that rounds to the next integer towards negative infinity
+func divideFloor(a, b int) int {
+	temp := a / b
+
+	if ((a ^ b) < 0) && (a%b != 0) {
+		return temp - 1
+	}
+
+	return temp
+}
+
+// Integer division that rounds to the next integer towards positive infinity
+func divideCeil(a, b int) int {
+	temp := a / b
+
+	if ((a ^ b) >= 0) && (a%b != 0) {
+		return temp + 1
+	}
+
+	return temp
 }

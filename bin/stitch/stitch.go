@@ -16,10 +16,12 @@ import (
 var inputPath = filepath.Join(".", "..", "..", "output")
 
 func main() {
+	log.Printf("Starting to read tile information at \"%v\"", inputPath)
 	tiles, err := loadImages(inputPath)
 	if err != nil {
 		log.Panic(err)
 	}
+	log.Printf("Got %v tiles", len(tiles))
 
 	/*f, err := os.Create("cpu.prof")
 	if err != nil {
@@ -31,13 +33,18 @@ func main() {
 	}
 	defer pprof.StopCPUProfile()*/
 
-	outputImage := image.NewRGBA(image.Rect(-4000, -4000, 8000, 8000))
+	outputRect := image.Rect(-10000, -10000, 10000, 10000)
 
+	log.Printf("Creating output image with a size of %v", outputRect.Size())
+	outputImage := image.NewRGBA(outputRect)
+
+	log.Printf("Stitching %v tiles into an image at %v", len(tiles), outputImage.Bounds())
 	tp := make(tilePairs)
-	if err := tp.stitch(tiles, outputImage); err != nil {
+	if err := tp.StitchGrid(tiles, outputImage, 256); err != nil {
 		log.Panic(err)
 	}
 
+	log.Printf("Creating output file \"%v\"", "output.png")
 	f, err := os.Create("output.png")
 	if err != nil {
 		log.Panic(err)
@@ -51,4 +58,6 @@ func main() {
 	if err := f.Close(); err != nil {
 		log.Panic(err)
 	}
+	log.Printf("Created output file \"%v\"", "output.png")
+
 }

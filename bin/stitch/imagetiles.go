@@ -14,8 +14,12 @@ import (
 	"math/rand"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
+	"sync"
+
+	"github.com/schollz/progressbar/v2"
 )
 
 const tileAlignmentSearchRadius = 5
@@ -62,26 +66,26 @@ func loadImages(path string) ([]imageTile, error) {
 		}
 
 		imageTiles = append(imageTiles, imageTile{
-			fileName: file,
-			image:    image.Rect(x, y, x+width, y+height),
+			fileName:   file,
+			image:      image.Rect(x, y, x+width, y+height),
+			imageMutex: &sync.Mutex{},
 		})
 	}
 
 	return imageTiles, nil
 }
 
-// alignTilePair returns the pixel delta for the first tile, so that it aligns perfectly with the second.
+// AlignTilePair returns the pixel delta for the first tile, so that it aligns perfectly with the second.
 // This function will load images if needed.
-func alignTilePair(tileA, tileB *imageTile, searchRadius int) (image.Point, error) {
-	if err := tileA.loadImage(); err != nil {
+func AlignTilePair(tileA, tileB *imageTile, searchRadius int) (image.Point, error) {
+	imgA, err := tileA.GetImage()
+	if err != nil {
 		return image.Point{}, err
 	}
-	if err := tileB.loadImage(); err != nil {
+	imgB, err := tileB.GetImage()
+	if err != nil {
 		return image.Point{}, err
 	}
-
-	// Type assertion.
-	imgA, imgB := *tileA.image.(*image.RGBA), *tileB.image.(*image.RGBA)
 
 	bestPoint := image.Point{}
 	bestValue := math.Inf(1)
@@ -90,7 +94,7 @@ func alignTilePair(tileA, tileB *imageTile, searchRadius int) (image.Point, erro
 		for x := -searchRadius; x <= searchRadius; x++ {
 			point := image.Point{x, y} // Offset of the first image.
 
-			value := getImageDifferenceValue(&imgA, &imgB, point)
+			value := getImageDifferenceValue(imgA, imgB, point)
 			if bestValue > value {
 				bestValue, bestPoint = value, point
 			}
@@ -100,7 +104,7 @@ func alignTilePair(tileA, tileB *imageTile, searchRadius int) (image.Point, erro
 	return bestPoint, nil
 }
 
-func (tp tilePairs) alignTiles(tiles []*imageTile) error {
+func (tp tilePairs) AlignTiles(tiles []*imageTile) error {
 
 	n := len(tiles)
 	maxOperations, operations := (n-1)*(n)/2, 0
@@ -113,7 +117,7 @@ func (tp tilePairs) alignTiles(tiles []*imageTile) error {
 			_, ok := tp[tileAlignmentKeys{tileA, tileB}]
 			if !ok {
 				// Entry doesn't exist yet. Determine tile pair alignment.
-				offset, err := alignTilePair(tileA, tileB, tileAlignmentSearchRadius)
+				offset, err := AlignTilePair(tileA, tileB, tileAlignmentSearchRadius)
 				if err != nil {
 					return fmt.Errorf("Failed to align tile pair %v %v: %w", tileA, tileB, err)
 				}
@@ -200,13 +204,13 @@ func (tp tilePairs) alignTiles(tiles []*imageTile) error {
 	return nil
 }
 
-func (tp tilePairs) stitch(tiles []imageTile, destImage *image.RGBA) error {
+func (tp tilePairs) Stitch(tiles []imageTile, destImage *image.RGBA) error {
 	intersectTiles := []*imageTile{}
 
 	// Get only the tiles that intersect with the destination image bounds.
 	// Ignore alignment here, doesn't matter if an image overlaps a few pixels anyways.
 	for i, tile := range tiles {
-		if tile.image.Bounds().Add(tile.offset).Overlaps(destImage.Bounds()) {
+		if tile.OffsetBounds().Overlaps(destImage.Bounds()) {
 			intersectTiles = append(intersectTiles, &tiles[i])
 		}
 	}
@@ -225,44 +229,79 @@ func (tp tilePairs) stitch(tiles []imageTile, destImage *image.RGBA) error {
 		draw.Draw(destImage, destImage.Bounds(), intersectTile.image, destImage.Bounds().Min, draw.Over)
 	}*/
 
-	drawMedianBlended(intersectTiles, destImage)
-
 	/*for _, intersectTile := range intersectTiles {
 		drawLabel(destImage, intersectTile.image.Bounds().Min.X, intersectTile.image.Bounds().Min.Y, fmt.Sprintf("%v", intersectTile.fileName))
 	}*/
 
-	return nil
+	return drawMedianBlended(intersectTiles, destImage)
 }
 
-func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) {
-	bounds := destImage.Bounds()
+// StitchGrid calls stitch, but divides the workload into a grid of chunks.
+// Additionally it runs the workload multithreaded.
+func (tp tilePairs) StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int) (errResult error) {
+	workloads := gridifyRectangle(destImage.Bounds(), gridSize)
 
-	// Make sure images are loaded.
-	for _, tile := range tiles {
-		tile.loadImage()
+	bar := progressbar.New(len(workloads))
+	bar.RenderBlank()
+
+	// Start worker threads
+	wc := make(chan image.Rectangle)
+	wg := sync.WaitGroup{}
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for workload := range wc {
+				if err := tp.Stitch(tiles, destImage.SubImage(workload).(*image.RGBA)); err != nil {
+					errResult = err // This will not stop execution, but at least one of any errors is returned.
+				}
+				bar.Add(1)
+			}
+		}()
 	}
+
+	// Push workload to worker threads
+	for _, workload := range workloads {
+		wc <- workload
+	}
+
+	// Wait until all worker threads are done
+	close(wc)
+	wg.Wait()
+
+	// Newline because of the progress bar
+	fmt.Println("")
+
+	return
+}
+
+func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) error {
+	bounds := destImage.Bounds()
 
 	for iy := bounds.Min.Y; iy < bounds.Max.Y; iy++ {
 		for ix := bounds.Min.X; ix < bounds.Max.X; ix++ {
-			//colList := []color.RGBA{}
-			rList, gList, bList := []int{}, []int{}, []int{}
+			rList, gList, bList := []int16{}, []int16{}, []int16{}
 			point := image.Point{ix, iy}
+			found := false
 
 			// Iterate through all tiles, and create a list of colors.
 			for _, tile := range tiles {
 				tilePoint := point.Sub(tile.offset)
-				imageRGBA, ok := tile.image.(*image.RGBA)
-				if ok && tilePoint.In(imageRGBA.Bounds()) {
+				imageRGBA, err := tile.GetImage() // TODO: Optimize, as it's slow to get tiles and images every pixel
+				if err != nil {
+					return fmt.Errorf("Couldn't load image: %w", err)
+				}
+				if tilePoint.In(imageRGBA.Bounds().Inset(4)) { // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
 					col := imageRGBA.RGBAAt(tilePoint.X, tilePoint.Y)
-					//colList = append(colList, col)
-					rList, gList, bList = append(rList, int(col.R)), append(gList, int(col.G)), append(bList, int(col.B))
+					rList, gList, bList = append(rList, int16(col.R)), append(gList, int16(col.G)), append(bList, int16(col.B))
+					found = true
 				}
 			}
 
-			// Sort color list.
-			/*sort.Slice(colList, func(i, j int) bool {
-				return rgbToHSV(colList[i]) < rgbToHSV(colList[j])
-			})*/
+			// If there were no tiles to get data from, ignore the pixel.
+			if !found {
+				continue
+			}
 
 			// Sort rList.
 			sort.Slice(rList, func(i, j int) bool {
@@ -279,36 +318,26 @@ func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) {
 				return bList[i] < bList[j]
 			})
 
-			//var col color.RGBA
-
-			/*if len(colList)%2 == 0 {
-				// Even
-				a, b := colList[len(colList)/2-1], colList[len(colList)/2]
-				col = color.RGBA{uint8((uint16(a.R) + uint16(b.R)) / 2), uint8((uint16(a.G) + uint16(b.G)) / 2), uint8((uint16(a.B) + uint16(b.B)) / 2), uint8((uint16(a.A) + uint16(b.A)) / 2)}
-			} else if len(colList) > 0 {
-				// Odd
-				col = colList[(len(colList)-1)/2]
-			}*/
-
+			// Take the middle element of each color.
 			var r, g, b uint8
 			if len(rList)%2 == 0 {
 				// Even
 				r = uint8((rList[len(rList)/2-1] + rList[len(rList)/2]) / 2)
-			} else if len(rList) > 0 {
+			} else {
 				// Odd
 				r = uint8(rList[(len(rList)-1)/2])
 			}
 			if len(gList)%2 == 0 {
 				// Even
 				g = uint8((gList[len(gList)/2-1] + gList[len(gList)/2]) / 2)
-			} else if len(gList) > 0 {
+			} else {
 				// Odd
 				g = uint8(gList[(len(gList)-1)/2])
 			}
 			if len(bList)%2 == 0 {
 				// Even
 				b = uint8((bList[len(bList)/2-1] + bList[len(bList)/2]) / 2)
-			} else if len(bList) > 0 {
+			} else {
 				// Odd
 				b = uint8(bList[(len(bList)-1)/2])
 			}
@@ -316,4 +345,6 @@ func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) {
 			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 		}
 	}
+
+	return nil
 }
