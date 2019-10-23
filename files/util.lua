@@ -72,7 +72,7 @@ function addPerkToPlayer(perkID)
 	addEffectToEntity(playerEntity, perkData.game_effect)
 
 	-- Add ui icon etc
-	local perkIcon = EntityCreateNew("")
+	--[[local perkIcon = EntityCreateNew("")
 	EntityAddComponent(
 		perkIcon,
 		"UIIconComponent",
@@ -82,7 +82,7 @@ function addPerkToPlayer(perkID)
 			icon_sprite_file = perkData.ui_icon
 		}
 	)
-	EntityAddChild(playerEntity, perkIcon)
+	EntityAddChild(playerEntity, perkIcon)]]
 
 	--local effect = EntityLoad("data/entities/misc/effect_protection_all.xml", x, y)
 	--EntityAddChild(playerEntity, effect)

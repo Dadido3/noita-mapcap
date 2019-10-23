@@ -4,9 +4,9 @@
 -- https://opensource.org/licenses/MIT
 
 local CAPTURE_PIXEL_SIZE = 2 -- in FullHD a ingame pixel is expected to be 2 real pixels
-local CAPTURE_GRID_SIZE = 128 -- in ingame pixels
+local CAPTURE_GRID_SIZE = 1080 / 4 -- in ingame pixels
 local CAPTURE_DELAY = 15 -- in frames
-local CAPTURE_FORCE_HP = 40 -- * 25HP
+local CAPTURE_FORCE_HP = 4 -- * 25HP
 
 local function preparePlayer()
 	local playerEntity = getPlayer()
