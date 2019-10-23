@@ -33,6 +33,10 @@ Works somewhat, still in development.
     - It will take the screenshots from the `output` folder
 8. An `output.png` with the stitched result will appear
 
+## Advanced usage
+
+If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F7` to disable the UI.
+
 ## License
 
 [MIT](LICENSE)
