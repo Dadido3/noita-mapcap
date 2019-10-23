@@ -14,15 +14,20 @@ async_loop(
 				GuiDestroy(modGUI)
 				modGUI = nil
 			end
-			GuiTextCentered(modGUI, 0, 0, "Don't do anything while the capturing process is running!")
 			GuiTextCentered(modGUI, 0, 0, "Use ESC and close the game to stop the process.")
-			--[[if GuiButton(gui, 0, 0, "DEBUG globals", 1) then
-				local file = io.open("mods/noita-mapcap/output/globals.txt", "w")
-				for i, v in pairs(_G) do
-					file:write(i .. "\n")
-				end
-				file:close()
-			end]]
+			GuiTextCentered(
+				modGUI,
+				0,
+				0,
+				'You can resume capturing just by restarting noita and pressing "Start capturing map" again,'
+			)
+			GuiTextCentered(modGUI, 0, 0, "the mod will skip already captured files.")
+			GuiTextCentered(
+				modGUI,
+				0,
+				0,
+				'If you want to start a new map, you have to delete all images from the "output" folder!'
+			)
 			GuiLayoutEnd(modGUI)
 		end
 

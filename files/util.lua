@@ -87,3 +87,13 @@ function addPerkToPlayer(perkID)
 	--local effect = EntityLoad("data/entities/misc/effect_protection_all.xml", x, y)
 	--EntityAddChild(playerEntity, effect)
 end
+
+function fileExists(fileName)
+	local f = io.open(fileName, "r")
+	if f ~= nil then
+		io.close(f)
+		return true
+	else
+		return false
+	end
+end
