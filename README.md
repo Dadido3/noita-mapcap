@@ -11,10 +11,10 @@ Works somewhat, still in development.
 **To-Do:**
 
 - [ ] Reduce memory usage of stitching program
-- [ ] Make stitching multi threaded
+- [x] Make stitching multi threaded
 - [ ] Add parameters to stitching program
-- [ ] Show progress while stitching
-- [ ] Improve image quality, reduce artifacts
+- [x] Show progress while stitching
+- [x] Improve image quality, reduce artifacts
 - [ ] Travis or similar for automatic builds, right now there are no executables
 - [ ] Fix crash while taking screenshots
 
