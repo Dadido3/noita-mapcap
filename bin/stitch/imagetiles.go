@@ -68,7 +68,7 @@ func loadImages(path string) ([]imageTile, error) {
 		imageTiles = append(imageTiles, imageTile{
 			fileName:   file,
 			image:      image.Rect(x, y, x+width, y+height),
-			imageMutex: &sync.Mutex{},
+			imageMutex: &sync.RWMutex{},
 		})
 	}
 
@@ -206,12 +206,21 @@ func (tp tilePairs) AlignTiles(tiles []*imageTile) error {
 
 func (tp tilePairs) Stitch(tiles []imageTile, destImage *image.RGBA) error {
 	intersectTiles := []*imageTile{}
+	images := []*image.RGBA{}
 
 	// Get only the tiles that intersect with the destination image bounds.
 	// Ignore alignment here, doesn't matter if an image overlaps a few pixels anyways.
 	for i, tile := range tiles {
 		if tile.OffsetBounds().Overlaps(destImage.Bounds()) {
-			intersectTiles = append(intersectTiles, &tiles[i])
+			tilePtr := &tiles[i]
+			intersectTiles = append(intersectTiles, tilePtr)
+			img, err := tilePtr.GetImage()
+			if err != nil {
+				return fmt.Errorf("Couldn't get image: %w", err)
+			}
+			imgCopy := *img
+			imgCopy.Rect = imgCopy.Rect.Add(tile.offset).Inset(4) // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
+			images = append(images, &imgCopy)
 		}
 	}
 
@@ -233,7 +242,9 @@ func (tp tilePairs) Stitch(tiles []imageTile, destImage *image.RGBA) error {
 		drawLabel(destImage, intersectTile.image.Bounds().Min.X, intersectTile.image.Bounds().Min.Y, fmt.Sprintf("%v", intersectTile.fileName))
 	}*/
 
-	return drawMedianBlended(intersectTiles, destImage)
+	drawMedianBlended(images, destImage)
+
+	return nil
 }
 
 // StitchGrid calls stitch, but divides the workload into a grid of chunks.
@@ -275,48 +286,36 @@ func (tp tilePairs) StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSiz
 	return
 }
 
-func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) error {
+func drawMedianBlended(images []*image.RGBA, destImage *image.RGBA) {
 	bounds := destImage.Bounds()
+
+	// Create arrays to be reused every pixel
+	rListEmpty, gListEmpty, bListEmpty := make([]int, 0, len(images)), make([]int, 0, len(images)), make([]int, 0, len(images))
 
 	for iy := bounds.Min.Y; iy < bounds.Max.Y; iy++ {
 		for ix := bounds.Min.X; ix < bounds.Max.X; ix++ {
-			rList, gList, bList := []int16{}, []int16{}, []int16{}
+			rList, gList, bList := rListEmpty, gListEmpty, bListEmpty
 			point := image.Point{ix, iy}
 			found := false
 
-			// Iterate through all tiles, and create a list of colors.
-			for _, tile := range tiles {
-				tilePoint := point.Sub(tile.offset)
-				imageRGBA, err := tile.GetImage() // TODO: Optimize, as it's slow to get tiles and images every pixel
-				if err != nil {
-					return fmt.Errorf("Couldn't load image: %w", err)
-				}
-				if tilePoint.In(imageRGBA.Bounds().Inset(4)) { // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
-					col := imageRGBA.RGBAAt(tilePoint.X, tilePoint.Y)
-					rList, gList, bList = append(rList, int16(col.R)), append(gList, int16(col.G)), append(bList, int16(col.B))
+			// Iterate through all images and create a list of colors.
+			for _, img := range images {
+				if point.In(img.Bounds()) {
+					col := img.RGBAAt(point.X, point.Y)
+					rList, gList, bList = append(rList, int(col.R)), append(gList, int(col.G)), append(bList, int(col.B))
 					found = true
 				}
 			}
 
-			// If there were no tiles to get data from, ignore the pixel.
+			// If there were no images to get data from, ignore the pixel.
 			if !found {
 				continue
 			}
 
-			// Sort rList.
-			sort.Slice(rList, func(i, j int) bool {
-				return rList[i] < rList[j]
-			})
-
-			// Sort gList.
-			sort.Slice(gList, func(i, j int) bool {
-				return gList[i] < gList[j]
-			})
-
-			// Sort bList.
-			sort.Slice(bList, func(i, j int) bool {
-				return bList[i] < bList[j]
-			})
+			// Sort colors.
+			sort.Ints(rList)
+			sort.Ints(gList)
+			sort.Ints(bList)
 
 			// Take the middle element of each color.
 			var r, g, b uint8
@@ -345,6 +344,4 @@ func drawMedianBlended(tiles []*imageTile, destImage *image.RGBA) error {
 			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 		}
 	}
-
-	return nil
 }

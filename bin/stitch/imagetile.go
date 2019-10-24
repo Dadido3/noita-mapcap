@@ -19,15 +19,28 @@ type imageTile struct {
 
 	offset image.Point // Correction offset of the image, so that it aligns pixel perfect with other images. Determined by image matching.
 
-	image      image.Image // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
-	imageMutex *sync.Mutex
+	image         image.Image   // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
+	imageMutex    *sync.RWMutex //
+	imageUsedFlag bool          // Flag signalling, that the image was used recently
 }
 
 func (it *imageTile) GetImage() (*image.RGBA, error) {
-	it.imageMutex.Lock()
-	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+	it.imageMutex.RLock()
+
+	it.imageUsedFlag = true // Race condition may happen on this flag, but doesn't matter here.
 
 	// Check if the image is already loaded
+	if img, ok := it.image.(*image.RGBA); ok {
+		it.imageMutex.RUnlock()
+		return img, nil
+	}
+
+	it.imageMutex.RUnlock()
+	// It's possible that the image got changed in between here
+	it.imageMutex.Lock()
+	defer it.imageMutex.Unlock()
+
+	// Check again if the image is already loaded
 	if img, ok := it.image.(*image.RGBA); ok {
 		return img, nil
 	}
@@ -58,7 +71,10 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 
 	// Free the image after some time
 	go func() {
-		time.Sleep(5 * time.Second)
+		for it.imageUsedFlag {
+			time.Sleep(5 * time.Second)
+			it.imageUsedFlag = false
+		}
 
 		it.imageMutex.Lock()
 		defer it.imageMutex.Unlock()
@@ -69,15 +85,15 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 }
 
 func (it *imageTile) OffsetBounds() image.Rectangle {
-	it.imageMutex.Lock()
-	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+	it.imageMutex.RLock()
+	defer it.imageMutex.RUnlock()
 
 	return it.image.Bounds().Add(it.offset)
 }
 
 func (it *imageTile) Bounds() image.Rectangle {
-	it.imageMutex.Lock()
-	defer it.imageMutex.Unlock() // TODO: Use RWMutex
+	it.imageMutex.RLock()
+	defer it.imageMutex.RUnlock()
 
 	return it.image.Bounds()
 }
