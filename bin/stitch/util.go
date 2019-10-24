@@ -11,10 +11,13 @@ import (
 	"image/color"
 	"math"
 	"os"
+	"sort"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
+
+	"github.com/google/hilbert"
 )
 
 // Source: https://gist.github.com/sergiotapia/7882944
@@ -75,6 +78,31 @@ func gridifyRectangle(rect image.Rectangle, gridSize int) (result []image.Rectan
 	return
 }
 
+func hilbertifyRectangle(rect image.Rectangle, gridSize int) ([]image.Rectangle, error) {
+	grid := gridifyRectangle(rect, gridSize)
+
+	gridX := divideFloor(rect.Min.X, gridSize)
+	gridY := divideFloor(rect.Min.Y, gridSize)
+
+	// Size of the grid in chunks
+	gridWidth := divideCeil(rect.Max.X, gridSize) - divideFloor(rect.Min.X, gridSize)
+	gridHeight := divideCeil(rect.Max.Y, gridSize) - divideFloor(rect.Min.Y, gridSize)
+
+	s, err := hilbert.NewHilbert(int(math.Pow(2, math.Ceil(math.Log2(math.Max(float64(gridWidth), float64(gridHeight)))))))
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(grid, func(i, j int) bool {
+		// Ignore out of range errors, as they shouldn't happen.
+		hilbertIndexA, _ := s.MapInverse(grid[i].Min.X/gridSize-gridX, grid[i].Min.Y/gridSize-gridY)
+		hilbertIndexB, _ := s.MapInverse(grid[j].Min.X/gridSize-gridX, grid[j].Min.Y/gridSize-gridY)
+		return hilbertIndexA < hilbertIndexB
+	})
+
+	return grid, nil
+}
+
 func drawLabel(img *image.RGBA, x, y int, label string) {
 	col := color.RGBA{200, 100, 0, 255}
 	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
@@ -105,7 +133,7 @@ func pointAbs(p image.Point) image.Point {
 	return p
 }
 
-// Integer division that rounds to the next integer towards negative infinity
+// Integer division that rounds to the next integer towards negative infinity.
 func divideFloor(a, b int) int {
 	temp := a / b
 
@@ -116,7 +144,7 @@ func divideFloor(a, b int) int {
 	return temp
 }
 
-// Integer division that rounds to the next integer towards positive infinity
+// Integer division that rounds to the next integer towards positive infinity.
 func divideCeil(a, b int) int {
 	temp := a / b
 
@@ -125,4 +153,11 @@ func divideCeil(a, b int) int {
 	}
 
 	return temp
+}
+
+func maxInt(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
 }

@@ -37,8 +37,12 @@ type tilePairs map[tileAlignmentKeys]tileAlignment
 
 var regexFileParse = regexp.MustCompile(`^(-?\d+),(-?\d+).png$`)
 
-func loadImages(path string) ([]imageTile, error) {
+func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 	var imageTiles []imageTile
+
+	if scaleDivider < 1 {
+		return nil, fmt.Errorf("Invalid scale of %v", scaleDivider)
+	}
 
 	files, err := filepath.Glob(filepath.Join(inputPath, "*.png"))
 	if err != nil {
@@ -66,9 +70,10 @@ func loadImages(path string) ([]imageTile, error) {
 		}
 
 		imageTiles = append(imageTiles, imageTile{
-			fileName:   file,
-			image:      image.Rect(x, y, x+width, y+height),
-			imageMutex: &sync.RWMutex{},
+			fileName:     file,
+			scaleDivider: scaleDivider,
+			image:        image.Rect(x/scaleDivider, y/scaleDivider, (x+width)/scaleDivider, (y+height)/scaleDivider),
+			imageMutex:   &sync.RWMutex{},
 		})
 	}
 
@@ -250,7 +255,11 @@ func (tp tilePairs) Stitch(tiles []imageTile, destImage *image.RGBA) error {
 // StitchGrid calls stitch, but divides the workload into a grid of chunks.
 // Additionally it runs the workload multithreaded.
 func (tp tilePairs) StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int) (errResult error) {
-	workloads := gridifyRectangle(destImage.Bounds(), gridSize)
+	//workloads := gridifyRectangle(destImage.Bounds(), gridSize)
+	workloads, err := hilbertifyRectangle(destImage.Bounds(), gridSize)
+	if err != nil {
+		return err
+	}
 
 	bar := progressbar.New(len(workloads))
 	bar.RenderBlank()

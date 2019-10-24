@@ -12,10 +12,14 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/nfnt/resize"
 )
 
 type imageTile struct {
 	fileName string
+
+	scaleDivider int // Downscales the coordinates and images on the fly.
 
 	offset image.Point // Correction offset of the image, so that it aligns pixel perfect with other images. Determined by image matching.
 
@@ -59,6 +63,10 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 		return &image.RGBA{}, err
 	}
 
+	if it.scaleDivider > 1 {
+		img = resize.Resize(uint(oldRect.Dx()), uint(oldRect.Dy()), img, resize.NearestNeighbor)
+	}
+
 	imgRGBA, ok := img.(*image.RGBA)
 	if !ok {
 		return &image.RGBA{}, fmt.Errorf("Expected an RGBA image, got %T instead", img)
@@ -72,7 +80,7 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 	// Free the image after some time
 	go func() {
 		for it.imageUsedFlag {
-			time.Sleep(5 * time.Second)
+			time.Sleep(1 * time.Second)
 			it.imageUsedFlag = false
 		}
 

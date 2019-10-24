@@ -17,11 +17,21 @@ var inputPath = filepath.Join(".", "..", "..", "output")
 
 func main() {
 	log.Printf("Starting to read tile information at \"%v\"", inputPath)
-	tiles, err := loadImages(inputPath)
+	tiles, err := loadImages(inputPath, 2)
 	if err != nil {
 		log.Panic(err)
 	}
 	log.Printf("Got %v tiles", len(tiles))
+
+	totalBounds := image.Rectangle{}
+	for i, tile := range tiles {
+		if i == 0 {
+			totalBounds = tile.Bounds()
+		} else {
+			totalBounds = totalBounds.Union(tile.Bounds())
+		}
+	}
+	log.Printf("Total size of the possible output space is %v", totalBounds)
 
 	/*profFile, err := os.Create("cpu.prof")
 	if err != nil {
@@ -35,14 +45,14 @@ func main() {
 
 	// TODO: Flags / Program arguments
 
-	outputRect := image.Rect(-35000, -35000, 35000, 35000)
+	outputRect := image.Rect(-1900*2, -1900*2, 1900*2, 1900*2)
 
 	log.Printf("Creating output image with a size of %v", outputRect.Size())
 	outputImage := image.NewRGBA(outputRect)
 
 	log.Printf("Stitching %v tiles into an image at %v", len(tiles), outputImage.Bounds())
 	tp := make(tilePairs)
-	if err := tp.StitchGrid(tiles, outputImage, 1024); err != nil {
+	if err := tp.StitchGrid(tiles, outputImage, 512); err != nil {
 		log.Panic(err)
 	}
 

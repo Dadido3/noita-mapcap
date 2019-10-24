@@ -5,12 +5,16 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gen2brain/shm v0.0.0-20180314170312-6c18ff7f8b90 h1:QagTG5rauLt6pVVEhnVSrlIX4ifhVIZOwmw6x6D8TUw=
 github.com/gen2brain/shm v0.0.0-20180314170312-6c18ff7f8b90/go.mod h1:uF6rMu/1nvu+5DpiRLwusA6xB8zlkNoGzKn8lmYONUo=
+github.com/google/hilbert v0.0.0-20181122061418-320f2e35a565 h1:KBAlCAY6eLC44FiEwbzEbHnpVlw15iVM4ZK8QpRIp4U=
+github.com/google/hilbert v0.0.0-20181122061418-320f2e35a565/go.mod h1:xn6EodFfRzV6j8NXQRPjngeHWlrpOrsZPKuuLRThU1k=
 github.com/kbinani/screenshot v0.0.0-20190719135742-f06580e30cdc h1:kGFotla6Dyr6a2ILeExAHlttPgJtnoP/GIw2uVN/4h4=
 github.com/kbinani/screenshot v0.0.0-20190719135742-f06580e30cdc/go.mod h1:f8GY5V3lRzakvEyr49P7hHRYoHtPr8zvj/7JodCoRzw=
 github.com/lxn/win v0.0.0-20190919090605-24c5960b03d8 h1:RVMGIuuNgrpGB7I79f6xfhGCkpN47IaEGh8VTM0p7Xc=
 github.com/lxn/win v0.0.0-20190919090605-24c5960b03d8/go.mod h1:ouWl4wViUNh8tPSIwxTVMuS014WakR1hqvBc2I0bMoA=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db h1:62I3jR2EmQ4l5rM/4FEfDWcRD+abF5XlKShorW5LRoQ=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db/go.mod h1:l0dey0ia/Uv7NcFFVbCLtqEBQbrT4OCwCSKTEv6enCw=
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6Oo2LfFZAehjjQMERAvZLEDnQ=
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/schollz/progressbar/v2 v2.14.0 h1:vo7bdkI9E4/CIk9DnL5uVIaybLQiVtiCC2vO+u9j5IM=
