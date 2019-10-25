@@ -8,6 +8,9 @@ env:
 matrix:
   include:
     - os: windows
+      env:
+        - GOOS=windows
+        - GOARCH=386
       script:
         - cd bin/stitch
         - go test
