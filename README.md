@@ -4,19 +4,21 @@ Addon that captures the map and saves it as image.
 
 ![](images/example1.png)
 
+A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4).
+
 ## State
 
 Works somewhat, still in development.
 
 **To-Do:**
 
-- [ ] Reduce memory usage of stitching program
+- [x] Reduce memory usage of stitching program
 - [x] Make stitching multi threaded
-- [ ] Add parameters to stitching program
+- [x] Add parameters to stitching program
 - [x] Show progress while stitching
 - [x] Improve image quality, reduce artifacts
 - [ ] Travis or similar for automatic builds, right now there are no executables
-- [ ] Fix crash while taking screenshots
+- [x] Fix crash while taking screenshots
 
 ## Usage
 
@@ -35,7 +37,7 @@ Works somewhat, still in development.
 
 ## Advanced usage
 
-If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F7` to disable the UI.
+If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F12` to disable the UI. There are some more options in the `F7` and `Shift + F7` menu.
 
 ## License
 

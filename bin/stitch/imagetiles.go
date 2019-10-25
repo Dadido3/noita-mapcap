@@ -44,7 +44,7 @@ func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 		return nil, fmt.Errorf("Invalid scale of %v", scaleDivider)
 	}
 
-	files, err := filepath.Glob(filepath.Join(inputPath, "*.png"))
+	files, err := filepath.Glob(filepath.Join(path, "*.png"))
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +267,7 @@ func (tp tilePairs) StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSiz
 	// Start worker threads
 	wc := make(chan image.Rectangle)
 	wg := sync.WaitGroup{}
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < runtime.NumCPU()*2; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
