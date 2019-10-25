@@ -8,100 +8,101 @@ UsePNGImageEncoder()
 Declare Worker(*Dummy)
 
 Structure QueueElement
-	img.i
-	x.i
-	y.i
+    img.i
+    x.i
+    y.i
 EndStructure
 
 ProcedureDLL AttachProcess(Instance)
-	Global Semaphore = CreateSemaphore()
-	Global Mutex = CreateMutex()
-	Global NewList Queue.QueueElement()
-	
-	ExamineDesktops()
+    Global Semaphore = CreateSemaphore()
+    Global Mutex = CreateMutex()
+    Global NewList Queue.QueueElement()
 
-	For i = 1 To 4
-		CreateThread(@Worker(), #Null)
-	Next
+    ExamineDesktops()
+    CreateDirectory("mods/noita-mapcap/output/")
+
+    For i = 1 To 4
+        CreateThread(@Worker(), #Null)
+    Next
 EndProcedure
 
 Procedure Worker(*Dummy)
-	Protected img, x, y
+    Protected img, x, y
 
-	Repeat
-		WaitSemaphore(Semaphore)
+    Repeat
+        WaitSemaphore(Semaphore)
 
-		LockMutex(Mutex)
-		FirstElement(Queue())
-		img = Queue()\img
-		x = Queue()\x
-		y = Queue()\y
-		DeleteElement(Queue())
-		UnlockMutex(Mutex)
+        LockMutex(Mutex)
+        FirstElement(Queue())
+        img = Queue()\img
+        x = Queue()\x
+        y = Queue()\y
+        DeleteElement(Queue())
+        UnlockMutex(Mutex)
 
-		SaveImage(img, "mods/noita-mapcap/output/" + x + "," + y + ".png", #PB_ImagePlugin_PNG)
-		FreeImage(img)
-	ForEver
+        SaveImage(img, "mods/noita-mapcap/output/" + x + "," + y + ".png", #PB_ImagePlugin_PNG)
+        FreeImage(img)
+    ForEver
 EndProcedure
 
 ProcedureDLL Capture(px.i, py.i)
-	; Get dimensions of main screen
-	
-	x = DesktopX(0)
-	y = DesktopY(0)
-	w = DesktopWidth(0)
-	h = DesktopHeight(0)
+    ; Get dimensions of main screen
 
-	imageID = CreateImage(#PB_Any, w, h)
-	If Not imageID
-		ProcedureReturn
-	EndIf
+    x = DesktopX(0)
+    y = DesktopY(0)
+    w = DesktopWidth(0)
+    h = DesktopHeight(0)
 
-	; Get DC of whole screen
-	screenDC = GetDC_(#Null)
-	If Not screenDC
-		FreeImage(imageID)
-		ProcedureReturn
-	EndIf
+    imageID = CreateImage(#PB_Any, w, h)
+    If Not imageID
+        ProcedureReturn
+    EndIf
 
-	hDC = StartDrawing(ImageOutput(imageID))
-	If Not hDC
-		FreeImage(imageID)
-		ReleaseDC_(#Null, screenDC)
-		ProcedureReturn
-	EndIf
-	If Not BitBlt_(hDC, 0, 0, w, h, screenDC, x, y, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
-		FreeImage(imageID)
-		ReleaseDC_(#Null, screenDC)
-		StopDrawing()
-		ProcedureReturn
-	EndIf
-	StopDrawing()
+    ; Get DC of whole screen
+    screenDC = GetDC_(#Null)
+    If Not screenDC
+        FreeImage(imageID)
+        ProcedureReturn
+    EndIf
 
-	ReleaseDC_(#Null, screenDC)
+    hDC = StartDrawing(ImageOutput(imageID))
+    If Not hDC
+        FreeImage(imageID)
+        ReleaseDC_(#Null, screenDC)
+        ProcedureReturn
+    EndIf
+    If Not BitBlt_(hDC, 0, 0, w, h, screenDC, x, y, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
+        FreeImage(imageID)
+        ReleaseDC_(#Null, screenDC)
+        StopDrawing()
+        ProcedureReturn
+    EndIf
+    StopDrawing()
 
-	LockMutex(Mutex)
-	; Check if the queue has too many elements, if so, wait. (Simulate go's channels)
-	While ListSize(Queue()) > 0
-		UnlockMutex(Mutex)
-		Delay(10)
-		LockMutex(Mutex)
-	Wend
-	LastElement(Queue())
-	AddElement(Queue())
-	Queue()\img = imageID
-	Queue()\x = px
-	Queue()\y = py
-	UnlockMutex(Mutex)
+    ReleaseDC_(#Null, screenDC)
 
-	SignalSemaphore(Semaphore)
+    LockMutex(Mutex)
+    ; Check if the queue has too many elements, if so, wait. (Simulate go's channels)
+    While ListSize(Queue()) > 0
+        UnlockMutex(Mutex)
+        Delay(10)
+        LockMutex(Mutex)
+    Wend
+    LastElement(Queue())
+    AddElement(Queue())
+    Queue()\img = imageID
+    Queue()\x = px
+    Queue()\y = py
+    UnlockMutex(Mutex)
+
+    SignalSemaphore(Semaphore)
 
 EndProcedure
 
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 72
-; FirstLine = 32
+; CursorPosition = 25
+; FirstLine = 3
 ; Folding = -
 ; EnableThread
 ; EnableXP
