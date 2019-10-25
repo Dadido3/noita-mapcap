@@ -1,23 +1,24 @@
-# Noita MapCapture addon
+# Noita MapCapture addon [![Build Status](https://travis-ci.com/Dadido3/noita-mapcap.svg?branch=master)](https://travis-ci.com/Dadido3/noita-mapcap)
 
 Addon that captures the map and saves it as image.
 
 ![](images/example1.png)
 
-A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4).
+A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4) (Warning: Spoilers).
 
 ## Usage
 
-1. Have Noita beta installed
-2. Install the repository as mod
-    - mod.xml and the rest should be in `.../Noita/mods/noita-mapcap/`
-3. Enable mod, and restart Noita
-4. In the game you should see a `Start capturing map` text on the screen, click it
-5. The screen will jump around, and the game will take screenshots automatically. Don't interfere with it. Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`
-6. When you think you are done, close noita
-7. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`
-    - It will take the screenshots from the `output` folder
-8. An `output.png` with the stitched result will appear
+1. Have Noita installed.
+2. Download the [latest release of the mod from this link](https://github.com/Dadido3/noita-mapcap/releases/latest) (The `Windows.x86.7z`, not the source)
+3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
+4. Enable mod, and restart Noita.
+5. In the game you should see a `>> Start capturing map <<` text on the screen, click it.
+6. The screen will jump around, and the game will take screenshots automatically. Don't interfere with it. Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
+7. When you think you are done, close noita.
+8. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
+    - Use the default value to create a complete stitch.
+    - It will take the screenshots from the `output` folder.
+9. An `output.png` with the stitched result will appear.
 
 ## Advanced usage
 
