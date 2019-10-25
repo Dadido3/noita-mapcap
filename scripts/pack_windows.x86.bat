@@ -14,3 +14,5 @@ robocopy "bin/stitch/" "distribution/noita-mapcap/bin/stitch/" stitch.exe README
 cd distribution
 
 7z a -t7z Windows.x86.7z -m0=lzma2 -mx=9 -aoa noita-mapcap
+
+cd ..
