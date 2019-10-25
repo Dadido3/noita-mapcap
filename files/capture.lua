@@ -26,7 +26,8 @@ local function resetPlayer()
 end
 
 function startCapturing()
-	local ox, oy = getPlayerPos()
+	local ox, oy = GameGetCameraPos()
+	--getPlayerPos()
 	ox, oy = math.floor(ox / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE, math.floor(oy / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE
 	local x, y = ox, oy
 
@@ -43,8 +44,11 @@ function startCapturing()
 				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY)
+					wait(CAPTURE_DELAY - 1)
+					UiHide = true -- Hide UI while capturing the screenshot
+					wait(1)
 					TriggerCapture(rx, ry)
+					UiHide = false
 				end
 				x, y = x + CAPTURE_GRID_SIZE, y
 			end
@@ -53,8 +57,11 @@ function startCapturing()
 				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY)
+					wait(CAPTURE_DELAY - 1)
+					UiHide = true
+					wait(1)
 					TriggerCapture(rx, ry)
+					UiHide = false
 				end
 				x, y = x, y + CAPTURE_GRID_SIZE
 			end
@@ -64,8 +71,11 @@ function startCapturing()
 				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY)
+					wait(CAPTURE_DELAY - 1)
+					UiHide = true
+					wait(1)
 					TriggerCapture(rx, ry)
+					UiHide = false
 				end
 				x, y = x - CAPTURE_GRID_SIZE, y
 			end
@@ -74,8 +84,11 @@ function startCapturing()
 				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY)
+					wait(CAPTURE_DELAY - 1)
+					UiHide = true
+					wait(1)
 					TriggerCapture(rx, ry)
+					UiHide = false
 				end
 				x, y = x, y - CAPTURE_GRID_SIZE
 			end
