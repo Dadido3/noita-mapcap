@@ -6,23 +6,7 @@ Addon that captures the map and saves it as image.
 
 A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4).
 
-## State
-
-Works somewhat, still in development.
-
-**To-Do:**
-
-- [x] Reduce memory usage of stitching program
-- [x] Make stitching multi threaded
-- [x] Add parameters to stitching program
-- [x] Show progress while stitching
-- [x] Improve image quality, reduce artifacts
-- [ ] Travis or similar for automatic builds, right now there are no executables
-- [x] Fix crash while taking screenshots
-
 ## Usage
-
-**DLLs and executables are not included in the repo yet! They will be uploaded once releases are built automatically. The mod won't function without them!**
 
 1. Have Noita beta installed
 2. Install the repository as mod
