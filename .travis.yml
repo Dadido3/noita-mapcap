@@ -15,6 +15,7 @@ matrix:
         - cd bin/stitch
         - go test
         - go build
+        - cd ../..
       before_deploy: ./scripts/pack_windows.x86.bat
       cache:
         directories:
