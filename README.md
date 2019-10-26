@@ -6,6 +6,15 @@ Addon that captures the map and saves it as image.
 
 A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4) (Warning: Spoilers).
 
+## System requirements
+
+- Windows Vista, ..., 10 (64 bit version)
+- A few GB of free drive space
+- 16-32 GB of RAM (But works with less as long as the software doesn't run out of virtual memory)
+- A processor
+- Optionally a monitor, keyboard and mouse to interact with the mod/software
+- A sound card to listen to music while it's grabbing screenshots
+
 ## Usage
 
 1. Have Noita installed.
@@ -16,9 +25,9 @@ A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom
 6. The screen will jump around, and the game will take screenshots automatically. Don't interfere with it. Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
 7. When you think you are done, close noita.
 8. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
-    - Use the default value to create a complete stitch.
+    - Use the default values to create a complete stitch.
     - It will take the screenshots from the `output` folder.
-9. An `output.png` with the stitched result will appear.
+9. The result will be saved as `.../Noita/mods/noita-mapcap/bin/stitch/output.png` if not defined otherwise.
 
 ## Advanced usage
 
