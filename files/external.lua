@@ -10,9 +10,28 @@ if not status then
 	print("Error loading capture lib: " .. cap)
 end
 ffi.cdef [[
-	void Capture(int x, int y);
+	typedef long LONG;
+	typedef struct {
+		LONG left;
+		LONG top;
+		LONG right;
+		LONG bottom;
+	} RECT;
+
+	bool GetRect(RECT* rect);
+	bool Capture(int x, int y);
 ]]
 
 function TriggerCapture(x, y)
-	caplib.Capture(x, y)
+	return caplib.Capture(x, y)
+end
+
+-- Get the client rectangle of the "Main" window of this process in screen coordinates
+function GetRect()
+	local rect = ffi.new("RECT", 0, 0, 0, 0)
+	if not caplib.GetRect(rect) then
+		return nil
+	end
+
+	return rect
 end

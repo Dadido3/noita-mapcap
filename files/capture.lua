@@ -3,10 +3,10 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-local CAPTURE_PIXEL_SIZE = 2 -- in FullHD an ingame pixel is expected to be 2 real pixels
-local CAPTURE_GRID_SIZE = 256 -- in ingame pixels. There will be 6 to 12 images overlapping
-local CAPTURE_DELAY = 15 -- in frames
-local CAPTURE_FORCE_HP = 4 -- * 25HP
+CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio
+CAPTURE_GRID_SIZE = 420 -- in ingame pixels. There will always be 3 to 6 images overlapping
+CAPTURE_DELAY = 15 -- in frames
+CAPTURE_FORCE_HP = 4 -- * 25HP
 
 local function preparePlayer()
 	local playerEntity = getPlayer()

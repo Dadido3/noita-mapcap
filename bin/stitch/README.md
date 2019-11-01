@@ -29,7 +29,7 @@ example list of files:
 - Run the program and follow the interactive prompt.
 - Run the program with parameters:
   - `divide int`
-    A downscaling factor. 2 will produce an image with half the side lengths. (default 2)
+    A downscaling factor. 2 will produce an image with half the side lengths. (default 1)
   - `input string`The source path of the image tiles to be stitched. (default "..\\..\\output")
   - `output string`
     The path and filename of the resulting stitched image. (default "output.png")

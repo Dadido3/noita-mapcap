@@ -2,7 +2,7 @@
 
 Addon that captures the map and saves it as image.
 
-![](images/example1.png)
+![missing image](images/example1.png)
 
 A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4) (Warning: Spoilers).
 
@@ -20,10 +20,14 @@ A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom
 1. Have Noita installed.
 2. Download the [latest release of the mod from this link](https://github.com/Dadido3/noita-mapcap/releases/latest) (The `Windows.x86.7z`, not the source)
 3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
-4. Set your resolution to 1920x1080 if possible, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see advanced usage.
+4. Set your resolution to 1280x720, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see advanced usage.
 5. Enable the mod and restart Noita.
 6. In the game you should see a `>> Start capturing map <<` text on the screen, click it.
-7. The screen will jump around, and the game will take screenshots automatically. Don't interfere with it. Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
+7. The screen will jump around, and the game will take screenshots automatically.
+    - Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
+    - Don't cover the game window.
+    - Don't move the game window outside of screen space.
+    - If you need to pause, use the ESC menu.
 8. When you think you are done, close noita.
 9. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
     - Use the default values to create a complete stitch.
@@ -43,9 +47,6 @@ The following two formulae have to be true:
 - Where `CAPTURE_PIXEL_SIZE` can be found inside `.../Noita/mods/noita-mapcap/files/capture.lua`
 - `VIRTUAL_RESOLUTION_*` can be found inside `.../Noita/mods/noita-mapcap/files/magic_numbers.xml`
 - and `SCREEN_RESOLUTION_*` is the screen resolution you have set up in noita.
-
-If you have a resolution of `1366 x 768‎`, then you should change the `VIRTUAL_RESOLUTION_*` to `683 x 384`.
-Another solution would be to change the `CAPTURE_PIXEL_SIZE` to `1.423`, but then you would get blurry images.
 
 You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SIZE` in `.../Noita/mods/noita-mapcap/files/capture.lua`. If you increase the grid size, you can capture more area per time. But on the other hand the stitcher may not be able to remove artifacts if the tiles don't overlap enough.
 
