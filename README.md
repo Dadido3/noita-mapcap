@@ -22,7 +22,9 @@ A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom
 3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
 4. Set your resolution to 1280x720, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see advanced usage.
 5. Enable the mod and restart Noita.
-6. In the game you should see a `>> Start capturing map <<` text on the screen, click it.
+6. In the game you should see text on screen.
+    - Either press `>> Start capturing map around view <<` to capture in a spiral around your current view.
+    - Or press `>> Start capturing full map <<` to capture the whole map.
 7. The screen will jump around, and the game will take screenshots automatically.
     - Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
     - Don't cover the game window.
@@ -49,6 +51,8 @@ The following two formulae have to be true:
 - and `SCREEN_RESOLUTION_*` is the screen resolution you have set up in noita.
 
 You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SIZE` in `.../Noita/mods/noita-mapcap/files/capture.lua`. If you increase the grid size, you can capture more area per time. But on the other hand the stitcher may not be able to remove artifacts if the tiles don't overlap enough.
+
+The rectangle for the full map capture mode is defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
 
 ## License
 

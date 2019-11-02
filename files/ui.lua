@@ -5,6 +5,8 @@
 
 UiHide = false
 local UiReduce = false
+UiProgress = nil
+UiCaptureProblem = nil
 
 async_loop(
 	function()
@@ -86,7 +88,7 @@ async_loop(
 				end
 
 				GuiTextCentered(modGUI, 0, 0, "You can freely look around and search a place to start capturing.")
-				GuiTextCentered(modGUI, 0, 0, "The mod will then take images in a spiral around your current view.")
+				GuiTextCentered(modGUI, 0, 0, "When started the mod will take pictures automatically.")
 				GuiTextCentered(modGUI, 0, 0, "Use ESC  to pause, and close the game to stop the process.")
 				GuiTextCentered(
 					modGUI,
@@ -102,8 +104,12 @@ async_loop(
 					'If you want to start a new map, you have to delete all images from the "output" folder!'
 				)
 				GuiTextCentered(modGUI, 0, 0, " ")
-				if GuiButton(modGUI, 0, 0, ">> Start capturing map <<", 1) then
-					startCapturing()
+				if GuiButton(modGUI, 0, 0, ">> Start capturing map around view <<", 1) then
+					startCapturingSpiral()
+					UiReduce = true
+				end
+				if GuiButton(modGUI, 0, 0, ">> Start capturing full map <<", 1) then
+					startCapturingHilbert()
 					UiReduce = true
 				end
 				GuiTextCentered(modGUI, 0, 0, " ")
@@ -111,6 +117,20 @@ async_loop(
 			if not UiHide then
 				local x, y = GameGetCameraPos()
 				GuiTextCentered(modGUI, 0, 0, string.format("Coordinates: %d, %d", x, y))
+				if UiProgress then
+					GuiTextCentered(
+						modGUI,
+						0,
+						0,
+						progressBarString(
+							UiProgress,
+							{BarLength = 100, CharFull = "l", CharEmpty = ".", Format = "|%s| [%d / %d] [%1.2f%%]"}
+						)
+					)
+				end
+				if UiCaptureProblem then
+					GuiTextCentered(modGUI, 0, 0, string.format("A problem occurred while capturing: %s", UiCaptureProblem))
+				end
 			end
 			GuiLayoutEnd(modGUI)
 		end

@@ -97,3 +97,11 @@ function fileExists(fileName)
 		return false
 	end
 end
+
+function progressBarString(progress, look)
+	local factor = progress.Progress / progress.Max
+	local count = math.ceil(look.BarLength * factor)
+	local barString = string.rep(look.CharFull, count) .. string.rep(look.CharEmpty, look.BarLength - count)
+
+	return string.format(look.Format, barString, progress.Progress, progress.Max, factor * 100)
+end
