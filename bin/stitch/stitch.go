@@ -3,6 +3,8 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+// TODO: Fix transparent pixels at the output image border
+
 package main
 
 import (

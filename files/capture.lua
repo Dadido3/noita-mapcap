@@ -31,10 +31,41 @@ local function resetPlayer()
 	setPlayerHP(CAPTURE_FORCE_HP)
 end
 
+local xOld, yOld = 0, 0
+local function captureScreenshot(x, y, rx, ry)
+	-- "Larger than grid jump" delay
+	local delay = CAPTURE_DELAY - 1
+	if math.abs(x - xOld) > CAPTURE_GRID_SIZE or math.abs(y - yOld) > CAPTURE_GRID_SIZE then
+		delay = delay + CAPTURE_BIGJUMP_DELAY
+	end
+	xOld, yOld = x, y
+
+	-- Set pos several times, so that chunks will load even if nothing happens in the surrounding
+	-- This prevents black blocks in areas without entites
+	for i = 1, delay, 1 do
+		GameSetCameraPos(x, y)
+		wait(1)
+	end
+	GameSetCameraPos(x, y)
+
+	UiHide = true -- Hide UI while capturing the screenshot
+	wait(1)
+	if not TriggerCapture(rx, ry) then
+		UiCaptureProblem = "Screen capture failed. Please restart Noita."
+	end
+	UiHide = false
+end
+
 function startCapturingSpiral()
 	local ox, oy = GameGetCameraPos()
 	ox, oy = math.floor(ox / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE, math.floor(oy / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE
 	local x, y = ox, oy
+
+	local virtualWidth, virtualHeight =
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+
+	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
 	preparePlayer()
 
@@ -46,62 +77,34 @@ function startCapturingSpiral()
 		function()
 			-- +x
 			for i = 1, i, 1 do
-				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
+				local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY - 1)
-					UiHide = true -- Hide UI while capturing the screenshot
-					wait(1)
-					if not TriggerCapture(rx, ry) then
-						UiCaptureProblem = "Screen capture failed. Please restart Noita."
-					end
-					UiHide = false
+					captureScreenshot(x, y, rx, ry)
 				end
 				x, y = x + CAPTURE_GRID_SIZE, y
 			end
 			-- +y
 			for i = 1, i, 1 do
-				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
+				local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY - 1)
-					UiHide = true
-					wait(1)
-					if not TriggerCapture(rx, ry) then
-						UiCaptureProblem = "Screen capture failed. Please restart Noita."
-					end
-					UiHide = false
+					captureScreenshot(x, y, rx, ry)
 				end
 				x, y = x, y + CAPTURE_GRID_SIZE
 			end
 			i = i + 1
 			-- -x
 			for i = 1, i, 1 do
-				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
+				local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY - 1)
-					UiHide = true
-					wait(1)
-					if not TriggerCapture(rx, ry) then
-						UiCaptureProblem = "Screen capture failed. Please restart Noita."
-					end
-					UiHide = false
+					captureScreenshot(x, y, rx, ry)
 				end
 				x, y = x - CAPTURE_GRID_SIZE, y
 			end
 			-- -y
 			for i = 1, i, 1 do
-				local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
+				local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					GameSetCameraPos(x, y)
-					wait(CAPTURE_DELAY - 1)
-					UiHide = true
-					wait(1)
-					if not TriggerCapture(rx, ry) then
-						UiCaptureProblem = "Screen capture failed. Please restart Noita."
-					end
-					UiHide = false
+					captureScreenshot(x, y, rx, ry)
 				end
 				x, y = x, y - CAPTURE_GRID_SIZE
 			end
@@ -112,6 +115,12 @@ end
 
 function startCapturingHilbert()
 	local ox, oy = GameGetCameraPos()
+
+	local virtualWidth, virtualHeight =
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+
+	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
 	-- Get size of the rectangle in grid/chunk coordinates
 	local gridLeft = math.floor(CAPTURE_LEFT / CAPTURE_GRID_SIZE)
@@ -143,23 +152,9 @@ function startCapturingHilbert()
 				local hx, hy = mapHilbert(t, gridPOTSize)
 				if hx < gridWidth and hy < gridHeight then
 					local x, y = (hx + gridLeft) * CAPTURE_GRID_SIZE, (hy + gridTop) * CAPTURE_GRID_SIZE
-					local rx, ry = x * CAPTURE_PIXEL_SIZE, y * CAPTURE_PIXEL_SIZE
+					local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 					if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-						GameSetCameraPos(x, y)
-
-						-- "Larger than grid jump" delay
-						if math.abs(x - ox) > CAPTURE_GRID_SIZE or math.abs(y - oy) > CAPTURE_GRID_SIZE then
-							wait(CAPTURE_BIGJUMP_DELAY)
-						end
-						ox, oy = x, y
-
-						wait(CAPTURE_DELAY - 1)
-						UiHide = true -- Hide UI while capturing the screenshot
-						wait(1)
-						if not TriggerCapture(rx, ry) then
-							UiCaptureProblem = "Screen capture failed. Please restart Noita."
-						end
-						UiHide = false
+						captureScreenshot(x, y, rx, ry)
 					end
 					UiProgress.Progress = UiProgress.Progress + 1
 				end

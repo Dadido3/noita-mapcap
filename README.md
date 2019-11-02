@@ -54,6 +54,53 @@ You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SI
 
 The rectangle for the full map capture mode is defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
 
+## How to do a full map capture minimal trouble
+
+For the best experience and result, follow these steps:
+
+1. Change the following values inside of `.../Noita/mods/noita-mapcap/files/magic_numbers.xml`:
+
+    ``` xml
+    <MagicNumbers
+        VIRTUAL_RESOLUTION_X="840"
+        VIRTUAL_RESOLUTION_Y="840"
+        STREAMING_CHUNK_TARGET="12"
+        ...
+    >
+    ```
+
+2. Change the following values inside of `.../Noita/save_shared/config.xml`: (Not the one in AppData!)
+
+    ``` xml
+    <Config
+        ...
+        backbuffer_height="840"
+        backbuffer_width="840"
+        internal_size_h="840"
+        internal_size_w="840"
+        window_h="840"
+        window_w="840"
+        framerate="600"
+        ...
+    >
+    ```
+
+3. Start `.../Noita/noita_dev.exe`
+    - If it's not there, copy it from `.../Noita/tools_modding/noita_dev.exe`
+    - If it's there, check if it is recent. If not, also copy it.
+    - Click `Ignore always` on the `ASSERT FAILED!` requester.
+
+4. When the game is loaded (When you can control your character):
+    - Press `F5`, `F8` and `F12` (In that order).
+    - Press `F7`, and disable `mTrailerMode` in the menu. (This should reduce chunk loading problems)
+    - Press `F7` again to close the menu.
+
+5. Press the `>> Start capturing full map <<` button.
+
+6. Wait a few hours until it's complete.
+
+7. Stitch the image as described above.
+
 ## License
 
 [MIT](LICENSE)
