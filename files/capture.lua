@@ -54,6 +54,9 @@ local function captureScreenshot(x, y, rx, ry)
 		UiCaptureProblem = "Screen capture failed. Please restart Noita."
 	end
 	UiHide = false
+
+	-- Reset monitor and PC standby each screenshot
+	ResetStandbyTimer()
 end
 
 function startCapturingSpiral()

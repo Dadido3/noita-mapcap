@@ -4,7 +4,7 @@ Addon that captures the map and saves it as image.
 
 ![missing image](images/example1.png)
 
-A resulting image with close to 3 gigapixels can be [seen here](https://easyzoom.com/image/158284/album/0/4) (Warning: Spoilers).
+A resulting image with 3.8 gigapixels can be [seen here](https://easyzoom.com/image/159431) (Warning: Spoilers).
 
 ## System requirements
 
@@ -80,26 +80,32 @@ For the best experience and result, follow these steps:
         internal_size_w="840"
         window_h="840"
         window_w="840"
+        fullscreen="0"
         framerate="600"
         ...
     >
     ```
 
-3. Start `.../Noita/noita_dev.exe`
-    - If it's not there, copy it from `.../Noita/tools_modding/noita_dev.exe`
-    - If it's there, check if it is recent. If not, also copy it.
+    If that file doesn't exist do step 3 and 5, and come back here.
+
+3. Copy `.../Noita/tools_modding/noita_dev.exe` to `.../Noita/noita_dev.exe`.
+    - Also copy it again, if there was an update.
+
+4. Patch your `.../Noita/noita_dev.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
+
+5. Start `.../Noita/noita_dev.exe`.
     - Click `Ignore always` on the `ASSERT FAILED!` requester.
 
-4. When the game is loaded (When you can control your character):
+6. When the game is loaded (When you can control your character):
     - Press `F5`, `F8` and `F12` (In that order).
     - Press `F7`, and disable `mTrailerMode` in the menu. (This should reduce chunk loading problems)
     - Press `F7` again to close the menu.
 
-5. Press the `>> Start capturing full map <<` button.
+7. Press the `>> Start capturing full map <<` button.
 
-6. Wait a few hours until it's complete.
+8. Wait a few hours until it's complete.
 
-7. Stitch the image as described above.
+9. Stitch the image as described above.
 
 ## License
 

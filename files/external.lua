@@ -20,6 +20,8 @@ ffi.cdef [[
 
 	bool GetRect(RECT* rect);
 	bool Capture(int x, int y);
+
+	int SetThreadExecutionState(int esFlags);
 ]]
 
 function TriggerCapture(x, y)
@@ -34,4 +36,9 @@ function GetRect()
 	end
 
 	return rect
+end
+
+-- Reset computer and monitor standby timer
+function ResetStandbyTimer()
+	ffi.C.SetThreadExecutionState(3) -- ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
 end
