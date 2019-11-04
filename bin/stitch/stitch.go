@@ -24,6 +24,7 @@ var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coo
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
 var flagYMax = flag.Int("ymax", 0, "Lower bound of the output rectangle. This coordinate is not included in the output.")
+var flagLowRAM = flag.Bool("lowram", true, "Reduces the needed ram drastically, at the expense of speed.")
 
 func main() {
 	flag.Parse()
@@ -153,12 +154,19 @@ func main() {
 		*flagOutputPath = result
 	}
 
-	log.Printf("Creating output image with a size of %v", outputRect.Size())
-	outputImage := image.NewRGBA(outputRect)
+	var outputImage image.Image
+	if *flagLowRAM {
+		outputImage = NewMedianBlendedImage(tiles)
+	} else {
+		log.Printf("Creating output image with a size of %v", outputRect.Size())
+		tempImage := image.NewRGBA(outputRect)
 
-	log.Printf("Stitching %v tiles into an image at %v", len(tiles), outputImage.Bounds())
-	if err := StitchGrid(tiles, outputImage, 512); err != nil {
-		log.Panic(err)
+		log.Printf("Stitching %v tiles into an image at %v", len(tiles), outputImage.Bounds())
+		if err := StitchGrid(tiles, tempImage, 512); err != nil {
+			log.Panic(err)
+		}
+
+		outputImage = tempImage
 	}
 
 	log.Printf("Creating output file \"%v\"", "output.png")
