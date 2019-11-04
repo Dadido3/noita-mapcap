@@ -54,7 +54,7 @@ You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SI
 
 The rectangle for the full map capture mode is defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
 
-## How to do a full map capture minimal trouble
+## How to do a full map capture with minimal trouble
 
 For the best experience and result, follow these steps:
 
