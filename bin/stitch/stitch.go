@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-// TODO: Fix transparent pixels at the output image border
-
 package main
 
 import (
@@ -159,8 +157,7 @@ func main() {
 	outputImage := image.NewRGBA(outputRect)
 
 	log.Printf("Stitching %v tiles into an image at %v", len(tiles), outputImage.Bounds())
-	tp := make(tilePairs)
-	if err := tp.StitchGrid(tiles, outputImage, 512); err != nil {
+	if err := StitchGrid(tiles, outputImage, 512); err != nil {
 		log.Panic(err)
 	}
 
