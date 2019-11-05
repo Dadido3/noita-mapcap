@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/schollz/progressbar/v2"
+	"github.com/cheggaaa/pb/v3"
 )
 
 var regexFileParse = regexp.MustCompile(`^(-?\d+),(-?\d+).png$`)
@@ -82,7 +82,9 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 			}
 			imgCopy := *img
 			imgCopy.Rect = imgCopy.Rect.Add(tile.offset).Inset(4) // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
-			images = append(images, &imgCopy)                     // TODO: Fix transparent pixels at the output image border because of Inset
+			images = append(images, &imgCopy)
+			// TODO: Fix transparent pixels at the output image border because of inset
+			// TODO: Fix downscaled images to cause artifacts because of the inset
 		}
 	}
 
@@ -104,15 +106,16 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 
 // StitchGrid calls stitch, but divides the workload into a grid of chunks.
 // Additionally it runs the workload multithreaded.
-func StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int) (errResult error) {
+func StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int, bar *pb.ProgressBar) (errResult error) {
 	//workloads := gridifyRectangle(destImage.Bounds(), gridSize)
 	workloads, err := hilbertifyRectangle(destImage.Bounds(), gridSize)
 	if err != nil {
 		return err
 	}
 
-	bar := progressbar.New(len(workloads))
-	bar.RenderBlank()
+	if bar != nil {
+		bar.SetTotal(int64(len(workloads))).Start()
+	}
 
 	// Start worker threads
 	wc := make(chan image.Rectangle)
@@ -125,7 +128,9 @@ func StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int) (errResu
 				if err := Stitch(tiles, destImage.SubImage(workload).(*image.RGBA)); err != nil {
 					errResult = err // This will not stop execution, but at least one of any errors is returned.
 				}
-				bar.Add(1)
+				if bar != nil {
+					bar.Increment()
+				}
 			}
 		}()
 	}
@@ -138,9 +143,6 @@ func StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int) (errResu
 	// Wait until all worker threads are done
 	close(wc)
 	wg.Wait()
-
-	// Newline because of the progress bar
-	fmt.Println("")
 
 	return
 }

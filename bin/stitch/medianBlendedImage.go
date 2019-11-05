@@ -18,23 +18,15 @@ type MedianBlendedImage struct {
 	tiles  []imageTile
 	bounds image.Rectangle
 
-	cachedRow *image.RGBA
+	cachedRow    *image.RGBA
+	queryCounter int
 }
 
 // NewMedianBlendedImage creates a new image from several single image tiles.
-func NewMedianBlendedImage(tiles []imageTile) *MedianBlendedImage {
-	totalBounds := image.Rectangle{}
-	for i, tile := range tiles {
-		if i == 0 {
-			totalBounds = tile.Bounds()
-		} else {
-			totalBounds = totalBounds.Union(tile.Bounds())
-		}
-	}
-
+func NewMedianBlendedImage(tiles []imageTile, bounds image.Rectangle) *MedianBlendedImage {
 	return &MedianBlendedImage{
 		tiles:     tiles,
-		bounds:    totalBounds,
+		bounds:    bounds,
 		cachedRow: &image.RGBA{},
 	}
 }
@@ -56,6 +48,9 @@ func (mbi *MedianBlendedImage) Bounds() image.Rectangle {
 func (mbi *MedianBlendedImage) At(x, y int) color.Color {
 	p := image.Point{x, y}
 
+	// Assume that every pixel is only queried once
+	mbi.queryCounter++
+
 	if !p.In(mbi.cachedRow.Bounds()) {
 		// Need to create a new row image
 		rect := mbi.Bounds()
@@ -69,10 +64,17 @@ func (mbi *MedianBlendedImage) At(x, y int) color.Color {
 		mbi.cachedRow = image.NewRGBA(rect)
 
 		// TODO: Don't use hilbert curve here
-		if err := StitchGrid(mbi.tiles, mbi.cachedRow, 512); err != nil {
+		if err := StitchGrid(mbi.tiles, mbi.cachedRow, 512, nil); err != nil {
 			return color.RGBA{}
 		}
 	}
 
 	return mbi.cachedRow.RGBAAt(x, y)
+}
+
+// Progress returns the approximate progress of any process that scans the image from top to bottom.
+func (mbi *MedianBlendedImage) Progress() (value, max int) {
+	size := mbi.Bounds().Size()
+
+	return mbi.queryCounter, size.X * size.Y
 }

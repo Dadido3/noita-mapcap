@@ -26,8 +26,8 @@ example list of files:
 
 ## Usage
 
-- Run the program and follow the interactive prompt.
-- Run the program with parameters:
+- Either run the program and follow the interactive prompt.
+- Or run the program with parameters:
   - `divide int`
     A downscaling factor. 2 will produce an image with half the side lengths. (default 1)
   - `input string`The source path of the image tiles to be stitched. (default "..\\..\\output")
@@ -41,22 +41,31 @@ example list of files:
     Lower bound of the output rectangle. This coordinate is not included in the output.
   - `ymin int`
     Upper bound of the output rectangle. This coordinate is included in the output.
+  - `prerender`
+    Pre renders the image in RAM before saving. Can speed things up if you have enough RAM.
 
-Example of usage:
+To output the 100x100 area that is centered at the origin use:
 
 ``` Shell Session
-./stitch -divide 2
+./stitch -divide 1 -xmin -50 -xmax 50 -ymin -50 -ymax 50
 ```
 
-Example of output:
+To enter the parameters inside of the program:
 
 ``` Shell Session
-2019/10/25 16:02:25 Starting to read tile information at "..\..\output"
-2019/10/25 16:02:34 Got 43338 tiles
-2019/10/25 16:02:34 Total size of the possible output space is (-19968,-36864)-(21184,35100)
-2019/10/25 16:02:34 Creating output image with a size of (41152,71964)
-2019/10/25 16:02:46 Stitching 43338 tiles into an image at (-19968,-36864)-(21184,35100)
- 100% |████████████████████████████████████████|  [33m13s:0s]
-2019/10/25 16:35:59 Creating output file "output.png"
-2019/10/25 16:44:17 Created output file "output.png"
+./stitch
+```
+
+Example output:
+
+``` Shell Session
+Enter downscaling factor:1
+Enter input path:..\..\output
+2019/11/04 23:53:20 Starting to read tile information at "..\..\output"
+2019/11/04 23:53:32 Got 20933 tiles
+2019/11/04 23:53:32 Total size of the possible output space is (-25620,-36540)-(25620,36540)
+Enter output rectangle (xMin,yMin;xMax,yMax):-25620,-36540;25620,36540
+Enter output filename and path:output.png
+2019/11/04 23:53:35 Creating output file "output.png"
+105 / 571 [--------------->____________________________________________________________________] 18.39% 1 p/s ETA 14m0s
 ```
