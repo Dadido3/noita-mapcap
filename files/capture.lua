@@ -18,16 +18,11 @@ local function preparePlayer()
 	local playerEntity = getPlayer()
 	addEffectToEntity(playerEntity, "PROTECTION_ALL")
 
-	addPerkToPlayer("BREATH_UNDERWATER")
-	addPerkToPlayer("INVISIBILITY")
-	addPerkToPlayer("REMOVE_FOG_OF_WAR")
-	addPerkToPlayer("REPELLING_CAPE")
-	addPerkToPlayer("WORM_DETRACTOR")
-
-	setPlayerHP(CAPTURE_FORCE_HP)
-end
-
-local function resetPlayer()
+	--addPerkToPlayer("BREATH_UNDERWATER")
+	--addPerkToPlayer("INVISIBILITY")
+	--addPerkToPlayer("REMOVE_FOG_OF_WAR")
+	--addPerkToPlayer("REPELLING_CAPE")
+	--addPerkToPlayer("WORM_DETRACTOR")
 	setPlayerHP(CAPTURE_FORCE_HP)
 end
 
