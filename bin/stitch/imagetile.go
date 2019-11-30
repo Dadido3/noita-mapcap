@@ -26,6 +26,8 @@ type imageTile struct {
 	image         image.Image   // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
 	imageMutex    *sync.RWMutex //
 	imageUsedFlag bool          // Flag signalling, that the image was used recently
+
+	pixelErrorSum uint64 // Sum of the difference between the (sub)pixels of all overlapping images. 0 Means that all overlapping images are identical.
 }
 
 func (it *imageTile) GetImage() (*image.RGBA, error) {

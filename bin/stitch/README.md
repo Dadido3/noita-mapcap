@@ -30,7 +30,8 @@ example list of files:
 - Or run the program with parameters:
   - `divide int`
     A downscaling factor. 2 will produce an image with half the side lengths. (default 1)
-  - `input string`The source path of the image tiles to be stitched. (default "..\\..\\output")
+  - `input string`
+    The source path of the image tiles to be stitched. (default "..\\..\\output")
   - `output string`
     The path and filename of the resulting stitched image. (default "output.png")
   - `xmax int`
@@ -43,11 +44,19 @@ example list of files:
     Upper bound of the output rectangle. This coordinate is included in the output.
   - `prerender`
     Pre renders the image in RAM before saving. Can speed things up if you have enough RAM.
+  - `cleanup float`
+    Enables cleanup mode with the given float as threshold. This will **DELETE** images from the input folder; no stitching will be done in this mode. A good value to start with is `0.999`, which deletes images where the sum of the min-max difference of each sub-pixel overlapping with other images is less than 99.9%% of the maximum possible sum of pixel differences.
 
 To output the 100x100 area that is centered at the origin use:
 
 ``` Shell Session
 ./stitch -divide 1 -xmin -50 -xmax 50 -ymin -50 -ymax 50
+```
+
+To remove images that would cause artifacts (You should recapture the deleted images afterwards):
+
+``` Shell Session
+./stitch -cleanup 0.999
 ```
 
 To enter the parameters inside of the program:

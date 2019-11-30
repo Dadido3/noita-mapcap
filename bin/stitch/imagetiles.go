@@ -104,7 +104,7 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 	return nil
 }
 
-// StitchGrid calls stitch, but divides the workload into a grid of chunks.
+// StitchGrid calls Stitch, but divides the workload into a grid of chunks.
 // Additionally it runs the workload multithreaded.
 func StitchGrid(tiles []imageTile, destImage *image.RGBA, gridSize int, bar *pb.ProgressBar) (errResult error) {
 	//workloads := gridifyRectangle(destImage.Bounds(), gridSize)
@@ -206,4 +206,125 @@ func drawMedianBlended(images []*image.RGBA, destImage *image.RGBA) {
 			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 		}
 	}
+}
+
+// Compare takes a list of tiles and compares them pixel by pixel.
+// The resulting pixel difference sum is stored in each tile.
+func Compare(tiles []imageTile, bounds image.Rectangle) error {
+	intersectTiles := []*imageTile{}
+	images := []*image.RGBA{}
+
+	// Get only the tiles that intersect with the bounds.
+	// Ignore alignment here, doesn't matter if an image overlaps a few pixels anyways.
+	for i, tile := range tiles {
+		if tile.OffsetBounds().Overlaps(bounds) {
+			tilePtr := &tiles[i]
+			intersectTiles = append(intersectTiles, tilePtr)
+			img, err := tilePtr.GetImage()
+			if err != nil {
+				return fmt.Errorf("Couldn't get image: %w", err)
+			}
+			imgCopy := *img
+			imgCopy.Rect = imgCopy.Rect.Add(tile.offset).Inset(4) // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
+			images = append(images, &imgCopy)
+		}
+	}
+
+	tempTilesEmpty := make([]*imageTile, 0, len(intersectTiles))
+
+	for iy := bounds.Min.Y; iy < bounds.Max.Y; iy++ {
+		for ix := bounds.Min.X; ix < bounds.Max.X; ix++ {
+			var rMin, rMax, gMin, gMax, bMin, bMax uint8
+			point := image.Point{ix, iy}
+			found := false
+			tempTiles := tempTilesEmpty
+
+			// Iterate through all images and find min and max subpixel values.
+			for i, img := range images {
+				if point.In(img.Bounds()) {
+					tempTiles = append(tempTiles, intersectTiles[i])
+					col := img.RGBAAt(point.X, point.Y)
+					if !found {
+						found = true
+						rMin, rMax, gMin, gMax, bMin, bMax = col.R, col.R, col.G, col.G, col.B, col.B
+					} else {
+						if rMin > col.R {
+							rMin = col.R
+						}
+						if rMax < col.R {
+							rMax = col.R
+						}
+						if gMin > col.G {
+							gMin = col.G
+						}
+						if gMax < col.G {
+							gMax = col.G
+						}
+						if bMin > col.B {
+							bMin = col.B
+						}
+						if bMax < col.B {
+							bMax = col.B
+						}
+					}
+				}
+			}
+
+			// If there were no images to get data from, ignore the pixel.
+			if !found {
+				continue
+			}
+
+			// Write the error value back into the tiles (Only those that contain the point point)
+			for _, tile := range tempTiles {
+				tile.pixelErrorSum += uint64(rMax-rMin) + uint64(gMax-gMin) + uint64(bMax-bMin)
+			}
+
+		}
+	}
+
+	return nil
+}
+
+// CompareGrid calls Compare, but divides the workload into a grid of chunks.
+// Additionally it runs the workload multithreaded.
+func CompareGrid(tiles []imageTile, bounds image.Rectangle, gridSize int, bar *pb.ProgressBar) (errResult error) {
+	//workloads := gridifyRectangle(destImage.Bounds(), gridSize)
+	workloads, err := hilbertifyRectangle(bounds, gridSize)
+	if err != nil {
+		return err
+	}
+
+	if bar != nil {
+		bar.SetTotal(int64(len(workloads))).Start()
+	}
+
+	// Start worker threads
+	wc := make(chan image.Rectangle)
+	wg := sync.WaitGroup{}
+	for i := 0; i < runtime.NumCPU()*2; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for workload := range wc {
+				if err := Compare(tiles, workload); err != nil {
+					errResult = err // This will not stop execution, but at least one of any errors is returned.
+				}
+				if bar != nil {
+					bar.Increment()
+				}
+			}
+		}()
+	}
+
+	// Push workload to worker threads
+	for _, workload := range workloads {
+		wc <- workload
+	}
+
+	// Wait until all worker threads are done
+	close(wc)
+	wg.Wait()
+
+	return
 }
