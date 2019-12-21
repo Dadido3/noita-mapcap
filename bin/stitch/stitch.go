@@ -258,8 +258,8 @@ func main() {
 		outputImage = tempImage
 	}
 
-	log.Printf("Creating output file \"%v\"", "output.png")
-	f, err := os.Create("output.png")
+	log.Printf("Creating output file \"%v\"", *flagOutputPath)
+	f, err := os.Create(*flagOutputPath)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -277,6 +277,6 @@ func main() {
 	if err := f.Close(); err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Created output file \"%v\"", "output.png")
+	log.Printf("Created output file \"%v\"", *flagOutputPath)
 
 }
