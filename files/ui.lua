@@ -4,6 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 UiHide = false
+UiHideCountdown = 0
 local UiReduce = false
 UiProgress = nil
 UiCaptureProblem = nil
@@ -117,6 +118,7 @@ async_loop(
 			if not UiHide then
 				local x, y = GameGetCameraPos()
 				GuiTextCentered(modGUI, 0, 0, string.format("Coordinates: %d, %d", x, y))
+				GuiTextCentered(modGUI, 0, 0, string.format("Countdown: %d", UiHideCountdown))
 				if UiProgress then
 					GuiTextCentered(
 						modGUI,

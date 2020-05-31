@@ -37,9 +37,11 @@ local function captureScreenshot(x, y, rx, ry)
 
 	-- Set pos several times, so that chunks will load even if nothing happens in the surrounding
 	-- This prevents black blocks in areas without entites
+	UiHideCountdown = delay
 	for i = 1, delay, 1 do
 		GameSetCameraPos(x, y)
 		wait(1)
+		UiHideCountdown = UiHideCountdown - 1
 	end
 	GameSetCameraPos(x, y)
 
