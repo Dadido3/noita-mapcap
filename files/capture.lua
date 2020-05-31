@@ -5,7 +5,7 @@
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio
 CAPTURE_GRID_SIZE = 420 -- in ingame pixels. There will always be 3 to 6 images overlapping
-CAPTURE_DELAY = 15 -- in frames
+CAPTURE_DELAY = 8 -- in frames
 CAPTURE_BIGJUMP_DELAY = 20 -- in frames. Additional delay after doing a "larger than grid jump"
 CAPTURE_FORCE_HP = 4 -- * 25HP
 

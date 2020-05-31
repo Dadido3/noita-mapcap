@@ -50,10 +50,13 @@ Here is a step by step explanation how to do so:
     <MagicNumbers
         VIRTUAL_RESOLUTION_X="840"
         VIRTUAL_RESOLUTION_Y="840"
-        STREAMING_CHUNK_TARGET="12"
+        STREAMING_CHUNK_TARGET="22"
         ...
     >
     ```
+
+    `STREAMING_CHUNK_TARGET` seems to have some influence on missing chunks while grabbing screenshots.
+    If you have problems with not generated (only background) areas, modify this value.
 
 3. Change the following values inside of `.../Noita/save_shared/config.xml` (Not the one in AppData!) to 
 
@@ -91,6 +94,10 @@ Here is a step by step explanation how to do so:
 9. Stitch the image as described in [Usage](#usage).
 
 ## Advanced stuff
+
+You can increase the "countdown" time in `.../Noita/mods/noita-mapcap/files/capture.lua`.
+`CAPTURE_DELAY` is the time in frames the script has to wait until it can take a screenshot.
+Also, when a chunk is captured, which is not a neighbor of the previous chunk, `CAPTURE_BIGJUMP_DELAY` gets added to the countdown.
 
 If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F12` to disable the UI. There are some more options in the `F7` and `Shift + F7` menu.
 
