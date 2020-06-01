@@ -5,8 +5,6 @@
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio
 CAPTURE_GRID_SIZE = 420 -- in ingame pixels. There will always be 3 to 6 images overlapping
-CAPTURE_DELAY = 8 -- in frames
-CAPTURE_BIGJUMP_DELAY = 20 -- in frames. Additional delay after doing a "larger than grid jump"
 CAPTURE_FORCE_HP = 4 -- * 25HP
 
 CAPTURE_LEFT = -25000 -- in ingame pixels. Left edge of the full map capture rectangle
@@ -26,31 +24,37 @@ local function preparePlayer()
 	setPlayerHP(CAPTURE_FORCE_HP)
 end
 
-local xOld, yOld = 0, 0
 local function captureScreenshot(x, y, rx, ry)
-	-- "Larger than grid jump" delay
-	local delay = CAPTURE_DELAY - 1
-	if math.abs(x - xOld) > CAPTURE_GRID_SIZE or math.abs(y - yOld) > CAPTURE_GRID_SIZE then
-		delay = delay + CAPTURE_BIGJUMP_DELAY
-	end
-	xOld, yOld = x, y
+	local virtualWidth, virtualHeight =
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
+		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
 
-	-- Set pos several times, so that chunks will load even if nothing happens in the surrounding
-	-- This prevents black blocks in areas without entites
-	UiHideCountdown = delay
-	for i = 1, delay, 1 do
-		GameSetCameraPos(x, y)
-		wait(1)
-		UiHideCountdown = UiHideCountdown - 1
-	end
+	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
+	local xMin, yMin = x - virtualHalfWidth, y - virtualHalfHeight
+	local xMax, yMax = xMin + virtualWidth, yMin + virtualHeight
+
+	UiCaptureDelay = 0
 	GameSetCameraPos(x, y)
+	repeat
+		if UiCaptureDelay > 100 then
+			-- Wiggle the screen a bit, as chunks sometimes don't want to load
+			GameSetCameraPos(x+math.random(-100, 100), y+math.random(-100, 100))
+			DrawUI()
+			wait(0)
+			UiCaptureDelay = UiCaptureDelay + 1
+			GameSetCameraPos(x, y)
+		end
+		
+		DrawUI()
+		wait(0)
+		UiCaptureDelay = UiCaptureDelay + 1
 
-	UiHide = true -- Hide UI while capturing the screenshot
-	wait(1)
+	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame
+
+	wait(0) -- Without this line empty chunks may still appear, also it's needed for the UI to disappear
 	if not TriggerCapture(rx, ry) then
 		UiCaptureProblem = "Screen capture failed. Please restart Noita."
 	end
-	UiHide = false
 
 	-- Reset monitor and PC standby each screenshot
 	ResetStandbyTimer()
@@ -161,6 +165,8 @@ function startCapturingHilbert()
 
 				t = t + 1
 			end
+
+			UiProgress.Done = true
 		end
 	)
 end

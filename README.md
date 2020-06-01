@@ -4,16 +4,17 @@ Addon that captures the map and saves it as image.
 
 ![missing image](images/example1.png)
 
-A resulting image with 3.8 gigapixels can be [seen here](https://easyzoom.com/image/159431) (Warning: Spoilers).
+A resulting image with 3.8 gigapixels can be [seen here](https://easyzoom.com/image/203402) (Warning: Spoilers).
 
 ## System requirements
 
-- Windows Vista, ..., 10 (64 bit version)
-- A few GB of free drive space
-- 16-32 GB of RAM (But works with less as long as the software doesn't run out of virtual memory)
-- A processor
-- Optionally a monitor, keyboard and mouse to interact with the mod/software
-- A sound card to listen to music while it's grabbing screenshots
+- Windows Vista, ..., 10. (64 bit version)
+- A few GB of free drive space.
+- 4 or more GB of RAM for gigapixel images. (But it works with less as long as the software doesn't run out of virtual memory)
+- A processor.
+- Optionally a monitor, keyboard and mouse to interact with the mod/software.
+- A sound card to listen to music while it's grabbing screenshots.
+  Capturing and stitching will take about 180 minutes (160 + 20).
 
 ## Usage
 
@@ -30,6 +31,7 @@ A resulting image with 3.8 gigapixels can be [seen here](https://easyzoom.com/im
     - Don't cover the game window.
     - Don't move the game window outside of screen space.
     - If you need to pause, use the ESC menu.
+    - Also, make sure that the console window isn't selected, as you will end up with screenshots of the console instead of the game. You can select and use any other window while it's capturing screenshots, though.
 8. When you think you are done, close noita.
 9. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
     - Use the default values to create a complete stitch.
@@ -50,15 +52,11 @@ Here is a step by step explanation how to do so:
     <MagicNumbers
         VIRTUAL_RESOLUTION_X="840"
         VIRTUAL_RESOLUTION_Y="840"
-        STREAMING_CHUNK_TARGET="22"
         ...
     >
     ```
 
-    `STREAMING_CHUNK_TARGET` seems to have some influence on missing chunks while grabbing screenshots.
-    If you have problems with not generated (only background) areas, modify this value.
-
-3. Change the following values inside of `.../Noita/save_shared/config.xml` (Not the one in AppData!) to 
+3. Change the following values inside of `.../Noita/save_shared/config.xml` (Not the one in AppData!) to
 
     ``` xml
     <Config
@@ -70,7 +68,6 @@ Here is a step by step explanation how to do so:
         window_h="840"
         window_w="840"
         fullscreen="0"
-        framerate="600"
         ...
     >
     ```
@@ -84,8 +81,6 @@ Here is a step by step explanation how to do so:
 
 6. When the game is loaded (When you can control your character):
     - Press `F5`, `F8` and `F12` (In that order).
-    - Press `F7`, and disable `mTrailerMode` in the menu. (This should reduce chunk loading problems)
-    - Press `F7` again to close the menu.
 
 7. Press the `>> Start capturing full map <<` button.
 
@@ -94,10 +89,6 @@ Here is a step by step explanation how to do so:
 9. Stitch the image as described in [Usage](#usage).
 
 ## Advanced stuff
-
-You can increase the "countdown" time in `.../Noita/mods/noita-mapcap/files/capture.lua`.
-`CAPTURE_DELAY` is the time in frames the script has to wait until it can take a screenshot.
-Also, when a chunk is captured, which is not a neighbor of the previous chunk, `CAPTURE_BIGJUMP_DELAY` gets added to the countdown.
 
 If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F12` to disable the UI. There are some more options in the `F7` and `Shift + F7` menu.
 
