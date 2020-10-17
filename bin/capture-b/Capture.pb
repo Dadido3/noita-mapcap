@@ -89,8 +89,12 @@ Procedure Worker(*Dummy)
 EndProcedure
 
 ProcedureDLL Capture(px.i, py.i)
-	Protected rect.RECT
+	Protected hWnd.l = GetProcHwnd()
+	If Not hWnd
+		ProcedureReturn #False
+	EndIf
 
+	Protected rect.RECT
 	If Not GetRect(@rect)
 		ProcedureReturn #False
 	EndIf
@@ -101,27 +105,27 @@ ProcedureDLL Capture(px.i, py.i)
 	EndIf
 
 	; Get DC of whole screen
-	screenDC = GetDC_(#Null)
-	If Not screenDC
+	windowDC = GetDC_(hWnd)
+	If Not windowDC
 		FreeImage(imageID)
 		ProcedureReturn #False
 	EndIf
 
 	hDC = StartDrawing(ImageOutput(imageID))
 	If Not hDC
+		ReleaseDC_(hWnd, windowDC)
 		FreeImage(imageID)
-		ReleaseDC_(#Null, screenDC)
 		ProcedureReturn #False
 	EndIf
-	If Not BitBlt_(hDC, 0, 0, rect\right-rect\left, rect\bottom-rect\top, screenDC, rect\left, rect\top, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
-		FreeImage(imageID)
-		ReleaseDC_(#Null, screenDC)
+	If Not BitBlt_(hDC, 0, 0, rect\right-rect\left, rect\bottom-rect\top, windowDC, 0, 0, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
 		StopDrawing()
+		ReleaseDC_(hWnd, windowDC)
+		FreeImage(imageID)
 		ProcedureReturn #False
 	EndIf
 	StopDrawing()
 
-	ReleaseDC_(#Null, screenDC)
+	ReleaseDC_(hWnd, windowDC)
 
 	LockMutex(Mutex)
 	; Check if the queue has too many elements, if so, wait. (Simulate go's channels)
@@ -149,10 +153,10 @@ EndProcedure
 ;Capture(123, 123)
 ;Delay(1000)
 
-; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; IDE Options = PureBasic 5.72 (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 140
-; FirstLine = 94
+; CursorPosition = 90
+; FirstLine = 77
 ; Folding = --
 ; EnableThread
 ; EnableXP
