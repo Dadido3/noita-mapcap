@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio
-CAPTURE_GRID_SIZE = 420 -- in ingame pixels. There will always be 3 to 6 images overlapping
+CAPTURE_GRID_SIZE = 512 -- in ingame pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024
 CAPTURE_FORCE_HP = 4 -- * 25HP
 
 CAPTURE_LEFT = -25000 -- in ingame pixels. Left edge of the full map capture rectangle
@@ -38,17 +38,16 @@ local function captureScreenshot(x, y, rx, ry)
 	repeat
 		if UiCaptureDelay > 100 then
 			-- Wiggle the screen a bit, as chunks sometimes don't want to load
-			GameSetCameraPos(x+math.random(-100, 100), y+math.random(-100, 100))
+			GameSetCameraPos(x + math.random(-100, 100), y + math.random(-100, 100))
 			DrawUI()
 			wait(0)
 			UiCaptureDelay = UiCaptureDelay + 1
 			GameSetCameraPos(x, y)
 		end
-		
+
 		DrawUI()
 		wait(0)
 		UiCaptureDelay = UiCaptureDelay + 1
-
 	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame
 
 	wait(0) -- Without this line empty chunks may still appear, also it's needed for the UI to disappear
@@ -63,6 +62,7 @@ end
 function startCapturingSpiral()
 	local ox, oy = GameGetCameraPos()
 	ox, oy = math.floor(ox / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE, math.floor(oy / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE
+	ox, oy = ox + 256, oy + 256 -- Align screen with ingame chunk grid that is 512x512
 	local x, y = ox, oy
 
 	local virtualWidth, virtualHeight =
@@ -156,6 +156,7 @@ function startCapturingHilbert()
 				local hx, hy = mapHilbert(t, gridPOTSize)
 				if hx < gridWidth and hy < gridHeight then
 					local x, y = (hx + gridLeft) * CAPTURE_GRID_SIZE, (hy + gridTop) * CAPTURE_GRID_SIZE
+					x, y = x + 256, y + 256 -- Align screen with ingame chunk grid that is 512x512
 					local rx, ry = x * CAPTURE_PIXEL_SIZE - virtualHalfWidth, y * CAPTURE_PIXEL_SIZE - virtualHalfHeight
 					if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 						captureScreenshot(x, y, rx, ry)

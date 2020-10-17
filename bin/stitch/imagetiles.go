@@ -81,10 +81,8 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 				return fmt.Errorf("Couldn't get image: %w", err)
 			}
 			imgCopy := *img
-			imgCopy.Rect = imgCopy.Rect.Add(tile.offset).Inset(4) // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
+			imgCopy.Rect = imgCopy.Rect.Add(tile.offset)
 			images = append(images, &imgCopy)
-			// TODO: Fix transparent pixels at the output image border because of inset
-			// TODO: Fix downscaled images to cause artifacts because of the inset
 		}
 	}
 
@@ -225,7 +223,7 @@ func Compare(tiles []imageTile, bounds image.Rectangle) error {
 				return fmt.Errorf("Couldn't get image: %w", err)
 			}
 			imgCopy := *img
-			imgCopy.Rect = imgCopy.Rect.Add(tile.offset).Inset(4) // Reduce image bounds by 4 pixels on each side, because otherwise there will be artifacts.
+			imgCopy.Rect = imgCopy.Rect.Add(tile.offset)
 			images = append(images, &imgCopy)
 		}
 	}
