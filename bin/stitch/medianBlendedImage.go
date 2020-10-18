@@ -72,6 +72,14 @@ func (mbi *MedianBlendedImage) At(x, y int) color.Color {
 	return mbi.cachedRow.RGBAAt(x, y)
 }
 
+// Opaque returns whether the image is fully opaque.
+//
+// For more speed and smaller filesizes, MedianBlendedImage will be marked as non-transparent.
+// This will speed up image saving by 2x, as there is no need to iterate over the whole image to find a single non opaque pixel.
+func (mbi *MedianBlendedImage) Opaque() bool {
+	return true
+}
+
 // Progress returns the approximate progress of any process that scans the image from top to bottom.
 func (mbi *MedianBlendedImage) Progress() (value, max int) {
 	size := mbi.Bounds().Size()
