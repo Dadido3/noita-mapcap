@@ -7,10 +7,29 @@ CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio
 CAPTURE_GRID_SIZE = 512 -- in ingame pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024
 CAPTURE_FORCE_HP = 4 -- * 25HP
 
-CAPTURE_LEFT = -25000 -- in ingame pixels. Left edge of the full map capture rectangle
-CAPTURE_TOP = -36000 -- in ingame pixels. Top edge of the full map capture rectangle
-CAPTURE_RIGHT = 25000 -- in ingame pixels. Right edge of the full map capture rectangle (Pixels are not included in the rectangle)
-CAPTURE_BOTTOM = 36000 -- in ingame pixels. Bottom edge of the full map capture rectangle (Pixels are not included in the rectangle)
+-- "Base layout" (Base layout. Every part outside this is based on a similar layout, but uses different materials/seeds)
+CAPTURE_AREA_BASE_LAYOUT = {
+	Left = -17920, -- in ingame pixels.
+	Top = -7168, -- in ingame pixels.
+	Right = 17920, -- in ingame pixels. (Coordinate is not included in the rectangle)
+	Bottom = 17408 -- in ingame pixels. (Coordinate is not included in the rectangle)
+}
+
+-- "Main world" (The main world with 3 parts: sky, normal and hell)
+CAPTURE_AREA_MAIN_WORLD = {
+	Left = -17920, -- in ingame pixels.
+	Top = -31744, -- in ingame pixels.
+	Right = 17920, -- in ingame pixels. (Coordinate is not included in the rectangle)
+	Bottom = 41984 -- in ingame pixels. (Coordinate is not included in the rectangle)
+}
+
+-- "Extended" (Main world + a fraction of the parallel worlds to the left and right)
+CAPTURE_AREA_EXTENDED = {
+	Left = -25600, -- in ingame pixels.
+	Top = -31744, -- in ingame pixels.
+	Right = 25600, -- in ingame pixels. (Coordinate is not included in the rectangle)
+	Bottom = 41984 -- in ingame pixels. (Coordinate is not included in the rectangle)
+}
 
 local function preparePlayer()
 	local playerEntity = getPlayer()
@@ -117,7 +136,7 @@ function startCapturingSpiral()
 	)
 end
 
-function startCapturingHilbert()
+function startCapturingHilbert(area)
 	local ox, oy = GameGetCameraPos()
 
 	local virtualWidth, virtualHeight =
@@ -127,10 +146,18 @@ function startCapturingHilbert()
 	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
 	-- Get size of the rectangle in grid/chunk coordinates
-	local gridLeft = math.floor(CAPTURE_LEFT / CAPTURE_GRID_SIZE)
-	local gridTop = math.floor(CAPTURE_TOP / CAPTURE_GRID_SIZE)
-	local gridRight = math.ceil(CAPTURE_RIGHT / CAPTURE_GRID_SIZE) + 1
-	local gridBottom = math.ceil(CAPTURE_BOTTOM / CAPTURE_GRID_SIZE) + 1
+	local gridLeft = math.floor(area.Left / CAPTURE_GRID_SIZE)
+	local gridTop = math.floor(area.Top / CAPTURE_GRID_SIZE)
+	local gridRight = math.ceil(area.Right / CAPTURE_GRID_SIZE) -- This grid coordinate is not included
+	local gridBottom = math.ceil(area.Bottom / CAPTURE_GRID_SIZE) -- This grid coordinate is not included
+
+	-- Edge case
+	if area.Left == area.Right then
+		gridRight = gridLeft
+	end
+	if area.Top == area.Bottom then
+		gridBottom = gridTop
+	end
 
 	-- Size of the grid in chunks
 	local gridWidth = gridRight - gridLeft

@@ -11,7 +11,7 @@ function DrawUI()
 	if modGUI ~= nil then
 		GuiStartFrame(modGUI)
 
-		GuiLayoutBeginVertical(modGUI, 50, 50)
+		GuiLayoutBeginVertical(modGUI, 50, 20)
 		if not UiProgress then
 			-- Show informations
 			local problem
@@ -108,9 +108,18 @@ function DrawUI()
 				UiProgress = {}
 				startCapturingSpiral()
 			end
-			if GuiButton(modGUI, 0, 0, ">> Start capturing full map <<", 1) then
+			GuiTextCentered(modGUI, 0, 0, " ")
+			if GuiButton(modGUI, 0, 0, ">> Start capturing base layout <<", 1) then
 				UiProgress = {}
-				startCapturingHilbert()
+				startCapturingHilbert(CAPTURE_AREA_BASE_LAYOUT)
+			end
+			if GuiButton(modGUI, 0, 0, ">> Start capturing main world <<", 1) then
+				UiProgress = {}
+				startCapturingHilbert(CAPTURE_AREA_MAIN_WORLD)
+			end
+			if GuiButton(modGUI, 0, 0, ">> Start capturing extended map <<", 1) then
+				UiProgress = {}
+				startCapturingHilbert(CAPTURE_AREA_EXTENDED)
 			end
 			GuiTextCentered(modGUI, 0, 0, " ")
 		elseif not UiProgress.Done then

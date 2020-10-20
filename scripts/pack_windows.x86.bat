@@ -3,7 +3,8 @@ rd distribution /s/q
 mkdir distribution
 mkdir distribution/noita-mapcap
 
-robocopy "." "distribution/noita-mapcap/" init.lua LICENSE compatibility.xml mod.xml README.md
+robocopy "." "distribution/noita-mapcap/" init.lua LICENSE compatibility.xml mod.xml README.md AREAS.md
+robocopy "images/" "distribution/noita-mapcap/images/" coordinates.png example1.png example2.png scale32_base-layout.png scale32_main-world.png scale32_extended.png
 
 robocopy "data" "distribution/noita-mapcap/data" /e
 robocopy "files" "distribution/noita-mapcap/files" /e

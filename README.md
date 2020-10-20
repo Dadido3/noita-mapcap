@@ -2,7 +2,7 @@
 
 Addon that captures a Noita world and saves it as image.
 
-![missing image](images/example1.png)
+![missing image](images/example2.png)
 
 A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom.com/image/223556) (Warning: Spoilers).
 
@@ -14,7 +14,7 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
 - A processor.
 - Optionally a monitor, keyboard and mouse to interact with the mod/software.
 - A sound card to listen to music while it's grabbing screenshots.
-  Capturing and stitching will take about 180 minutes (160 + 20).
+  Capturing and stitching the "extended" map will take about 180 minutes (160 + 20).
 
 ## Usage
 
@@ -25,7 +25,7 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
 5. Enable the mod and restart Noita.
 6. In the game you should see text on screen.
     - Either press `>> Start capturing map around view <<` to capture in a spiral around your current view.
-    - Or press `>> Start capturing full map <<` to capture the whole map.
+    - Or press any other option to capture [specific areas](AREAS.md).
 7. The screen will jump around, and the game will take screenshots automatically.
     - Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
     - Don't move the game window outside of screen space. You can cover it with other windows, and continue using your PC.
@@ -82,7 +82,7 @@ Here is a step by step explanation how to do so:
 6. When the game is loaded (When you can control your character):
     - Press `F5`, `F8` and `F12` (In that order).
 
-7. Press the `>> Start capturing full map <<` button.
+7. Press the `>> Start capturing extended map <<` button.
 
 8. Wait a few hours until it's complete.
 
@@ -104,7 +104,7 @@ The following two equations have to be true:
 
 You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SIZE` in `.../Noita/mods/noita-mapcap/files/capture.lua`. If you increase the grid size, you can capture more area per time. But on the other hand the stitcher may not be able to remove artifacts if the tiles don't overlap enough.
 
-The rectangle for the full map capture mode is defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
+The rectangles for the different capture modes are defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
 
 ## License
 
