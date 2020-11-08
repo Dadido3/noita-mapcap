@@ -32,6 +32,7 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
     - Don't minimize the game window.
     - If you need to pause, use the ESC menu.
     - Also, make sure that the console window isn't selected, as you will end up with screenshots of the console instead of the game. You can select and use any other window while it's capturing screenshots, though.
+    - Noita may crash in the process or show error messages. If you encounter an `ASSERT FAILED!` message click on `Ignore always`. If Noita crashes you can restart it, load your save and start capturing again. It will continue from where it stopped. More information/details about this can be found [here](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723571110).
 8. When you think you are done, close Noita.
 9. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
     - Use the default values to create a complete stitch.
@@ -105,6 +106,8 @@ The following two equations have to be true:
 You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SIZE` in `.../Noita/mods/noita-mapcap/files/capture.lua`. If you increase the grid size, you can capture more area per time. But on the other hand the stitcher may not be able to remove artifacts if the tiles don't overlap enough.
 
 The rectangles for the different capture modes are defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
+
+As the resulting stitched image is really big, you can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723591552) that addresses how you can view, convert or even self-host your images.
 
 ## License
 
