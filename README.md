@@ -97,10 +97,10 @@ You can capture in a different resolution if you want or need to. If you do so, 
 
 The following two equations have to be true:
 
-$$\begin{align}
-\text{CAPTURE_PIXEL_SIZE} = \frac{\text{SCREEN_RESOLUTION_X}}{\text{VIRTUAL_RESOLUTION_X}}\\
-\text{CAPTURE_PIXEL_SIZE} = \frac{\text{SCREEN_RESOLUTION_Y}}{\text{VIRTUAL_RESOLUTION_Y}}
-\end{align}$$
+$$\begin{align*}
+\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_X}}{\text{VIRTUAL\\_RESOLUTION\\_X}}\\
+\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_Y}}{\text{VIRTUAL\\_RESOLUTION\\_Y}}
+\end{align*}$$
 
 - Where `CAPTURE_PIXEL_SIZE` can be found inside `.../Noita/mods/noita-mapcap/files/capture.lua`
 - `VIRTUAL_RESOLUTION_*` can be found inside `.../Noita/mods/noita-mapcap/files/magic_numbers.xml`
