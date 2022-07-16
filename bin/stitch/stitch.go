@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 David Vogel
+// Copyright (c) 2019-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -46,7 +46,7 @@ func main() {
 					return err
 				}
 				if int(num) < 1 {
-					return fmt.Errorf("Number must be larger than 0")
+					return fmt.Errorf("number must be larger than 0")
 				}
 
 				return nil
@@ -125,7 +125,7 @@ func main() {
 				}
 				rect := image.Rect(xMin, yMin, xMax, yMax)
 				if rect.Empty() {
-					return fmt.Errorf("Rectangle must not be empty")
+					return fmt.Errorf("rectangle must not be empty")
 				}
 
 				outputRect = rect

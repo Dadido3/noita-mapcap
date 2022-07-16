@@ -1,0 +1,26 @@
+name: Build and release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+
+  build:
+    name: Build and release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [windows]
+        goarch: [amd64]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: wangyoucao577/go-release-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        extra_files: init.lua LICENSE compatibility.xml mod.xml README.md AREAS.md images/coordinates.png images/example1.png images/example2.png images/scale32_base-layout.png images/scale32_main-world.png images/scale32_extended.png data files capture-b/capture.dll capture-b/README.md stitch/stitch.exe stitch/README.md

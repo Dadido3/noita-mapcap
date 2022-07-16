@@ -1,15 +1,26 @@
 module github.com/Dadido3/noita-mapcap
 
-go 1.14
+go 1.18
 
 require (
-	github.com/BurntSushi/xgb v0.0.0-20200324125942-20f126ea2843 // indirect
-	github.com/cheggaaa/pb/v3 v3.0.4
-	github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5 // indirect
+	github.com/cheggaaa/pb/v3 v3.1.0
 	github.com/google/hilbert v0.0.0-20181122061418-320f2e35a565
-	github.com/kbinani/screenshot v0.0.0-20191211154542-3a185f1ce18f
-	github.com/lxn/win v0.0.0-20191128105842-2da648fda5b4 // indirect
-	github.com/manifoldco/promptui v0.3.2
+	github.com/kbinani/screenshot v0.0.0-20210720154843-7d3a670d8329
+	github.com/manifoldco/promptui v0.9.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
+	golang.org/x/image v0.0.0-20220617043117-41969df76e82
+)
+
+require (
+	github.com/VividCortex/ewma v1.2.0 // indirect
+	github.com/chzyer/readline v1.5.1 // indirect
+	github.com/fatih/color v1.13.0 // indirect
+	github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5 // indirect
+	github.com/jezek/xgb v0.0.0-20210312150743-0e0f116e1240 // indirect
+	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 )

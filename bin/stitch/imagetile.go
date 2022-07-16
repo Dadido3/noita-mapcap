@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 David Vogel
+// Copyright (c) 2019-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -71,7 +71,7 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 
 	imgRGBA, ok := img.(*image.RGBA)
 	if !ok {
-		return &image.RGBA{}, fmt.Errorf("Expected an RGBA image, got %T instead", img)
+		return &image.RGBA{}, fmt.Errorf("expected an RGBA image, got %T instead", img)
 	}
 
 	// Restore the position of the image rectangle

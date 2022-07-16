@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 David Vogel
+// Copyright (c) 2019-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -24,13 +24,13 @@ import (
 func getImageFileDimension(imagePath string) (int, int, error) {
 	file, err := os.Open(imagePath)
 	if err != nil {
-		return 0, 0, fmt.Errorf("Can't open file %v: %w", imagePath, err)
+		return 0, 0, fmt.Errorf("can't open file %v: %w", imagePath, err)
 	}
 	defer file.Close()
 
 	image, _, err := image.DecodeConfig(file)
 	if err != nil {
-		return 0, 0, fmt.Errorf("Error decoding config of image file %v: %w", imagePath, err)
+		return 0, 0, fmt.Errorf("error decoding config of image file %v: %w", imagePath, err)
 	}
 
 	return image.Width, image.Height, nil

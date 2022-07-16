@@ -26,7 +26,7 @@ func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 	var imageTiles []imageTile
 
 	if scaleDivider < 1 {
-		return nil, fmt.Errorf("Invalid scale of %v", scaleDivider)
+		return nil, fmt.Errorf("invalid scale of %v", scaleDivider)
 	}
 
 	files, err := filepath.Glob(filepath.Join(path, "*.png"))
@@ -41,12 +41,12 @@ func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 		if parsed, err := strconv.ParseInt(result[1], 10, 0); err == nil {
 			x = int(parsed)
 		} else {
-			return nil, fmt.Errorf("Error parsing %v to integer: %w", result[1], err)
+			return nil, fmt.Errorf("error parsing %v to integer: %w", result[1], err)
 		}
 		if parsed, err := strconv.ParseInt(result[2], 10, 0); err == nil {
 			y = int(parsed)
 		} else {
-			return nil, fmt.Errorf("Error parsing %v to integer: %w", result[2], err)
+			return nil, fmt.Errorf("error parsing %v to integer: %w", result[2], err)
 		}
 
 		width, height, err := getImageFileDimension(file)
@@ -78,7 +78,7 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 			tilePtr := &tiles[i]
 			img, err := tilePtr.GetImage()
 			if err != nil {
-				log.Printf("Couldn't load image tile %s: %v", tile.String(), err)
+				log.Printf("couldn't load image tile %s: %v", tile.String(), err)
 				continue
 			}
 			//intersectTiles = append(intersectTiles, tilePtr)
