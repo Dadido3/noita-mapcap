@@ -27,6 +27,9 @@ jobs:
       - name: Build stitch tool
         run: go build -v -ldflags="-X 'main.versionString=${{ github.event.release.tag_name }}'" .
         working-directory: ./bin/stitch
+        env:
+          GOARCH: ${{ matrix.goarch }}
+          GOOS: ${{ matrix.goos }}
 
       - name: Create distribution archive
         run: go run -v ./scripts/dist
