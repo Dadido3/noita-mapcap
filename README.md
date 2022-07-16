@@ -97,7 +97,10 @@ You can capture in a different resolution if you want or need to. If you do so, 
 
 The following two equations have to be true:
 
-![CAPTURE_PIXEL_SIZE = SCREEN_RESOLUTION_* / VIRTUAL_RESOLUTION_*](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20%5Clarge%20%5Cbegin%7Balign*%7D%20%5Ctext%7BCAPTURE%5C_PIXEL%5C_SIZE%7D%20%26%3D%20%5Cfrac%7B%5Ctext%7BSCREEN%5C_RESOLUTION%5C_X%7D%7D%7B%5Ctext%7BVIRTUAL%5C_RESOLUTION%5C_X%7D%7D%5C%5C%20%5Ctext%7BCAPTURE%5C_PIXEL%5C_SIZE%7D%20%26%3D%20%5Cfrac%7B%5Ctext%7BSCREEN%5C_RESOLUTION%5C_Y%7D%7D%7B%5Ctext%7BVIRTUAL%5C_RESOLUTION%5C_Y%7D%7D%20%5Cend%7Balign*%7D)
+$$\begin{align*}
+\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_X}}{\text{VIRTUAL\\_RESOLUTION\\_X}}\\
+\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_Y}}{\text{VIRTUAL\\_RESOLUTION\\_Y}}
+\end{align*}$$
 
 - Where `CAPTURE_PIXEL_SIZE` can be found inside `.../Noita/mods/noita-mapcap/files/capture.lua`
 - `VIRTUAL_RESOLUTION_*` can be found inside `.../Noita/mods/noita-mapcap/files/magic_numbers.xml`
