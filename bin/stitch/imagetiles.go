@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 David Vogel
+// Copyright (c) 2019-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"log"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -67,7 +68,7 @@ func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 // Stitch takes a list of tiles and stitches them together.
 // The destImage shouldn't be too large, or it gets too slow.
 func Stitch(tiles []imageTile, destImage *image.RGBA) error {
-	intersectTiles := []*imageTile{}
+	//intersectTiles := []*imageTile{}
 	images := []*image.RGBA{}
 
 	// Get only the tiles that intersect with the destination image bounds.
@@ -75,11 +76,12 @@ func Stitch(tiles []imageTile, destImage *image.RGBA) error {
 	for i, tile := range tiles {
 		if tile.OffsetBounds().Overlaps(destImage.Bounds()) {
 			tilePtr := &tiles[i]
-			intersectTiles = append(intersectTiles, tilePtr)
 			img, err := tilePtr.GetImage()
 			if err != nil {
-				return fmt.Errorf("Couldn't get image: %w", err)
+				log.Printf("Couldn't load image tile %s: %v", tile.String(), err)
+				continue
 			}
+			//intersectTiles = append(intersectTiles, tilePtr)
 			imgCopy := *img
 			imgCopy.Rect = imgCopy.Rect.Add(tile.offset)
 			images = append(images, &imgCopy)
@@ -217,11 +219,12 @@ func Compare(tiles []imageTile, bounds image.Rectangle) error {
 	for i, tile := range tiles {
 		if tile.OffsetBounds().Overlaps(bounds) {
 			tilePtr := &tiles[i]
-			intersectTiles = append(intersectTiles, tilePtr)
 			img, err := tilePtr.GetImage()
 			if err != nil {
-				return fmt.Errorf("Couldn't get image: %w", err)
+				log.Printf("Couldn't load image tile %s: %v", tile.String(), err)
+				continue
 			}
+			intersectTiles = append(intersectTiles, tilePtr)
 			imgCopy := *img
 			imgCopy.Rect = imgCopy.Rect.Add(tile.offset)
 			images = append(images, &imgCopy)
