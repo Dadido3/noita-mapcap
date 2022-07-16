@@ -9,17 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.x
+    - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: ^1.18
-      id: go
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Build
-      run: go build -v ./bin/stitch
+    - name: Build stitch tool
+      run: go build -v .
+      working-directory: ./bin/stitch
 
-    - name: Test
-      run: go test -v ./bin/stitch
+    - name: Test stitch tool
+      run: go test -v .
+      working-directory: ./bin/stitch

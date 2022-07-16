@@ -31,6 +31,8 @@ var flagPrerender = flag.Bool("prerender", false, "Pre renders the image in RAM 
 var flagCleanupThreshold = flag.Float64("cleanup", 0, "Enable cleanup mode with the given threshold. This will DELETE images from the input folder, no stitching will be done in this mode. A good value to start with is 0.999, which deletes images where the sum of the min-max difference of each sub-pixel overlapping with other images is less than 99.9%% of the maximum possible sum of pixel differences.")
 
 func main() {
+	log.Printf("Noita MapCapture stitching tool v%s", version)
+
 	flag.Parse()
 
 	// Query the user, if there were no cmd arguments given

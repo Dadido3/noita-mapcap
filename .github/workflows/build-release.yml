@@ -12,15 +12,28 @@ jobs:
     strategy:
       matrix:
         goos: [windows]
-        goarch: [amd64]
+        goarch: ["386"]
 
     steps:
 
-    - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.18
 
-    - uses: wangyoucao577/go-release-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
-        extra_files: init.lua LICENSE compatibility.xml mod.xml README.md AREAS.md images/coordinates.png images/example1.png images/example2.png images/scale32_base-layout.png images/scale32_main-world.png images/scale32_extended.png data files capture-b/capture.dll capture-b/README.md stitch/stitch.exe stitch/README.md
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build stitch tool
+        run: go build -v -ldflags="-X 'main.versionString=${{ github.event.release.tag_name }}'" .
+        working-directory: ./bin/stitch
+
+      - name: Create distribution archive
+        run: go run -v ./scripts/dist
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: dist/dist.zip
+          asset_name: noita-mapcap-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          overwrite: true
