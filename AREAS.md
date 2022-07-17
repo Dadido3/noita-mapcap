@@ -1,7 +1,7 @@
 # Capture areas
 
 A list of available capture areas.
-Coordinates are in in-game "virtual" pixels.
+Coordinates are in in-game "virtual" or "world" pixels.
 `Right` and `Bottom` coordinates are not included in the rectangle.
 
 The dimensions of the capture rectangle are exactly:
