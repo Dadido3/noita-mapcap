@@ -3,6 +3,12 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+---@type NoitaAPI
+local noitaAPI = dofile_once("mods/noita-mapcap/files/noita-api.lua")
+
+---@type JSONLib
+local jsonSerialize = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
+
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.
 CAPTURE_FORCE_HP = 4 -- * 25HP
@@ -84,18 +90,31 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 
 	-- Capture entities right after capturing the screenshot.
 	if entityFile then
-		local radius = math.sqrt(virtualHalfWidth^2 + virtualHalfHeight^2) + 1
-		local entities = EntityGetInRadius(x, y, radius)
-		for _, entityID in ipairs(entities) do
-			-- Make sure to only export entities when they are encountered the first time.
-			if not EntityHasTag(entityID, "MapCaptured") then
-				local x, y, rotation, scaleX, scaleY = EntityGetTransform(entityID)
-				local entityName = EntityGetName(entityID)
-				local entityTags = EntityGetTags(entityID)
-				entityFile:write(string.format("%d, %s, %f, %f, %f, %f, %f, %q\n", entityID, entityName, x, y, rotation, scaleX, scaleY, entityTags))
-				-- TODO: Correctly escape CSV data
-				EntityAddTag(entityID, "MapCaptured") -- Prevent recapturing.
+		local ok, err = pcall(function()
+			local radius = math.sqrt(virtualHalfWidth^2 + virtualHalfHeight^2) + 1
+			local entities = noitaAPI.Entity.GetInRadius(x, y, radius)
+			for _, entity in ipairs(entities) do
+				-- Get to the root entity, as we are exporting entire entity trees.
+				local rootEntity = entity:GetRootEntity()
+				-- Make sure to only export entities when they are encountered the first time.
+				if not rootEntity:HasTag("MapCaptured") then
+					-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
+					-- Well, as long as it does not crash between write and flush.
+					if entityFile:seek("end") == 0 then
+						-- First line.
+						entityFile:write("[\n\t", jsonSerialize.Marshal(rootEntity), "\n", "]")
+					else
+						-- Following lines.
+						entityFile:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
+						entityFile:write(",\n\t", jsonSerialize.Marshal(rootEntity), "\n", "]")
+					end
+
+					rootEntity:AddTag("MapCaptured") -- Prevent recapturing.
+				end
 			end
+		end)
+		if not ok then
+			print("Entity export error:", err)
 		end
 		entityFile:flush() -- Ensure everything is written to disk before noita decides to crash.
 	end
@@ -105,15 +124,13 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 end
 
 local function createOrOpenEntityCaptureFile()
-	-- Create or reopen entities CSV file.
-	local file = io.open("mods/noita-mapcap/output/entities.csv", "a+")
-	if file == nil then return nil end
+	-- Make sure the file exists.
+	local file = io.open("mods/noita-mapcap/output/entities.csv", "a")
+	if file ~= nil then file:close() end
 
-	if file:seek("end") == 0 then
-		-- Empty file: Create header.
-		file:write("entityID, entityName, x, y, rotation, scaleX, scaleY, tags\n")
-		file:flush()
-	end
+	-- Create or reopen entities CSV file.
+	file = io.open("mods/noita-mapcap/output/entities.csv", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
+	if file == nil then return nil end
 
 	return file
 end
