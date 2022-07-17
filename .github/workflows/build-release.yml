@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         goos: [windows]
-        goarch: ["386"]
+        goarch: ["amd64"]
 
     steps:
 
