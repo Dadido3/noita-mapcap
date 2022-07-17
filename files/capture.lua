@@ -31,9 +31,6 @@ CAPTURE_AREA_EXTENDED = {
 	Bottom = 41984 -- in virtual (world) pixels. (Coordinate is not included in the rectangle)
 }
 
--- Set of already captured entities.
-local capturedEntities = {}
-
 local function preparePlayer()
 	local playerEntity = getPlayer()
 	addEffectToEntity(playerEntity, "PROTECTION_ALL")
@@ -91,13 +88,13 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 		local entities = EntityGetInRadius(x, y, radius)
 		for _, entityID in ipairs(entities) do
 			-- Make sure to only export entities when they are encountered the first time.
-			if not capturedEntities[entityID] then
-				capturedEntities[entityID] = true
+			if not EntityHasTag(entityID, "MapCaptured") then
 				local x, y, rotation, scaleX, scaleY = EntityGetTransform(entityID)
 				local entityName = EntityGetName(entityID)
 				local entityTags = EntityGetTags(entityID)
 				entityFile:write(string.format("%d, %s, %f, %f, %f, %f, %f, %q\n", entityID, entityName, x, y, rotation, scaleX, scaleY, entityTags))
 				-- TODO: Correctly escape CSV data
+				EntityAddTag(entityID, "MapCaptured") -- Prevent recapturing.
 			end
 		end
 		entityFile:flush() -- Ensure everything is written to disk before noita decides to crash.
@@ -108,21 +105,6 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 end
 
 local function createOrOpenEntityCaptureFile()
-	local file = io.open("mods/noita-mapcap/output/entities.csv", "r")
-	if file then
-		local _ = file:read() -- Skip first line.
-		for line in file:lines() do
-			for field in string.gmatch(line, "([^,]+)") do
-				local entityID = tonumber(field)
-				if entityID then
-					capturedEntities[entityID] = true
-				end
-				break
-			end
-		end
-		file:close()
-	end
-
 	-- Create or reopen entities CSV file.
 	local file = io.open("mods/noita-mapcap/output/entities.csv", "a+")
 	if file == nil then return nil end
