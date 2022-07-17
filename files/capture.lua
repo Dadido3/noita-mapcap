@@ -31,6 +31,9 @@ CAPTURE_AREA_EXTENDED = {
 	Bottom = 41984 -- in virtual (world) pixels. (Coordinate is not included in the rectangle)
 }
 
+-- Set of already captured entities.
+local capturedEntities = {}
+
 local function preparePlayer()
 	local playerEntity = getPlayer()
 	addEffectToEntity(playerEntity, "PROTECTION_ALL")
@@ -86,18 +89,55 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 	if entityFile then
 		local radius = math.sqrt(virtualHalfWidth^2 + virtualHalfHeight^2) + 1
 		local entities = EntityGetInRadius(x, y, radius)
-		for i, v in ipairs(entities) do
-			entityFile:write(tostring(v) .. "\n")
+		for _, entityID in ipairs(entities) do
+			-- Make sure to only export entities when they are encountered the first time.
+			if not capturedEntities[entityID] then
+				capturedEntities[entityID] = true
+				local x, y, rotation, scaleX, scaleY = EntityGetTransform(entityID)
+				local entityName = EntityGetName(entityID)
+				local entityTags = EntityGetTags(entityID)
+				entityFile:write(string.format("%d, %s, %f, %f, %f, %f, %f, %q\n", entityID, entityName, x, y, rotation, scaleX, scaleY, entityTags))
+				-- TODO: Correctly escape CSV data
+			end
 		end
-		entityFile:flush()
+		entityFile:flush() -- Ensure everything is written to disk before noita decides to crash.
 	end
 
 	-- Reset monitor and PC standby each screenshot.
 	ResetStandbyTimer()
 end
 
+local function createOrOpenEntityCaptureFile()
+	local file = io.open("mods/noita-mapcap/output/entities.csv", "r")
+	if file then
+		local _ = file:read() -- Skip first line.
+		for line in file:lines() do
+			for field in string.gmatch(line, "([^,]+)") do
+				local entityID = tonumber(field)
+				if entityID then
+					capturedEntities[entityID] = true
+				end
+				break
+			end
+		end
+		file:close()
+	end
+
+	-- Create or reopen entities CSV file.
+	local file = io.open("mods/noita-mapcap/output/entities.csv", "a+")
+	if file == nil then return nil end
+
+	if file:seek("end") == 0 then
+		-- Empty file: Create header.
+		file:write("entityID, entityName, x, y, rotation, scaleX, scaleY, tags\n")
+		file:flush()
+	end
+
+	return file
+end
+
 function startCapturingSpiral()
-	--local entityFile = io.open("mods/noita-mapcap/output/entities.txt", "a+")
+	local entityFile = createOrOpenEntityCaptureFile()
 
 	local ox, oy = GameGetCameraPos() -- Returns the virtual coordinates of the screen center.
 	ox, oy = math.floor(ox / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE, math.floor(oy / CAPTURE_GRID_SIZE) * CAPTURE_GRID_SIZE
@@ -122,7 +162,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry)
+					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x + CAPTURE_GRID_SIZE, y
 			end
@@ -130,7 +170,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry)
+					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x, y + CAPTURE_GRID_SIZE
 			end
@@ -139,7 +179,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry)
+					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x - CAPTURE_GRID_SIZE, y
 			end
@@ -147,7 +187,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry)
+					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x, y - CAPTURE_GRID_SIZE
 			end
@@ -157,6 +197,8 @@ function startCapturingSpiral()
 end
 
 function startCapturingHilbert(area)
+	local entityFile = createOrOpenEntityCaptureFile()
+
 	local ox, oy = GameGetCameraPos()
 
 	local virtualWidth, virtualHeight =
@@ -206,7 +248,7 @@ function startCapturingHilbert(area)
 					x, y = x + 256, y + 256 -- Align screen with ingame chunk grid that is 512x512.
 					local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 					if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-						captureScreenshot(x, y, rx, ry)
+						captureScreenshot(x, y, rx, ry, entityFile)
 					end
 					UiProgress.Progress = UiProgress.Progress + 1
 				end
