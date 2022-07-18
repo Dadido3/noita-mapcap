@@ -1,3 +1,8 @@
+-- Copyright (c) 2022 David Vogel
+-- 
+-- This software is released under the MIT License.
+-- https://opensource.org/licenses/MIT
+
 dofile("mods/noita-mapcap/files/init.lua")
 
 function OnPlayerSpawned(player_entity)
@@ -11,3 +16,6 @@ function OnWorldPostUpdate() -- this is called every time the game has finished 
 end
 
 ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic_numbers.xml") -- override some game constants
+
+-- Apply overrides.
+ModLuaFileAppend("data/scripts/perks/perk.lua", "mods/noita-mapcap/files/overrides/perks/perk.lua" )

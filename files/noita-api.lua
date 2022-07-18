@@ -23,12 +23,28 @@ local EntityAPI = {}
 local NoitaEntity = {}
 NoitaEntity.__index = NoitaEntity
 
+---WrapID wraps the given entity ID and returns a Noita entity object.
+---@param id number
+---@return NoitaEntity|nil
+function EntityAPI.WrapID(id)
+	if id == nil or type(id) ~= "number" then return nil end
+	return setmetatable({ ID = id }, NoitaEntity)
+end
+
 local ComponentAPI = {}
 
 ---@class NoitaComponent
 ---@field ID integer -- Noita component ID.
 local NoitaComponent = {}
 NoitaComponent.__index = NoitaComponent
+
+---WrapID wraps the given component ID and returns a Noita component object.
+---@param id number
+---@return NoitaComponent|nil
+function ComponentAPI.WrapID(id)
+	if id == nil or type(id) ~= "number" then return nil end
+	return setmetatable({ ID = id }, NoitaComponent)
+end
 
 -------------------------
 -- JSON Implementation --

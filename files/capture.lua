@@ -45,7 +45,7 @@ local componentTypeNamesToDisable = {
 	"DamageModelComponent",
 	"PhysicsBodyCollisionDamageComponent",
 	"ExplodeOnDamageComponent",
-	"SpriteOffsetAnimatorComponent",
+	--"SpriteOffsetAnimatorComponent",
 	--"PhysicsBody2Component", -- Disabling will hide barrels and similar stuff, also triggers an assertion.
 	--"PhysicsBodyComponent",
 	--"VelocityComponent", -- Disabling this component may cause a "...\component_updators\advancedfishai_system.cpp at line 107" exception.
@@ -125,13 +125,13 @@ local function captureEntities(entityFile, x, y, radius)
 			end
 
 			-- Disable the hover animation of cards. Disabling the "SpriteOffsetAnimatorComponent" does not help.
-			local components = rootEntity:GetComponents("SpriteOffsetAnimatorComponent")
-			for _, component in ipairs(components) do
-				component:SetValue("x_speed", 0)
-				component:SetValue("y_speed", 0)
-				component:SetValue("x_amount", 0)
-				component:SetValue("y_amount", 0)
-			end
+			--local components = rootEntity:GetComponents("SpriteOffsetAnimatorComponent")
+			--for _, component in ipairs(components) do
+			--	component:SetValue("x_speed", 0)
+			--	component:SetValue("y_speed", 0)
+			--	component:SetValue("x_amount", 0)
+			--	component:SetValue("y_amount", 0)
+			--end
 
 		end
 	end
