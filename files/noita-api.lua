@@ -9,6 +9,13 @@
 -- State: Working but incomplete. If something is missing, add it by hand!
 -- It would be optimal to generate this API wrapper automatically...
 
+---@type JSONLib
+local json = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
+
+-------------
+-- Classes --
+-------------
+
 local EntityAPI = {}
 
 ---@class NoitaEntity
@@ -22,6 +29,43 @@ local ComponentAPI = {}
 ---@field ID integer -- Noita component ID.
 local NoitaComponent = {}
 NoitaComponent.__index = NoitaComponent
+
+-------------------------
+-- JSON Implementation --
+-------------------------
+
+---MarshalJSON implements the JSON marshaler interface.
+---@return string
+function NoitaComponent:MarshalJSON()
+	local resultObject = {
+		typeName = self:GetTypeName(),
+		members = self:GetMembers(),
+		--objectMembers = component:ObjectGetMembers
+	}
+
+	return json.Marshal(resultObject)
+end
+
+---MarshalJSON implements the JSON marshaler interface.
+---@return string
+function NoitaEntity:MarshalJSON()
+	local result = {
+		name = self:GetName(),
+		filename = self:GetFilename(),
+		tags = self:GetTags(),
+		children = self:GetAllChildren(),
+		components = self:GetAllComponents(),
+		transform = {},
+	}
+
+	result.transform.x, result.transform.y, result.transform.rotation, result.transform.scaleX, result.transform.scaleY = self:GetTransform()
+
+	return json.Marshal(result)
+end
+
+------------------------
+-- Noita API wrappers --
+------------------------
 
 ---
 ---@param filename string
@@ -458,6 +502,10 @@ end
 
 -- TODO: Add missing Noita API methods and functions.
 
+--------------------
+-- Noita API root --
+--------------------
+
 ---@class NoitaAPI
 local api = {
 	Component = ComponentAPI,
@@ -467,7 +515,5 @@ local api = {
 		Entity = NoitaEntity,
 	},
 }
-
-
 
 return api

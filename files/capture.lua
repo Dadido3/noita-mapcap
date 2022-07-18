@@ -7,7 +7,7 @@
 local noitaAPI = dofile_once("mods/noita-mapcap/files/noita-api.lua")
 
 ---@type JSONLib
-local jsonSerialize = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
+local json = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.
@@ -102,11 +102,11 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 					-- Well, as long as it does not crash between write and flush.
 					if entityFile:seek("end") == 0 then
 						-- First line.
-						entityFile:write("[\n\t", jsonSerialize.Marshal(rootEntity), "\n", "]")
+						entityFile:write("[\n\t", json.Marshal(rootEntity), "\n", "]")
 					else
 						-- Following lines.
 						entityFile:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
-						entityFile:write(",\n\t", jsonSerialize.Marshal(rootEntity), "\n", "]")
+						entityFile:write(",\n\t", json.Marshal(rootEntity), "\n", "]")
 					end
 
 					rootEntity:AddTag("MapCaptured") -- Prevent recapturing.

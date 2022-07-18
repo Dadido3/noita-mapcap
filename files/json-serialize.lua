@@ -5,9 +5,6 @@
 
 -- Simple library to marshal JSON values.
 
----@type NoitaAPI
-local noitaAPI = dofile_once("mods/noita-mapcap/files/noita-api.lua")
-
 ---@class JSONLib
 local lib = {}
 
@@ -63,7 +60,7 @@ function lib.MarshalNumber(val)
 end
 
 ---MarshalBoolean returns the JSON representation of a boolean value.
----@param val number
+---@param val boolean
 ---@return string
 function lib.MarshalBoolean(val)
 	return tostring(val)
@@ -118,37 +115,6 @@ function lib.MarshalArray(val, customMarshalFunction)
 	return result
 end
 
----MarshalNoitaComponent returns the JSON representation of the given Noita component.
----@param component NoitaComponent
----@return string
-function lib.MarshalNoitaComponent(component)
-	local resultObject = {
-		typeName = component:GetTypeName(),
-		members = component:GetMembers(),
-		--objectMembers = component:ObjectGetMembers
-	}
-
-	return lib.Marshal(resultObject)
-end
-
----MarshalNoitaEntity returns the JSON representation of the given Noita entity.
----@param entity NoitaEntity
----@return string
-function lib.MarshalNoitaEntity(entity)
-	local result = {
-		name = entity:GetName(),
-		filename = entity:GetFilename(),
-		tags = entity:GetTags(),
-		children = entity:GetAllChildren(),
-		components = entity:GetAllComponents(),
-		transform = {},
-	}
-
-	result.transform.x, result.transform.y, result.transform.rotation, result.transform.scaleX, result.transform.scaleY = entity:GetTransform()
-
-	return lib.Marshal(result)
-end
-
 ---Marshal marshals any value into JSON representation.
 ---@param val any
 ---@return string
@@ -164,11 +130,9 @@ function lib.Marshal(val)
 	elseif t == "boolean" then
 		return lib.MarshalBoolean(val)
 	elseif t == "table" then
-		-- Check if object is instance of class...
-		if getmetatable(val) == noitaAPI.MetaTables.Component then
-			return lib.MarshalNoitaComponent(val)
-		elseif getmetatable(val) == noitaAPI.MetaTables.Entity then
-			return lib.MarshalNoitaEntity(val)
+		-- Check if object implements the JSON marshaler interface.
+		if val.MarshalJSON ~= nil and type(val.MarshalJSON) == "function" then
+			return val:MarshalJSON()
 		end
 
 		-- If not, fall back to array or object handling.
