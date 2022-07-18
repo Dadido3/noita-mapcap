@@ -34,12 +34,32 @@ NoitaComponent.__index = NoitaComponent
 -- JSON Implementation --
 -------------------------
 
+-- Set of component keys that would return an "invalid type" error when called with ComponentGetValue2().
+-- This is more or less to get around console error spam that otherwise can't be prevented when iterating over component members.
+-- Only used inside the JSON marshaler, until there is a better solution.
+local componentValueKeysWithInvalidType = {}
+
 ---MarshalJSON implements the JSON marshaler interface.
 ---@return string
 function NoitaComponent:MarshalJSON()
+	-- Get list of members, but with correct type (instead of string values).
+	local membersTable = self:GetMembers()
+	local members = {}
+	if membersTable then
+		for k, v in pairs(membersTable) do
+			if not componentValueKeysWithInvalidType[k] then
+				members[k] = self:GetValue(k) -- Try to get value with correct type. Assuming nil is an error, but this is not always the case... meh.
+			end
+			if members[k] == nil then
+				componentValueKeysWithInvalidType[k] = true
+				--members[k] = v -- Fall back to string value of self:GetMembers().
+			end
+		end
+	end
+
 	local resultObject = {
 		typeName = self:GetTypeName(),
-		members = self:GetMembers(),
+		members = members,
 		--objectMembers = component:ObjectGetMembers
 	}
 
@@ -419,9 +439,11 @@ end
 
 ---Returns one or many values matching the type or subtypes of the requested field in a component subobject.
 ---Reports error and returns nil if the field type is not supported or 'object_name' is not a metaobject.
+---
+---Reporting errors means that it spams the stdout with messages, instead of using the lua error handling. Thanks Nolla.
 ---@param objectName string
 ---@param fieldName string
----@return any
+---@return any|nil
 function NoitaComponent:ObjectGetValue(objectName, fieldName)
 	return ComponentObjectGetValue2(self.ID, objectName, fieldName)
 end
