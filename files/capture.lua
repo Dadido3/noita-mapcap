@@ -179,7 +179,7 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 			print(string.format("Entity capture error: %s", err))
 		end
 
-	until DoesWorldExistAt(xMin, yMin, xMax, yMax) and UiCaptureDelay > 25 -- Chunks will be drawn on the *next* frame.
+	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame.
 
 	wait(0) -- Without this line empty chunks may still appear, also it's needed for the UI to disappear.
 	if not TriggerCapture(rx, ry) then
