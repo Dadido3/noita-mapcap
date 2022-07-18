@@ -11,7 +11,6 @@ local json = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.
-CAPTURE_FORCE_HP = 4 -- * 25HP
 
 -- "Base layout" (Base layout. Every part outside this is based on a similar layout, but uses different materials/seeds)
 CAPTURE_AREA_BASE_LAYOUT = {
@@ -37,16 +36,108 @@ CAPTURE_AREA_EXTENDED = {
 	Bottom = 41984 -- in virtual (world) pixels. (Coordinate is not included in the rectangle)
 }
 
-local function preparePlayer()
-	local playerEntity = getPlayer()
-	addEffectToEntity(playerEntity, "PROTECTION_ALL")
+local componentTypeNamesToDisable = {
+	"AnimalAIComponent",
+	"SimplePhysicsComponent",
+	"CharacterPlatformingComponent",
+	"WormComponent",
+	"WormAIComponent",
+	"DamageModelComponent",
+	"PhysicsBodyCollisionDamageComponent",
+	"ExplodeOnDamageComponent",
+	"SpriteOffsetAnimatorComponent",
+	--"PhysicsBody2Component", -- Disabling will hide barrels and similar stuff, also triggers an assertion.
+	--"PhysicsBodyComponent",
+	--"VelocityComponent", -- Disabling this component may cause a "...\component_updators\advancedfishai_system.cpp at line 107" exception.
+	--"SpriteComponent",
+	--"AudioComponent",
+}
 
-	--addPerkToPlayer("BREATH_UNDERWATER")
-	--addPerkToPlayer("INVISIBILITY")
-	--addPerkToPlayer("REMOVE_FOG_OF_WAR")
-	--addPerkToPlayer("REPELLING_CAPE")
-	--addPerkToPlayer("WORM_DETRACTOR")
-	setPlayerHP(CAPTURE_FORCE_HP)
+---
+---@return file*|nil
+local function createOrOpenEntityCaptureFile()
+	-- Make sure the file exists.
+	local file = io.open("mods/noita-mapcap/output/entities.json", "a")
+	if file ~= nil then file:close() end
+
+	-- Create or reopen entities CSV file.
+	file = io.open("mods/noita-mapcap/output/entities.json", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
+	if file == nil then return nil end
+
+	return file
+end
+
+---captureEntities gathers all entities on the screen (around x, y within radius), serializes them, appends them into entityFile and modifies those entities.
+---@param entityFile file*|nil
+---@param x number
+---@param y number
+---@param radius number
+local function captureEntities(entityFile, x, y, radius)
+	if not entityFile then return end
+
+	local entities = noitaAPI.Entity.GetInRadius(x, y, radius)
+	for _, entity in ipairs(entities) do
+		-- Get to the root entity, as we are exporting entire entity trees.
+		local rootEntity = entity:GetRootEntity()
+		-- Make sure to only export entities when they are encountered the first time.
+		if not rootEntity:HasTag("MapCaptured") then
+
+			-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
+			-- Well, as long as it does not crash between write and flush.
+			if entityFile:seek("end") == 0 then
+				-- First line.
+				entityFile:write("[\n\t", json.Marshal(rootEntity), "\n", "]")
+			else
+				-- Following lines.
+				entityFile:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
+				entityFile:write(",\n\t", json.Marshal(rootEntity), "\n", "]")
+			end
+
+			-- Prevent recapturing.
+			rootEntity:AddTag("MapCaptured")
+
+			-- Disable some components.
+			for _, componentTypeName in ipairs(componentTypeNamesToDisable) do
+				local components = rootEntity:GetComponents(componentTypeName)
+				for _, component in ipairs(components) do
+					rootEntity:SetComponentsEnabled(component, false)
+				end
+			end
+
+			-- Modify the gravity of every VelocityComponent, so stuff will not fall.
+			local component = rootEntity:GetFirstComponent("VelocityComponent")
+			if component then
+				component:SetValue("gravity_x", 0)
+				component:SetValue("gravity_y", 0)
+			end
+
+			-- Modify the gravity of every CharacterPlatformingComponent, so mobs will not fall.
+			local component = rootEntity:GetFirstComponent("CharacterPlatformingComponent")
+			if component then
+				component:SetValue("pixel_gravity", 0)
+			end
+
+			-- Disable the hover and spinning animations of every ItemComponent.
+			local component = rootEntity:GetFirstComponent("ItemComponent")
+			if component then
+				component:SetValue("play_hover_animation", false)
+				component:SetValue("play_spinning_animation", false)
+			end
+
+			-- Disable the hover animation of cards. Disabling the "SpriteOffsetAnimatorComponent" does not help.
+			local components = rootEntity:GetComponents("SpriteOffsetAnimatorComponent")
+			for _, component in ipairs(components) do
+				component:SetValue("x_speed", 0)
+				component:SetValue("y_speed", 0)
+				component:SetValue("x_amount", 0)
+				component:SetValue("y_amount", 0)
+			end
+
+		end
+	end
+
+	-- Ensure everything is written to disk before noita decides to crash.
+	entityFile:flush()
 end
 
 --- Captures a screenshot at the given coordinates.
@@ -81,58 +172,22 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 		DrawUI()
 		wait(0)
 		UiCaptureDelay = UiCaptureDelay + 1
-	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame.
+
+		-- Capture all entities right after the camera frame was moved.
+		local ok, err = pcall(captureEntities, entityFile, x, y, 5000)
+		if not ok then
+			print(string.format("Entity capture error: %s", err))
+		end
+
+	until DoesWorldExistAt(xMin, yMin, xMax, yMax) and UiCaptureDelay > 25 -- Chunks will be drawn on the *next* frame.
 
 	wait(0) -- Without this line empty chunks may still appear, also it's needed for the UI to disappear.
 	if not TriggerCapture(rx, ry) then
 		UiCaptureProblem = "Screen capture failed. Please restart Noita."
 	end
 
-	-- Capture entities right after capturing the screenshot.
-	if entityFile then
-		local ok, err = pcall(function()
-			local radius = math.sqrt(virtualHalfWidth^2 + virtualHalfHeight^2) + 1
-			local entities = noitaAPI.Entity.GetInRadius(x, y, radius)
-			for _, entity in ipairs(entities) do
-				-- Get to the root entity, as we are exporting entire entity trees.
-				local rootEntity = entity:GetRootEntity()
-				-- Make sure to only export entities when they are encountered the first time.
-				if not rootEntity:HasTag("MapCaptured") then
-					-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
-					-- Well, as long as it does not crash between write and flush.
-					if entityFile:seek("end") == 0 then
-						-- First line.
-						entityFile:write("[\n\t", json.Marshal(rootEntity), "\n", "]")
-					else
-						-- Following lines.
-						entityFile:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
-						entityFile:write(",\n\t", json.Marshal(rootEntity), "\n", "]")
-					end
-
-					rootEntity:AddTag("MapCaptured") -- Prevent recapturing.
-				end
-			end
-		end)
-		if not ok then
-			print("Entity export error:", err)
-		end
-		entityFile:flush() -- Ensure everything is written to disk before noita decides to crash.
-	end
-
 	-- Reset monitor and PC standby each screenshot.
 	ResetStandbyTimer()
-end
-
-local function createOrOpenEntityCaptureFile()
-	-- Make sure the file exists.
-	local file = io.open("mods/noita-mapcap/output/entities.json", "a")
-	if file ~= nil then file:close() end
-
-	-- Create or reopen entities CSV file.
-	file = io.open("mods/noita-mapcap/output/entities.json", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
-	if file == nil then return nil end
-
-	return file
 end
 
 function startCapturingSpiral()
@@ -148,8 +203,6 @@ function startCapturingSpiral()
 		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
 
 	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
-
-	preparePlayer()
 
 	GameSetCameraFree(true)
 
@@ -232,8 +285,6 @@ function startCapturingHilbert(area)
 	local t, tLimit = 0, gridMaxSize * gridMaxSize
 
 	UiProgress = {Progress = 0, Max = gridWidth * gridHeight}
-
-	preparePlayer()
 
 	GameSetCameraFree(true)
 

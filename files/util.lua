@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2020 David Vogel
+-- Copyright (c) 2019-2022 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -23,7 +23,7 @@ function GamePrint(...)
 	end
 
 	for line in result:gmatch("[^\r\n]+") do
-		for i, v in ipairs(splitStringByLength(line, 100)) do
+		for i, v in ipairs(SplitStringByLength(line, 100)) do
 			oldGamePrint(v)
 		end
 	end
@@ -104,4 +104,14 @@ function progressBarString(progress, look)
 	local barString = string.rep(look.CharFull, count) .. string.rep(look.CharEmpty, look.BarLength - count)
 
 	return string.format(look.Format, barString, progress.Progress, progress.Max, factor * 100)
+end
+
+---Returns a new table with all arguments stored into keys `1`, `2`, etc. and with a field `"n"` with the total number of arguments.
+---@param ... any
+---@return table
+function table.pack(...)
+	t = {...}
+	t.n = select("#", ...)
+
+	return t
 end

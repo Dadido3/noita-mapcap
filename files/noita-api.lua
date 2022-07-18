@@ -48,7 +48,15 @@ function NoitaComponent:MarshalJSON()
 	if membersTable then
 		for k, v in pairs(membersTable) do
 			if not componentValueKeysWithInvalidType[k] then
-				members[k] = self:GetValue(k) -- Try to get value with correct type. Assuming nil is an error, but this is not always the case... meh.
+				local packedResult = table.pack(self:GetValue(k)) -- Try to get value with correct type. Assuming nil is an error, but this is not always the case... meh.
+				if packedResult.n == 0 then
+					members[k] = nil -- Write no result as nil. Basically do nothing.
+				elseif packedResult.n == 1 then
+					members[k] = packedResult[1] -- Write single value result as single value.
+				else
+					packedResult.n = nil -- Discard n field, otherwise this is not a pure array.
+					members[k] = packedResult -- Write multi value result as array.
+				end
 			end
 			if members[k] == nil then
 				componentValueKeysWithInvalidType[k] = true
@@ -187,10 +195,15 @@ end
 
 ---Returns a table of components filtered by the given parameters.
 ---@param componentTypeName string
----@param tag string
+---@param tag string|nil
 ---@return NoitaComponent[]
 function NoitaEntity:GetComponents(componentTypeName, tag)
-	local componentIDs = EntityGetComponent(self.ID, componentTypeName, tag) or {}
+	local componentIDs
+	if tag ~= nil then
+		componentIDs = EntityGetComponent(self.ID, componentTypeName, tag) or {}
+	else
+		componentIDs = EntityGetComponent(self.ID, componentTypeName) or {}
+	end
 	local result = {}
 	for _, componentID in ipairs(componentIDs) do
 		table.insert(result, setmetatable({ ID = componentID }, NoitaComponent))
@@ -200,10 +213,15 @@ end
 
 ---Returns the first component of this entity that fits the given parameters.
 ---@param componentTypeName string
----@param tag string
+---@param tag string|nil
 ---@return NoitaComponent|nil
 function NoitaEntity:GetFirstComponent(componentTypeName, tag)
-	local componentID = EntityGetFirstComponent(self.ID, componentTypeName, tag)
+	local componentID
+	if tag ~= nil then
+		componentID = EntityGetFirstComponent(self.ID, componentTypeName, tag)
+	else
+		componentID = EntityGetFirstComponent(self.ID, componentTypeName)
+	end
 	if componentID == nil then
 		return nil
 	end
@@ -426,15 +444,15 @@ end
 ---@param fieldName string
 ---@return any|nil
 function NoitaComponent:GetValue(fieldName)
-	return ComponentGetValue2(self.ID, fieldName)
+	return ComponentGetValue2(self.ID, fieldName) -- TODO: Rework Noita API to handle vectors, and return a vector instead of some shitty multi value result
 end
 
 ---Sets the value of a field. Value(s) should have a type matching the field type.
 ---Reports error if the values weren't given in correct type, the field type is not supported, or the component does not exist.
 ---@param fieldName string
----@param valueOrValues any|nil
-function NoitaComponent:SetValue(fieldName, valueOrValues)
-	return ComponentSetValue2(self.ID, fieldName, valueOrValues)
+---@param ... any|nil -- Vectors use one argument per dimension.
+function NoitaComponent:SetValue(fieldName, ...)
+	return ComponentSetValue2(self.ID, fieldName, ...) -- TODO: Rework Noita API to handle vectors, and use a vector instead of shitty multi value arguments
 end
 
 ---Returns one or many values matching the type or subtypes of the requested field in a component subobject.
@@ -445,16 +463,16 @@ end
 ---@param fieldName string
 ---@return any|nil
 function NoitaComponent:ObjectGetValue(objectName, fieldName)
-	return ComponentObjectGetValue2(self.ID, objectName, fieldName)
+	return ComponentObjectGetValue2(self.ID, objectName, fieldName) -- TODO: Rework Noita API to handle vectors, and return a vector instead of some shitty multi value result
 end
 
 ---Sets the value of a field in a component subobject. Value(s) should have a type matching the field type.
 ---Reports error if the values weren't given in correct type, the field type is not supported or 'object_name' is not a metaobject.
 ---@param objectName string
 ---@param fieldName string
----@param valueOrValues any
-function NoitaComponent:ObjectSetValue(objectName, fieldName, valueOrValues)
-	return ComponentObjectSetValue2(self.ID, objectName, fieldName, valueOrValues)
+---@param ... any|nil -- Vectors use one argument per dimension.
+function NoitaComponent:ObjectSetValue(objectName, fieldName, ...)
+	return ComponentObjectSetValue2(self.ID, objectName, fieldName, ...) -- TODO: Rework Noita API to handle vectors, and use a vector instead of shitty multi value arguments
 end
 
 ---Creates a component of type 'component_type_name' and adds it to 'entity_id'.
@@ -473,26 +491,26 @@ function NoitaEntity:EntityAddComponent(componentTypeName, tableOfComponentValue
 	return setmetatable({ ID = componentID }, NoitaComponent)
 end
 
----'type_stored_in_vector' should be "int", "float" or "string".
+---
 ---@param arrayMemberName string
----@param typeStoredInVector string
+---@param typeStoredInVector "int"|"float"|"string"
 ---@return number
 function NoitaComponent:GetVectorSize(arrayMemberName, typeStoredInVector)
 	return ComponentGetVectorSize(self.ID, arrayMemberName, typeStoredInVector)
 end
 
----'type_stored_in_vector' should be "int", "float" or "string".
+---
 ---@param arrayName string
----@param typeStoredInVector string
+---@param typeStoredInVector "int"|"float"|"string"
 ---@param index number
 ---@return number|number|string|nil
 function NoitaComponent:GetVectorValue(arrayName, typeStoredInVector, index)
 	return ComponentGetVectorValue(self.ID, arrayName, typeStoredInVector, index)
 end
 
----'type_stored_in_vector' should be "int", "float" or "string".
+---
 ---@param arrayName string
----@param typeStoredInVector string
+---@param typeStoredInVector "int"|"float"|"string"
 ---@return number[]|number|string|nil
 function NoitaComponent:GetVector(arrayName, typeStoredInVector)
 	return ComponentGetVector(self.ID, arrayName, typeStoredInVector)

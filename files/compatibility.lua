@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2020 David Vogel
+-- Copyright (c) 2019-2022 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -9,8 +9,7 @@
 local oldPrint = print
 function print(...)
 	local arg = {...}
-
-	stringArgs = {}
+	local stringArgs = {}
 
 	for i, v in ipairs(arg) do
 		table.insert(stringArgs, tostring(v))
@@ -23,8 +22,7 @@ end
 --[[local logFile = io.open("lualog.txt", "w")
 function print(...)
 	local arg = {...}
-
-	stringArgs = {}
+	local stringArgs = {}
 
 	local result = ""
 	for i, v in ipairs(arg) do

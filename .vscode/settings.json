@@ -29,5 +29,6 @@
         "xmin",
         "ymax",
         "ymin"
-    ]
+    ],
+    "Lua.runtime.version": "LuaJIT"
 }
