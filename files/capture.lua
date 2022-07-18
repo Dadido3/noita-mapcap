@@ -125,11 +125,11 @@ end
 
 local function createOrOpenEntityCaptureFile()
 	-- Make sure the file exists.
-	local file = io.open("mods/noita-mapcap/output/entities.csv", "a")
+	local file = io.open("mods/noita-mapcap/output/entities.json", "a")
 	if file ~= nil then file:close() end
 
 	-- Create or reopen entities CSV file.
-	file = io.open("mods/noita-mapcap/output/entities.csv", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
+	file = io.open("mods/noita-mapcap/output/entities.json", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
 	if file == nil then return nil end
 
 	return file
