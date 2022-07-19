@@ -145,11 +145,12 @@ function EntityAPI.LoadCameraBound(filename, posX, posY)
 	return EntityLoadCameraBound(filename, posX, posY)
 end
 
----
+---Creates a new entity from the given XML file, and attaches it to entity.
+---This will not load tags and other stuff, it seems.
 ---@param filename string
 ---@param entity NoitaEntity
 function EntityAPI.LoadToEntity(filename, entity)
-	return EntityLoadToEntity(filename, entity)
+	return EntityLoadToEntity(filename, entity.ID)
 end
 
 ---
