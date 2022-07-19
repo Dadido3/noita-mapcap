@@ -42,6 +42,7 @@ local componentTypeNamesToDisable = {
 	"CharacterPlatformingComponent",
 	"WormComponent",
 	"WormAIComponent",
+	"CameraBoundComponent", -- Disabling this component will prevent entites from being killed/reset when they go offscreen. If they are reset, the "MapCaptured" tag will be gone and we capture these entities multiple times. This has some side effects, like longleg.xml and zombie_weak.xml will respawn every revisit, as the spawner doesn't get deleted.
 	--"PhysicsBodyCollisionDamageComponent",
 	--"ExplodeOnDamageComponent",
 	--"DamageModelComponent",
@@ -83,7 +84,7 @@ local function captureEntities(entityFile, x, y, radius)
 		local rootEntity = entity:GetRootEntity()
 		-- Make sure to only export entities when they are encountered the first time.
 		if not rootEntity:HasTag("MapCaptured") then
-			--print(rootEntity:GetFilename())
+			--print(rootEntity:GetFilename(), "got captured!")
 
 			-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
 			-- Well, as long as it does not crash between write and flush.
