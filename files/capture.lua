@@ -155,7 +155,6 @@ local function captureEntities(entityFile, x, y, radius)
 			local component = rootEntity:GetFirstComponent("ExplodeOnDamageComponent")
 			if component then
 				component:SetValue("explode_on_death_percent", 0)
-				print("What the hell?", component:ObjectGetValue("config_explosion", "damage"))
 			end
 
 			-- Try to prevent some stuff from exploding.
