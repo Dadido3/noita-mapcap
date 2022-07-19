@@ -42,10 +42,12 @@ local componentTypeNamesToDisable = {
 	"CharacterPlatformingComponent",
 	"WormComponent",
 	"WormAIComponent",
-	"DamageModelComponent",
-	"PhysicsBodyCollisionDamageComponent",
-	"ExplodeOnDamageComponent",
+	--"PhysicsBodyCollisionDamageComponent",
+	--"ExplodeOnDamageComponent",
+	--"DamageModelComponent",
 	--"SpriteOffsetAnimatorComponent",
+	--"MaterialInventoryComponent",
+	--"LuaComponent",
 	--"PhysicsBody2Component", -- Disabling will hide barrels and similar stuff, also triggers an assertion.
 	--"PhysicsBodyComponent",
 	--"VelocityComponent", -- Disabling this component may cause a "...\component_updators\advancedfishai_system.cpp at line 107" exception.
@@ -81,6 +83,7 @@ local function captureEntities(entityFile, x, y, radius)
 		local rootEntity = entity:GetRootEntity()
 		-- Make sure to only export entities when they are encountered the first time.
 		if not rootEntity:HasTag("MapCaptured") then
+			--print(rootEntity:GetFilename())
 
 			-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
 			-- Well, as long as it does not crash between write and flush.
@@ -109,6 +112,7 @@ local function captureEntities(entityFile, x, y, radius)
 			if component then
 				component:SetValue("gravity_x", 0)
 				component:SetValue("gravity_y", 0)
+				component:SetValue("mVelocity", 0, 0)
 			end
 
 			-- Modify the gravity of every CharacterPlatformingComponent, so mobs will not fall.
@@ -125,19 +129,62 @@ local function captureEntities(entityFile, x, y, radius)
 			end
 
 			-- Disable the hover animation of cards. Disabling the "SpriteOffsetAnimatorComponent" does not help.
-			--local components = rootEntity:GetComponents("SpriteOffsetAnimatorComponent")
-			--for _, component in ipairs(components) do
-			--	component:SetValue("x_speed", 0)
-			--	component:SetValue("y_speed", 0)
-			--	component:SetValue("x_amount", 0)
-			--	component:SetValue("y_amount", 0)
-			--end
+			--[[local components = rootEntity:GetComponents("SpriteOffsetAnimatorComponent")
+			for _, component in ipairs(components) do
+				component:SetValue("x_speed", 0)
+				component:SetValue("y_speed", 0)
+				component:SetValue("x_amount", 0)
+				component:SetValue("y_amount", 0)
+			end]]
+
+			-- Try to prevent some stuff from exploding.
+			local component = rootEntity:GetFirstComponent("PhysicsBody2Component")
+			if component then
+				component:SetValue("kill_entity_if_body_destroyed", false)
+				component:SetValue("destroy_body_if_entity_destroyed", false)
+				component:SetValue("auto_clean", false)
+			end
+
+			-- Try to prevent some stuff from exploding.
+			local component = rootEntity:GetFirstComponent("DamageModelComponent")
+			if component then
+				component:SetValue("falling_damages", false)
+			end
+
+			-- Try to prevent some stuff from exploding.
+			local component = rootEntity:GetFirstComponent("ExplodeOnDamageComponent")
+			if component then
+				component:SetValue("explode_on_death_percent", 0)
+				print("What the hell?", component:ObjectGetValue("config_explosion", "damage"))
+			end
+
+			-- Try to prevent some stuff from exploding.
+			local component = rootEntity:GetFirstComponent("MaterialInventoryComponent")
+			if component then
+				component:SetValue("on_death_spill", false)
+				component:SetValue("kill_when_empty", false)
+			end
 
 		end
 	end
 
 	-- Ensure everything is written to disk before noita decides to crash.
 	entityFile:flush()
+end
+
+function DebugEntityCapture()
+	local entityFile = createOrOpenEntityCaptureFile()
+
+	-- Coroutine to capture all entities around the viewport every frame.
+	async_loop(function()
+		local x, y = GameGetCameraPos() -- Returns the virtual coordinates of the screen center.
+		-- Call the protected function and catch any errors.
+		local ok, err = pcall(captureEntities, entityFile, x, y, 5000)
+		if not ok then
+			print(string.format("Entity capture error: %s", err))
+		end
+		wait(0)
+	end)
 end
 
 --- Captures a screenshot at the given coordinates.
@@ -147,8 +194,7 @@ end
 --- @param y number -- Virtual y coordinate (World pixels) of the screen center.
 --- @param rx number -- Screen x coordinate of the top left corner of the screenshot rectangle.
 --- @param ry number -- Screen y coordinate of the top left corner of the screenshot rectangle.
---- @param entityFile file*
-local function captureScreenshot(x, y, rx, ry, entityFile)
+local function captureScreenshot(x, y, rx, ry)
 	local virtualWidth, virtualHeight =
 		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
 		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
@@ -172,12 +218,6 @@ local function captureScreenshot(x, y, rx, ry, entityFile)
 		DrawUI()
 		wait(0)
 		UiCaptureDelay = UiCaptureDelay + 1
-
-		-- Capture all entities right after the camera frame was moved.
-		local ok, err = pcall(captureEntities, entityFile, x, y, 5000)
-		if not ok then
-			print(string.format("Entity capture error: %s", err))
-		end
 
 	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame.
 
@@ -205,6 +245,17 @@ function startCapturingSpiral()
 	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
 	GameSetCameraFree(true)
+
+	-- Coroutine to capture all entities around the viewport every frame.
+	async_loop(function()
+		local x, y = GameGetCameraPos() -- Returns the virtual coordinates of the screen center.
+		-- Call the protected function and catch any errors.
+		local ok, err = pcall(captureEntities, entityFile, x, y, 5000)
+		if not ok then
+			print(string.format("Entity capture error: %s", err))
+		end
+		wait(0)
+	end)
 
 	-- Coroutine to calculate next coordinate, and trigger screenshots.
 	local i = 1
@@ -287,6 +338,17 @@ function startCapturingHilbert(area)
 	UiProgress = {Progress = 0, Max = gridWidth * gridHeight}
 
 	GameSetCameraFree(true)
+
+	-- Coroutine to capture all entities around the viewport every frame.
+	async_loop(function()
+		local x, y = GameGetCameraPos() -- Returns the virtual coordinates of the screen center.
+		-- Call the protected function and catch any errors.
+		local ok, err = pcall(captureEntities, entityFile, x, y, 5000)
+		if not ok then
+			print(string.format("Entity capture error: %s", err))
+		end
+		wait(0)
+	end)
 
 	-- Coroutine to calculate next coordinate, and trigger screenshots.
 	async(
