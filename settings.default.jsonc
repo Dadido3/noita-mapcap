@@ -1,0 +1,20 @@
+{
+    "general_settings": {
+        "CAPTURE_RESOLUTION_WIDTH": 1280, // REQUIRED! Note: this setting overwrites window_w, internal_size_w, backbuffer_width
+        "CAPTURE_RESOLUTION_HEIGHT": 768, // REQUIRED! Note: this setting overwrites window_h, internal_size_h, backbuffer_height
+        "CAPTURE_GRID_SIZE": 512,         // OPTIONAL. Note: Adjust the capture grid size. Must fit into an area of CAPTURE_RESOLUTION_HEIGHT * CAPTURE_RESOLUTION_WIDTH
+        "WORLD_SEED": null                // OPTIONAL. Note: Set the seed of the world you want to capture, or set it to null for random worlds.
+    },
+    "config_xml": {
+        "audio_effects_volume": 0.2,
+        "audio_music_volume": 0,
+        "has_been_started_before": 1,
+        "mods_disclaimer_accepted": 1,
+        "mods_sandbox_enabled": 0,
+        "mods_sandbox_warning_done": 1,
+        "online_features": 0,
+        "rendering_filmgrain": 0,
+        "rendering_pixel_art_antialiasing": 0,
+        "screenshake_intensity": 0
+    }
+}

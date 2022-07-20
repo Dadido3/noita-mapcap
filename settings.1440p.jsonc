@@ -1,0 +1,9 @@
+{
+    "general_settings": {
+        "CAPTURE_RESOLUTION_WIDTH": 1024,  // REQUIRED! Note: this setting overwrites window_w, internal_size_w, backbuffer_width
+        "CAPTURE_RESOLUTION_HEIGHT": 1024, // REQUIRED! Note: this setting overwrites window_h, internal_size_h, backbuffer_height
+        "CAPTURE_GRID_SIZE": 1024,         // OPTIONAL. Note: Adjust the capture grid size. Must fit into an area of CAPTURE_RESOLUTION_HEIGHT * CAPTURE_RESOLUTION_WIDTH
+        "WORLD_SEED": 119984861            // OPTIONAL. Note: Set the seed of the world you want to capture, or set it to null for random worlds.
+    },
+    "config_xml": { }
+}

@@ -20,24 +20,26 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
 
 1. Have Noita installed.
 2. Download the [latest release of the mod from this link](https://github.com/Dadido3/noita-mapcap/releases/latest) (The `Windows.x86.7z`, not the source)
-3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
-4. Set your resolution to 1280x720, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see [Advanced stuff](#advanced-stuff).
-5. Enable the mod and restart Noita.
-6. In the game you should see text on screen.
+3. Unpack it into your `mods` folder, so that you get the following file structure `./Noita/mods/noita-mapcap/mod.xml`.
+4. Run `Apply-Settings.ps1` with [PowerShell 7](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.2) to automatically configure noita_dev.exe and its config. If you have a 1440p monitor, rename `settings.1440.jsonc` to `settings.jsonc`.
+5. If you used `Apply-Settings.ps1`, skip step 6 and 7.
+6. Set your resolution to 1280x720, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see [Advanced stuff](#advanced-stuff).
+7. Enable the mod and restart Noita.
+8. In the game you should see text on screen.
     - Either press `>> Start capturing map around view <<` to capture in a spiral around your current view.
     - Or press any other option to capture [specific areas](AREAS.md).
-7. The screen will jump around, and the game will take screenshots automatically.
+9. The screen will jump around, and the game will take screenshots automatically.
     - Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
     - Don't move the game window outside of screen space. You can cover it with other windows, and continue using your PC.
     - Don't minimize the game window.
     - If you need to pause, use the ESC menu.
     - Also, make sure that the console window isn't selected, as you will end up with screenshots of the console instead of the game. You can select and use any other window while it's capturing screenshots, though.
     - Noita may crash in the process or show error messages. If you encounter an `ASSERT FAILED!` message click on `Ignore always`. If Noita crashes you can restart it, load your save and start capturing again. It will continue from where it stopped. More information/details about this can be found [here](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723571110).
-8. When you think you are done, close Noita.
-9. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
+10. When you think you are done, close Noita.
+11. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
     - Use the default values to create a complete stitch.
     - It will take the screenshots from the `output` folder.
-10. The result will be saved as `.../Noita/mods/noita-mapcap/bin/stitch/output.png` if not defined otherwise.
+12. The result will be saved as `.../Noita/mods/noita-mapcap/bin/stitch/output.png` if not defined otherwise.
 
 ## How to do a full map capture with minimal trouble
 
