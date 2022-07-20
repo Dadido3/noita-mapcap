@@ -4,10 +4,10 @@
 -- https://opensource.org/licenses/MIT
 
 ---@type NoitaAPI
-local noitaAPI = dofile_once("mods/noita-mapcap/files/noita-api.lua")
+local noitaAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api.lua")
 
 ---@type JSONLib
-local json = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
+local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.

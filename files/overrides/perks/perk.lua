@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 ---@type NoitaAPI
-local noitaAPI = dofile_once("mods/noita-mapcap/files/noita-api.lua")
+local noitaAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api.lua")
 
 local oldPerkSpawn = perk_spawn
 

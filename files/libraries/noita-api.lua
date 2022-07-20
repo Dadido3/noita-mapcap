@@ -10,7 +10,7 @@
 -- It would be optimal to generate this API wrapper automatically...
 
 ---@type JSONLib
-local json = dofile_once("mods/noita-mapcap/files/json-serialize.lua")
+local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
 -------------
 -- Classes --
