@@ -3,8 +3,8 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
----@type NoitaAPI
-local noitaAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api.lua")
+---@type NoitaEntityAPI
+local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entity.lua")
 
 ---@type JSONLib
 local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
@@ -78,7 +78,7 @@ end
 local function captureEntities(entityFile, x, y, radius)
 	if not entityFile then return end
 
-	local entities = noitaAPI.Entity.GetInRadius(x, y, radius)
+	local entities = EntityAPI.GetInRadius(x, y, radius)
 	for _, entity in ipairs(entities) do
 		-- Get to the root entity, as we are exporting entire entity trees.
 		local rootEntity = entity:GetRootEntity()

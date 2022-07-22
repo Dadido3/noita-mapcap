@@ -8,8 +8,8 @@
 ---@type Vec2
 local Vec2 = dofile_once("mods/noita-mapcap/files/libraries/vec2.lua")
 
----@type NoitaAPI
-local NoitaAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api.lua")
+---@type NoitaCameraAPI
+local CameraAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/camera.lua")
 
 ---@class Coords
 ---@field InternalResolution Vec2
@@ -79,7 +79,7 @@ end
 ---@param viewportCenter Vec2|nil -- Result of `GameGetCameraPos()`. Will be queried automatically if set to nil.
 ---@return Vec2 window
 function Coords:ToWindow(world, viewportCenter)
-	viewportCenter = viewportCenter or NoitaAPI.Camera.Pos()
+	viewportCenter = viewportCenter or CameraAPI.Pos()
 
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
@@ -92,7 +92,7 @@ end
 ---@param viewportCenter Vec2|nil -- Result of `GameGetCameraPos()`. Will be queried automatically if set to nil.
 ---@return Vec2 world
 function Coords:ToWorld(window, viewportCenter)
-	viewportCenter = viewportCenter or NoitaAPI.Camera.Pos()
+	viewportCenter = viewportCenter or CameraAPI.Pos()
 
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()

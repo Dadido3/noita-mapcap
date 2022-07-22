@@ -5,6 +5,9 @@
 
 dofile("mods/noita-mapcap/files/init.lua")
 
+---Called in order upon loading game.
+function OnModInit() end
+
 function OnPlayerSpawned(player_entity)
 	--EntityLoad("mods/noita-mapcap/files/luacomponent.xml") -- ffi isn't accessible from inside lua components, scrap that idea
 	modGUI = GuiCreate()

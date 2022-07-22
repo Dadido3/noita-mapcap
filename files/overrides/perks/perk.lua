@@ -3,8 +3,8 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
----@type NoitaAPI
-local noitaAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api.lua")
+---@type NoitaEntityAPI
+local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entity.lua")
 
 local oldPerkSpawn = perk_spawn
 
@@ -15,7 +15,7 @@ local oldPerkSpawn = perk_spawn
 ---@param dontRemoveOtherPerks boolean
 ---@return NoitaEntity|nil
 function perk_spawn(x, y, perkID, dontRemoveOtherPerks)
-	local entity = noitaAPI.Entity.WrapID(oldPerkSpawn(x, y, perkID, dontRemoveOtherPerks))
+	local entity = EntityAPI.WrapID(oldPerkSpawn(x, y, perkID, dontRemoveOtherPerks))
 	if entity == nil then return end
 
 	-- Remove the SpriteOffsetAnimatorComponent components from the entity.
