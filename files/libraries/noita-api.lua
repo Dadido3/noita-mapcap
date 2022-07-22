@@ -9,6 +9,9 @@
 -- State: Working but incomplete. If something is missing, add it by hand!
 -- It would be optimal to generate this API wrapper automatically...
 
+---@type Vec2
+local Vec2 = dofile_once("mods/noita-mapcap/files/libraries/vec2.lua")
+
 ---@type JSONLib
 local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
@@ -45,6 +48,8 @@ function ComponentAPI.WrapID(id)
 	if id == nil or type(id) ~= "number" then return nil end
 	return setmetatable({ ID = id }, NoitaComponent)
 end
+
+local CameraAPI = {}
 
 -------------------------
 -- JSON Implementation --
@@ -552,12 +557,52 @@ function NoitaComponent:ObjectGetMembers(objectName)
 	return ComponentObjectGetMembers(self.ID, objectName)
 end
 
+---
 ---@return string string
 function NoitaComponent:GetTypeName()
 	return ComponentGetTypeName(self.ID)
 end
 
 -- TODO: Add missing Noita API methods and functions.
+
+---
+---@param strength number
+---@param position Vec2|nil -- Defaults to camera position if not set.
+function CameraAPI.Screenshake(strength, position)
+	if position == nil then
+		return GameScreenshake(strength)
+	end
+	return GameScreenshake(strength, position.x, position.y)
+end
+
+-- TODO: Add missing Noita API methods and functions.
+
+---Returns the center position of the viewport in world/virtual coordinates.
+---@return Vec2
+function CameraAPI.Pos()
+	return Vec2(GameGetCameraPos())
+end
+
+---Sets the center position of the viewport in world/virtual coordinates.
+---@param position Vec2
+function CameraAPI.SetPos(position)
+	return GameSetCameraPos(position.x, position.y)
+end
+
+---
+---@param isFree boolean
+function CameraAPI.SetCameraFree(isFree)
+	return GameSetCameraFree(isFree)
+end
+
+---Returns the camera boundaries rectangle in world/virtual coordinates.
+---This may not be 100% pixel perfect with regards to what you see on the screen.
+---@return Vec2 topLeft
+---@return Vec2 bottomRight
+function CameraAPI.Bounds()
+	local x, y, w, h = GameGetCameraBounds()
+	return Vec2(x, y), Vec2(x + w, y + h)
+end
 
 --------------------
 -- Noita API root --
@@ -567,6 +612,7 @@ end
 local api = {
 	Component = ComponentAPI,
 	Entity = EntityAPI,
+	Camera = CameraAPI,
 	MetaTables = {
 		Component = NoitaComponent,
 		Entity = NoitaEntity,

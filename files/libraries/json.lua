@@ -47,7 +47,7 @@ end
 ---@param val string
 ---@return string
 function lib.MarshalString(val)
-	return string.format("%q", escapeString(val)) -- TODO: Escape strings correctly.
+	return string.format("%q", escapeString(val))
 end
 
 ---MarshalNumber returns the JSON representation of a number value.
