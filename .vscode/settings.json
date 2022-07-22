@@ -30,5 +30,8 @@
         "ymax",
         "ymin"
     ],
-    "Lua.runtime.version": "LuaJIT"
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.format.defaultConfig": {
+        "max_line_length": "512"
+    }
 }
