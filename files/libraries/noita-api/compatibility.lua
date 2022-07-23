@@ -42,10 +42,6 @@ package.loaded = package.loaded or {
 	--os = os,
 }
 
-for k, v in pairs(package.loaded) do
-	print(k, v)
-end
-
 ---Emulated require function in case the Lua API is restricted.
 ---It's probably good enough for most usecases.
 ---@param modName string

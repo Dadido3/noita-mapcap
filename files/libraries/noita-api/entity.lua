@@ -92,7 +92,7 @@ end
 
 ---
 ---@param componentTypeName string
----@param tableOfComponentValues string[]|nil
+---@param tableOfComponentValues string[]
 ---@return NoitaComponent|nil
 function NoitaEntity:AddComponent(componentTypeName, tableOfComponentValues)
 	local componentID = EntityAddComponent(self.ID, componentTypeName, tableOfComponentValues)
@@ -238,7 +238,7 @@ end
 ---@return string[]
 function NoitaEntity:GetTags()
 	---@type string
-	local tagsString = EntityGetTags(self.ID)
+	local tagsString = EntityGetTags(self.ID) or ""
 	local result = {}
 	for tag in tagsString:gmatch('([^,]+)') do
 		table.insert(result, tag)

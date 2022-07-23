@@ -47,12 +47,12 @@ function EntityRemoveComponent(entity_id, component_id) end
 function EntityGetAllComponents(entity_id) end
 ---@param entity_id number
 ---@param component_type_name string
----@param tag string ""
+---@param tag string|nil
 ---@return number[]|nil component_id
 function EntityGetComponent(entity_id, component_type_name, tag) end
 ---@param entity_id number
 ---@param component_type_name string
----@param tag string ""
+---@param tag string|nil
 ---@return number|nil component_id
 function EntityGetFirstComponent(entity_id, component_type_name, tag) end
 ---@param entity_id number
@@ -358,8 +358,8 @@ function AddMaterialInventoryMaterial(entity_id, material_name, count) end
 ---@return number material_type
 function GetMaterialInventoryMainMaterial(entity_id) end
 ---@param strength number
----@param x number camera_x
----@param y number camera_y
+---@param x number|nil -- Defaults to camera position
+---@param y number|nil -- Defaults to camera position
 function GameScreenshake(strength, x, y) end
 function GameOnCompleted() end
 ---@param id string

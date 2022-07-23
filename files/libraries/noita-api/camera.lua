@@ -28,7 +28,7 @@ end
 
 ---Returns the center position of the viewport in world/virtual coordinates.
 ---@return Vec2
-function CameraAPI.Pos()
+function CameraAPI.GetPos()
 	return Vec2(GameGetCameraPos())
 end
 

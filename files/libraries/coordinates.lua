@@ -76,7 +76,7 @@ end
 ---@param viewportCenter Vec2|nil -- Result of `GameGetCameraPos()`. Will be queried automatically if set to nil.
 ---@return Vec2 window
 function Coords:ToWindow(world, viewportCenter)
-	viewportCenter = viewportCenter or CameraAPI.Pos()
+	viewportCenter = viewportCenter or CameraAPI.GetPos()
 
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
@@ -89,7 +89,7 @@ end
 ---@param viewportCenter Vec2|nil -- Result of `GameGetCameraPos()`. Will be queried automatically if set to nil.
 ---@return Vec2 world
 function Coords:ToWorld(window, viewportCenter)
-	viewportCenter = viewportCenter or CameraAPI.Pos()
+	viewportCenter = viewportCenter or CameraAPI.GetPos()
 
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
