@@ -44,6 +44,9 @@ package.loaded = package.loaded or {
 
 local oldRequire = require
 
+local recursionSet = {}
+local recursionLast
+
 ---Emulated require function in case the Lua API is restricted.
 ---It's probably good enough for most usecases.
 ---
@@ -54,6 +57,11 @@ function require(modName)
 	-- Check if package was already loaded, return previous result.
 	if package.loaded[modName] ~= nil then return package.loaded[modName] end
 
+	if recursionSet[modName] then
+		error(string.format("Cyclic dependency with module %q called by %q", modName, recursionLast))
+	end
+	recursionSet[modName], recursionLast = true, modName
+
 	local notFoundStr = ""
 
 	-- Check if there is an entry in the preload table.
@@ -63,6 +71,7 @@ function require(modName)
 
 		if res == nil then res = true end
 		package.loaded[modName] = res
+		recursionSet[modName], recursionLast = nil, nil
 		return res
 	else
 		notFoundStr = notFoundStr .. string.format("\tno field package.preload['%s']\n", modName)
@@ -81,6 +90,7 @@ function require(modName)
 			else
 				if res == nil then res = true end
 				package.loaded[modName] = res
+				recursionSet[modName], recursionLast = nil, nil
 				return res
 			end
 		else
@@ -92,12 +102,14 @@ function require(modName)
 	if oldRequire then
 		local ok, res = pcall(oldRequire, modName)
 		if ok then
+			recursionSet[modName], recursionLast = nil, nil
 			return res
 		else
 			notFoundStr = notFoundStr .. string.format("\toriginal require:%s", res)
 		end
 	end
 
+	recursionSet[modName], recursionLast = nil, nil
 	error(string.format("module %q not found:\n%s", modName, notFoundStr))
 end
 
