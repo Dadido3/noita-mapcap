@@ -11,7 +11,6 @@ local ComponentAPI = require("libraries.noita-api.component")
 -- Classes --
 -------------
 
----@class NoitaEntityAPI
 local EntityAPI = {}
 
 ---@class NoitaEntity

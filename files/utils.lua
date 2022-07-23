@@ -3,7 +3,6 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
----@class Utils
 local Utils = {}
 
 ---Returns if the file at filePath exists.
@@ -17,6 +16,10 @@ function Utils.FileExists(filePath)
 	else
 		return false
 	end
+end
+
+function Utils.NoitaSpecialDirectory()
+	-- TODO: Implement NoitaSpecialDirectory function
 end
 
 return Utils

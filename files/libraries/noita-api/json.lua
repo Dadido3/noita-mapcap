@@ -5,7 +5,6 @@
 
 -- Simple library to marshal JSON values. Mainly for Noita.
 
----@class JSONLib
 local lib = {}
 
 ---Maps single characters to escaped strings.

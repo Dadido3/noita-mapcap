@@ -9,7 +9,6 @@ local Vec2 = require("libraries.noita-api.vec2")
 -- Classes --
 -------------
 
----@class NoitaCameraAPI
 local CameraAPI = {}
 
 ------------------------

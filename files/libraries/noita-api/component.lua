@@ -9,7 +9,6 @@ local JSON = require("libraries.noita-api.json")
 -- Classes --
 -------------
 
----@class NoitaComponentAPI
 local ComponentAPI = {}
 
 ---@class NoitaComponent
