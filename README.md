@@ -112,6 +112,10 @@ The rectangles for the different capture modes are defined in `.../Noita/mods/no
 
 As the resulting stitched image is really big, you can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723591552) that addresses how you can view, convert or even self-host your images.
 
+## Acknowledgements
+
+This addon uses the [LuaNXML](https://github.com/zatherz/luanxml) library by [Zatherz](https://github.com/zatherz).
+
 ## License
 
 [MIT](LICENSE)

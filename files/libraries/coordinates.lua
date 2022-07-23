@@ -10,6 +10,8 @@
 --------------------------
 
 local CameraAPI = require("noita-api.camera")
+local NXML = require("luanxml.nxml")
+local Utils = require("noita-api.utils")
 local Vec2 = require("noita-api.vec2")
 
 ----------
@@ -25,6 +27,24 @@ local Coords = {
 	WindowResolution = Vec2(0, 0),
 	VirtualResolution = Vec2(0, 0),
 }
+
+---Reads and updates the internal, window and virtual resolutions from Noita's config files and API.
+---@return any error
+function Coords:ReadResolutions()
+	local filename = Utils.GetSpecialDirectory("save-shared") .. "config.xml"
+
+	local f, err = io.open(filename, "r")
+	if not f then return err end
+
+	local xml = NXML.parse(f:read("*a"))
+
+	self.WindowResolution = Vec2(tonumber(xml.attr["window_w"]), tonumber(xml.attr["window_h"]))
+	self.InternalResolution = Vec2(tonumber(xml.attr["internal_size_w"]), tonumber(xml.attr["internal_size_h"]))
+	self.VirtualResolution = Vec2(tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y")))
+
+	f:close()
+	return nil
+end
 
 ---Returns the size of the internal rectangle in window/screen coordinates.
 ---The internal rect is always uniformly scaled to fit inside the window rectangle.

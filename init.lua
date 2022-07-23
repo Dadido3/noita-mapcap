@@ -16,6 +16,12 @@ if not async then
 	require("coroutines") -- Loads Noita's coroutines library from `data/scripts/lib/coroutines.lua`.
 end
 
+--------------------------
+-- Load library modules --
+--------------------------
+
+local Coords = require("coordinates")
+
 -------------------------------
 -- Load and run script files --
 -------------------------------
@@ -23,6 +29,7 @@ end
 dofile("mods/noita-mapcap/files/external.lua")
 dofile("mods/noita-mapcap/files/capture.lua")
 dofile("mods/noita-mapcap/files/ui.lua")
+--dofile("mods/noita-mapcap/files/blablabla.lua")
 
 --------------------
 -- Hook callbacks --
@@ -78,6 +85,9 @@ end
 ---The last point where the Mod API is available.
 ---After this materials.xml will be loaded.
 function OnMagicNumbersAndWorldSeedInitialized()
+	-- Get resolutions for correct coordinate transformations.
+	-- This needs to be done once all magic numbers are set.
+	Coords:ReadResolutions()
 end
 
 ---Called when the game is paused or unpaused.

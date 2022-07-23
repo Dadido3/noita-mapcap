@@ -35,5 +35,6 @@
     "Lua.runtime.version": "LuaJIT",
     "Lua.format.defaultConfig": {
         "max_line_length": "512"
-    }
+    },
+    "Lua.workspace.ignoreSubmodules": false
 }
