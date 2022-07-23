@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- Simple library to marshal JSON values.
+-- Simple library to marshal JSON values. Mainly for Noita.
 
 ---@class JSONLib
 local lib = {}

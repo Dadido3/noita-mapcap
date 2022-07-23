@@ -3,8 +3,12 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
----@type NoitaEntityAPI
-local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entity.lua")
+-- Emulate and override some functions and tables to make everything conform more to standard lua.
+-- This will make `require` work, even in sandboxes with restricted Noita API.
+local modFolder = "noita-mapcap"
+dofile("mods/" .. modFolder .. "/files/libraries/noita-api/compatibility.lua")(modFolder)
+
+local EntityAPI = require("libraries.noita-api.entity")
 
 local oldPerkSpawn = perk_spawn
 

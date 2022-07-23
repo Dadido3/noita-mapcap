@@ -3,14 +3,23 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
----@type NoitaEntityAPI
-local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entity.lua")
+--------------------
+-- Load libraries --
+--------------------
 
----@type HilbertLib
-local Hilbert = dofile_once("mods/noita-mapcap/files/libraries/hilbert-curve.lua")
+local JSON = require("libraries.noita-api.json")
+local EntityAPI = require("libraries.noita-api.entity")
+local Hilbert = require("libraries.hilbert-curve")
 
----@type JSONLib
-local JSON = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
+------------------
+-- Load modules --
+------------------
+
+local Utils = require("utils")
+
+----------
+-- Code --
+----------
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.
@@ -267,7 +276,7 @@ function startCapturingSpiral()
 			-- +x
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
-				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
+				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x + CAPTURE_GRID_SIZE, y
@@ -275,7 +284,7 @@ function startCapturingSpiral()
 			-- +y
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
-				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
+				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x, y + CAPTURE_GRID_SIZE
@@ -284,7 +293,7 @@ function startCapturingSpiral()
 			-- -x
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
-				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
+				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x - CAPTURE_GRID_SIZE, y
@@ -292,7 +301,7 @@ function startCapturingSpiral()
 			-- -y
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
-				if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
+				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 					captureScreenshot(x, y, rx, ry, entityFile)
 				end
 				x, y = x, y - CAPTURE_GRID_SIZE
@@ -362,7 +371,7 @@ function startCapturingHilbert(area)
 					local x, y = (hx + gridLeft) * CAPTURE_GRID_SIZE, (hy + gridTop) * CAPTURE_GRID_SIZE
 					x, y = x + 256, y + 256 -- Align screen with ingame chunk grid that is 512x512.
 					local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
-					if not fileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
+					if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
 						captureScreenshot(x, y, rx, ry, entityFile)
 					end
 					UiProgress.Progress = UiProgress.Progress + 1

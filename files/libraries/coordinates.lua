@@ -5,11 +5,8 @@
 
 -- Viewport coordinates transformation (world <-> window) for Noita.
 
----@type Vec2
-local Vec2 = dofile_once("mods/noita-mapcap/files/libraries/vec2.lua")
-
----@type NoitaCameraAPI
-local CameraAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/camera.lua")
+local Vec2 = require("libraries.noita-api.vec2")
+local CameraAPI = require("libraries.noita-api.camera")
 
 ---@class Coords
 ---@field InternalResolution Vec2

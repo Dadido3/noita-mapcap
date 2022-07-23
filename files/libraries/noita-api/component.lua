@@ -3,14 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- Noita modding API, but a bit more beautiful.
--- Current modding API version: 7
-
--- State: Working but incomplete. If something is missing, add it by hand!
--- It would be optimal to generate this API wrapper automatically...
-
----@type JSONLib
-local JSON = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
+local JSON = require("libraries.noita-api.json")
 
 -------------
 -- Classes --
@@ -26,7 +19,7 @@ NoitaComponent.__index = NoitaComponent
 ComponentAPI.MetaTable = NoitaComponent
 
 ---WrapID wraps the given component ID and returns a Noita component object.
----@param id number
+---@param id number|nil
 ---@return NoitaComponent|nil
 function ComponentAPI.WrapID(id)
 	if id == nil or type(id) ~= "number" then return nil end

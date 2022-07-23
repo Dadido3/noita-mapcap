@@ -3,14 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- Noita modding API, but a bit more beautiful.
--- Current modding API version: 7
-
--- State: Working but incomplete. If something is missing, add it by hand!
--- It would be optimal to generate this API wrapper automatically...
-
----@type Vec2
-local Vec2 = dofile_once("mods/noita-mapcap/files/libraries/vec2.lua")
+local Vec2 = require("libraries.noita-api.vec2")
 
 -------------
 -- Classes --

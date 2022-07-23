@@ -1,11 +1,33 @@
--- Copyright (c) 2019-2020 David Vogel
+-- Copyright (c) 2019-2022 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+--------------------
+-- Load libraries --
+--------------------
+
+------------------
+-- Load modules --
+------------------
+
+local Utils = require("utils")
+
+----------
+-- Code --
+----------
+
 UiCaptureDelay = 0 -- Waiting time in frames
 UiProgress = nil
 UiCaptureProblem = nil
+
+local function progressBarString(progress, look)
+	local factor = progress.Progress / progress.Max
+	local count = math.ceil(look.BarLength * factor)
+	local barString = string.rep(look.CharFull, count) .. string.rep(look.CharEmpty, look.BarLength - count)
+
+	return string.format(look.Format, barString, progress.Progress, progress.Max, factor * 100)
+end
 
 function DrawUI()
 	if modGUI ~= nil then
@@ -65,7 +87,7 @@ function DrawUI()
 				end
 			end
 
-			if not fileExists("mods/noita-mapcap/bin/capture-b/capture.dll") then
+			if not Utils.FileExists("mods/noita-mapcap/bin/capture-b/capture.dll") then
 				GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Can't find library for screenshots.")
 				GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
 				GuiTextCentered(modGUI, 0, 0, "- Redownload a release of this mod from GitHub, don't download the sourcecode")
@@ -73,7 +95,7 @@ function DrawUI()
 				problem = true
 			end
 
-			if not fileExists("mods/noita-mapcap/bin/stitch/stitch.exe") then
+			if not Utils.FileExists("mods/noita-mapcap/bin/stitch/stitch.exe") then
 				GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Can't find software for stitching.")
 				GuiTextCentered(modGUI, 0, 0, "You can still take screenshots, but you won't be able to stitch those screenshots.")
 				GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")

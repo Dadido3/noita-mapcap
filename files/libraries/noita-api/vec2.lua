@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- Just 2D vector stuff.
+-- Just 2D vector stuff. Mainly for Noita.
 
 -- State: Some stuff is untested.
 
