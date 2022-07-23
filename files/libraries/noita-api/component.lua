@@ -146,6 +146,16 @@ end
 -- JSON Implementation --
 -------------------------
 
+---Returns a new table with all arguments stored into keys `1`, `2`, etc. and with a field `"n"` with the total number of arguments.
+---@param ... any
+---@return table
+local function pack(...)
+	t = {...}
+	t.n = select("#", ...)
+
+	return t
+end
+
 -- Set of component keys that would return an "invalid type" error when called with ComponentGetValue2().
 -- This is more or less to get around console error spam that otherwise can't be prevented when iterating over component members.
 -- Only used inside the JSON marshaler, until there is a better solution.
@@ -160,7 +170,7 @@ function NoitaComponent:MarshalJSON()
 	if membersTable then
 		for k, v in pairs(membersTable) do
 			if not componentValueKeysWithInvalidType[k] then
-				local packedResult = table.pack(self:GetValue(k)) -- Try to get value with correct type. Assuming nil is an error, but this is not always the case... meh.
+				local packedResult = pack(self:GetValue(k)) -- Try to get value with correct type. Assuming nil is an error, but this is not always the case... meh.
 				if packedResult.n == 0 then
 					members[k] = nil -- Write no result as nil. Basically do nothing.
 				elseif packedResult.n == 1 then
