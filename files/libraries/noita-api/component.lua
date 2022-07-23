@@ -10,7 +10,7 @@
 -- It would be optimal to generate this API wrapper automatically...
 
 ---@type JSONLib
-local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
+local JSON = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
 -------------
 -- Classes --
@@ -183,7 +183,7 @@ function NoitaComponent:MarshalJSON()
 		--objectMembers = component:ObjectGetMembers
 	}
 
-	return json.Marshal(resultObject)
+	return JSON.Marshal(resultObject)
 end
 
 return ComponentAPI

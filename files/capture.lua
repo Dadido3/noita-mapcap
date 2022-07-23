@@ -10,7 +10,7 @@ local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entit
 local Hilbert = dofile_once("mods/noita-mapcap/files/libraries/hilbert-curve.lua")
 
 ---@type JSONLib
-local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
+local JSON = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
 CAPTURE_PIXEL_SIZE = 1 -- Screen to virtual pixel ratio.
 CAPTURE_GRID_SIZE = 512 -- in virtual (world) pixels. There will always be exactly 4 images overlapping if the virtual resolution is 1024x1024.
@@ -93,11 +93,11 @@ local function captureEntities(entityFile, x, y, radius)
 			-- Well, as long as it does not crash between write and flush.
 			if entityFile:seek("end") == 0 then
 				-- First line.
-				entityFile:write("[\n\t", json.Marshal(rootEntity), "\n", "]")
+				entityFile:write("[\n\t", JSON.Marshal(rootEntity), "\n", "]")
 			else
 				-- Following lines.
 				entityFile:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
-				entityFile:write(",\n\t", json.Marshal(rootEntity), "\n", "]")
+				entityFile:write(",\n\t", JSON.Marshal(rootEntity), "\n", "]")
 			end
 
 			-- Prevent recapturing.

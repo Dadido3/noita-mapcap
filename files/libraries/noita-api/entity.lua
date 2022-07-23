@@ -16,7 +16,7 @@ local ComponentAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/co
 local Vec2 = dofile_once("mods/noita-mapcap/files/libraries/vec2.lua")
 
 ---@type JSONLib
-local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
+local JSON = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
 -------------
 -- Classes --
@@ -371,7 +371,7 @@ function NoitaEntity:MarshalJSON()
 
 	result.transform.x, result.transform.y, result.transform.rotation, result.transform.scaleX, result.transform.scaleY = self:GetTransform()
 
-	return json.Marshal(result)
+	return JSON.Marshal(result)
 end
 
 return EntityAPI
