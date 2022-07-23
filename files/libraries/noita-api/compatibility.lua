@@ -26,7 +26,7 @@ end
 -- Package doesn't exist when the Lua API is restricted.
 -- Therefore we create it here and apply some default values.
 package = package or {}
-package.path = package.path or "./?.lua;"
+package.path = package.path or "./?.lua;" -- Allow paths relative to the working directory.
 package.preload = package.preload or {}
 package.loaded = package.loaded or {
 	_G = _G,
@@ -42,13 +42,17 @@ package.loaded = package.loaded or {
 	--os = os,
 }
 
+local oldRequire = require
+
 ---Emulated require function in case the Lua API is restricted.
 ---It's probably good enough for most usecases.
+---
+---We need to override the default require in any case, as only dofile can access stuff in the virtual filesystem.
 ---@param modName string
 ---@return any
-local function customRequire(modName)
+function require(modName)
 	-- Check if package was already loaded, return previous result.
-	if package.loaded[modName] then return package.loaded[modName] end
+	if package.loaded[modName] ~= nil then return package.loaded[modName] end
 
 	local notFoundStr = ""
 
@@ -61,7 +65,7 @@ local function customRequire(modName)
 		package.loaded[modName] = res
 		return res
 	else
-		notFoundStr = notFoundStr .. string.format("\tno field package.preload[%q]\n", modName)
+		notFoundStr = notFoundStr .. string.format("\tno field package.preload['%s']\n", modName)
 	end
 
 	-- Load and execute scripts.
@@ -72,29 +76,40 @@ local function customRequire(modName)
 		local fixedPath = string.gsub(filePath, "^%.[\\/]", "") -- Need to remove "./" or ".\" at the beginning, as Noita allows only "data" and "mods".
 		if fixedPath:sub(1, 4) == "data" or fixedPath:sub(1, 4) == "mods" then -- Ignore everything other than data and mod root path elements. It's not perfect, but this is just there to prevent console spam.
 			local res, err = dofile(fixedPath)
-			if res == nil then
-				notFoundStr = notFoundStr .. string.format("\tno file %q\n", filePath)
+			if err then
+				notFoundStr = notFoundStr .. string.format("\tno file '%s'\n", filePath)
 			else
 				if res == nil then res = true end
 				package.loaded[modName] = res
 				return res
 			end
 		else
-			notFoundStr = notFoundStr .. string.format("\tnot allowed %q\n", filePath)
+			notFoundStr = notFoundStr .. string.format("\tnot allowed '%s'\n", filePath)
+		end
+	end
+
+	-- Fall back to the original require, if it exists.
+	if oldRequire then
+		local ok, res = pcall(oldRequire, modName)
+		if ok then
+			return res
+		else
+			notFoundStr = notFoundStr .. string.format("\toriginal require:%s", res)
 		end
 	end
 
 	error(string.format("module %q not found:\n%s", modName, notFoundStr))
 end
 
-require = require or customRequire
-
 ---Set up some stuff so `require` works as expected.
----@param modName any
-local function setup(modName)
+---@param libPath any -- Path to the libraries directory of this mod.
+local function setup(libPath)
 	-- Add the files folder of the given mod as base for any `require` lookups.
-	package.path = package.path .. "./mods/" .. modName .. "/files/?.lua;"
-	--package.path = package.path .. "./mods/" .. modName .. "/files/?/init.lua;"
+	package.path = package.path .. "./" .. libPath .. "?.lua;"
+	package.path = package.path .. "./" .. libPath .. "?/init.lua;"
+
+	-- Add the library directory of Noita itself.
+	package.path = package.path .. "./data/scripts/lib/?.lua;"
 end
 
 return setup

@@ -3,19 +3,14 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
---------------------
--- Load libraries --
---------------------
+--------------------------
+-- Load library modules --
+--------------------------
 
-local JSON = require("libraries.noita-api.json")
-local EntityAPI = require("libraries.noita-api.entity")
-local Hilbert = require("libraries.hilbert-curve")
-
-------------------
--- Load modules --
-------------------
-
-local Utils = require("utils")
+local JSON = require("noita-api.json")
+local EntityAPI = require("noita-api.entity")
+local Utils = require("noita-api.utils")
+local Hilbert = require("hilbert-curve")
 
 ----------
 -- Code --

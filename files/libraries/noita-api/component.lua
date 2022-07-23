@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-local JSON = require("libraries.noita-api.json")
+local JSON = require("noita-api.json")
 
 -------------
 -- Classes --

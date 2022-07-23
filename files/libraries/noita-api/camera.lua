@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-local Vec2 = require("libraries.noita-api.vec2")
+local Vec2 = require("noita-api.vec2")
 
 -------------
 -- Classes --

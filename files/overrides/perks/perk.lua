@@ -5,10 +5,10 @@
 
 -- Emulate and override some functions and tables to make everything conform more to standard lua.
 -- This will make `require` work, even in sandboxes with restricted Noita API.
-local modFolder = "noita-mapcap"
-dofile("mods/" .. modFolder .. "/files/libraries/noita-api/compatibility.lua")(modFolder)
+local libPath = "mods/noita-mapcap/files/libraries/"
+dofile(libPath .. "noita-api/compatibility.lua")(libPath)
 
-local EntityAPI = require("libraries.noita-api.entity")
+local EntityAPI = require("noita-api.entity")
 
 local oldPerkSpawn = perk_spawn
 

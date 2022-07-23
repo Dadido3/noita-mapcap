@@ -5,8 +5,16 @@
 
 -- Viewport coordinates transformation (world <-> window) for Noita.
 
-local Vec2 = require("libraries.noita-api.vec2")
-local CameraAPI = require("libraries.noita-api.camera")
+--------------------------
+-- Load library modules --
+--------------------------
+
+local CameraAPI = require("noita-api.camera")
+local Vec2 = require("noita-api.vec2")
+
+----------
+-- Code --
+----------
 
 ---@class Coords
 ---@field InternalResolution Vec2

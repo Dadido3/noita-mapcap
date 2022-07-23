@@ -3,15 +3,11 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
---------------------
--- Load libraries --
---------------------
+--------------------------
+-- Load library modules --
+--------------------------
 
-------------------
--- Load modules --
-------------------
-
-local Utils = require("utils")
+local Utils = require("noita-api.utils")
 
 ----------
 -- Code --

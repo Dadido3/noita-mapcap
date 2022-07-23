@@ -9,12 +9,16 @@
 
 -- Emulate and override some functions and tables to make everything conform more to standard lua.
 -- This will make `require` work, even in sandboxes with restricted Noita API.
-local modFolder = "noita-mapcap"
-dofile("mods/" .. modFolder .. "/files/libraries/noita-api/compatibility.lua")(modFolder)
+local libPath = "mods/noita-mapcap/files/libraries/"
+dofile(libPath .. "noita-api/compatibility.lua")(libPath)
 
 if not async then
-	dofile_once("data/scripts/lib/coroutines.lua")
+	require("coroutines") -- Loads Noita's coroutines library from `data/scripts/lib/coroutines.lua`.
 end
+
+-------------------------------
+-- Load and run script files --
+-------------------------------
 
 dofile("mods/noita-mapcap/files/external.lua")
 dofile("mods/noita-mapcap/files/capture.lua")

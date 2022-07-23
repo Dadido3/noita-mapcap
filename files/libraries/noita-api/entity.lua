@@ -3,9 +3,8 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
-local Vec2 = require("libraries.noita-api.vec2")
-local JSON = require("libraries.noita-api.json")
-local ComponentAPI = require("libraries.noita-api.component")
+local ComponentAPI = require("noita-api.component")
+local JSON = require("noita-api.json")
 
 -------------
 -- Classes --

@@ -22,16 +22,17 @@ But this would be too complex, as there are a lot of edge cases and stuff that h
     ```lua
     -- Emulate and override some functions and tables to make everything conform more to standard lua.
     -- This will make `require` work, even in sandboxes with restricted Noita API.
-    local modFolder = "noita-mapcap"
-    dofile("mods/" .. modFolder .. "/files/libraries/noita-api/compatibility.lua")(modFolder)
+    local libPath = "mods/noita-mapcap/files/libraries/"
+    dofile(libPath .. "noita-api/compatibility.lua")(libPath)
     ```
 
-    You need to set `modFolder` to your mod's directory name.
+    You need to adjust `libPath` to point into your mod's library directory.
+    The trailing `/` is needed!
 
 After that you can import and use the library like this:
 
 ```lua
-local EntityAPI = require("libraries.noita-api.entity")
+local EntityAPI = require("noita-api.entity")
 
 local x, y, radius = 10, 10, 100
 
@@ -44,4 +45,10 @@ for _, entity in ipairs(entities) do
         entity:SetComponentsEnabled(component, false)
     end
 end
+```
+
+To include the whole set of API commands, use:
+
+```lua
+local NoitaAPI = require("noita-api")
 ```
