@@ -6,6 +6,9 @@
 ---@type NoitaEntityAPI
 local EntityAPI = dofile_once("mods/noita-mapcap/files/libraries/noita-api/entity.lua")
 
+---@type HilbertLib
+local Hilbert = dofile_once("mods/noita-mapcap/files/libraries/hilbert-curve.lua")
+
 ---@type JSONLib
 local json = dofile_once("mods/noita-mapcap/files/libraries/json.lua")
 
@@ -354,7 +357,7 @@ function startCapturingHilbert(area)
 	async(
 		function()
 			while t < tLimit do
-				local hx, hy = mapHilbert(t, gridPOTSize)
+				local hx, hy = Hilbert.Map(t, gridPOTSize)
 				if hx < gridWidth and hy < gridHeight then
 					local x, y = (hx + gridLeft) * CAPTURE_GRID_SIZE, (hy + gridTop) * CAPTURE_GRID_SIZE
 					x, y = x + 256, y + 256 -- Align screen with ingame chunk grid that is 512x512.

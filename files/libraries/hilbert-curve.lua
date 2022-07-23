@@ -1,8 +1,19 @@
--- Copyright (c) 2019-2020 David Vogel
+-- Copyright (c) 2019-2022 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+---@class HilbertLib
+local Hilbert = {}
+
+---Rotate/flip quadrant.
+---@param n integer
+---@param x integer
+---@param y integer
+---@param rx boolean
+---@param ry boolean
+---@return integer
+---@return integer
 local function hilbertRotate(n, x, y, rx, ry)
 	if not ry then
 		if rx then
@@ -15,13 +26,17 @@ local function hilbertRotate(n, x, y, rx, ry)
 	return x, y
 end
 
--- Maps a variable t to a hilbert curve with the side length of 2^potSize (Power of two size)
-function mapHilbert(t, potSize)
+---Maps t in the range of [0, (2^potSize)^2-1] to a position on the hilbert curve with the side length of 2^potSize (Power of two size).
+---@param t integer
+---@param potSize integer
+---@return integer
+---@return integer
+function Hilbert.Map(t, potSize)
 	local size = math.pow(2, potSize)
 	local x, y = 0, 0
 
 	if t < 0 or t >= size * size then
-		error("Variable t is outside of the range")
+		error("variable t is outside of the range")
 	end
 
 	for i = 0, potSize - 1, 1 do
@@ -46,3 +61,5 @@ function mapHilbert(t, potSize)
 
 	return x, y
 end
+
+return Hilbert
