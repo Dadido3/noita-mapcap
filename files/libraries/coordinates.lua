@@ -5,6 +5,9 @@
 
 -- Viewport coordinates transformation (world <-> window) for Noita.
 
+-- For it to work, you have to:
+-- - Put Coords:ReadResolutions() inside of the OnMagicNumbersAndWorldSeedInitialized() hook.
+
 --------------------------
 -- Load library modules --
 --------------------------
@@ -19,9 +22,9 @@ local Vec2 = require("noita-api.vec2")
 ----------
 
 ---@class Coords
----@field InternalResolution Vec2
----@field WindowResolution Vec2
----@field VirtualResolution Vec2
+---@field InternalResolution Vec2 -- Size of the internal rectangle in window pixels.
+---@field WindowResolution Vec2 -- Size of the window client area in window pixels.
+---@field VirtualResolution Vec2 -- Size of the virtual rectangle in world/virtual pixels.
 local Coords = {
 	InternalResolution = Vec2(0, 0),
 	WindowResolution = Vec2(0, 0),

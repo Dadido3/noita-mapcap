@@ -7,10 +7,15 @@
 -- Load library modules --
 --------------------------
 
-local JSON = require("noita-api.json")
+local CameraAPI = require("noita-api.camera")
+local Coords = require("coordinates")
 local EntityAPI = require("noita-api.entity")
-local Utils = require("noita-api.utils")
 local Hilbert = require("hilbert-curve")
+local JSON = require("noita-api.json")
+local ScreenCapture = require("screen-capture")
+local Utils = require("noita-api.utils")
+local Vec2 = require("noita-api.vec2")
+local MonitorStandby = require("monitor-standby")
 
 ----------
 -- Code --
@@ -194,47 +199,69 @@ function DebugEntityCapture()
 	end)
 end
 
---- Captures a screenshot at the given coordinates.
---- This will block until all chunks in the given area are loaded.
----
---- @param x number -- Virtual x coordinate (World pixels) of the screen center.
---- @param y number -- Virtual y coordinate (World pixels) of the screen center.
---- @param rx number -- Screen x coordinate of the top left corner of the screenshot rectangle.
---- @param ry number -- Screen y coordinate of the top left corner of the screenshot rectangle.
-local function captureScreenshot(x, y, rx, ry)
-	local virtualWidth, virtualHeight =
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+---Returns a capturing rectangle in window coordinates, and also the world coordinates for the same rectangle.
+---@param pos Vec2|nil -- Position of the viewport center in world coordinates. If set to nil, the viewport center will be queried automatically.
+---@return Vec2 topLeftCapture
+---@return Vec2 bottomRightCapture
+---@return Vec2 topLeftWorld
+---@return Vec2 bottomRightWorld
+local function GenerateCaptureRectangle(pos)
+	local topLeft, bottomRight = Coords:ValidRenderingRect()
 
-	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
-	local xMin, yMin = x - virtualHalfWidth, y - virtualHalfHeight
-	local xMax, yMax = xMin + virtualWidth, yMin + virtualHeight
+	-- Convert valid rendering rectangle into world coordinates, and round it towards the window center.
+	local topLeftWorld, bottomRightWorld = Coords:ToWorld(topLeft, pos):Rounded("ceil"), Coords:ToWorld(bottomRight, pos):Rounded("floor")
+
+	-- Convert back into window coordinates, and round to nearest.
+	local topLeftCapture, bottomRightCapture = Coords:ToWindow(topLeftWorld, pos):Rounded(), Coords:ToWindow(bottomRightWorld, pos):Rounded()
+
+	return topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld
+end
+
+---Captures a screenshot at the given position in world coordinates.
+---This will block until all chunks in the virtual rectangle are loaded.
+---
+---Don't set `ensureLoaded` to true when `pos` is nil!
+---@param pos Vec2|nil -- Position of the viewport center in world coordinates. If set to nil, the viewport will not be modified.
+---@param ensureLoaded boolean|nil -- If true, the function will wait until all chunks in the virtual rectangle are loaded.
+local function captureScreenshot(pos, ensureLoaded)
+	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = GenerateCaptureRectangle(pos)
 
 	UiCaptureDelay = 0
-	GameSetCameraPos(x, y)
-	repeat
-		if UiCaptureDelay > 100 then
-			-- Wiggle the screen a bit, as chunks sometimes don't want to load.
-			GameSetCameraPos(x + math.random(-100, 100), y + math.random(-100, 100))
+	if pos then CameraAPI.SetPos(pos) end
+	if ensureLoaded then
+		repeat
+			if UiCaptureDelay > 100 then
+				-- Wiggle the screen a bit, as chunks sometimes don't want to load.
+				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-100, 100), math.random(-100, 100))) end
+				DrawUI()
+				wait(0)
+				UiCaptureDelay = UiCaptureDelay + 1
+				if pos then CameraAPI.SetPos(pos) end
+			end
+
 			DrawUI()
 			wait(0)
 			UiCaptureDelay = UiCaptureDelay + 1
-			GameSetCameraPos(x, y)
-		end
 
-		DrawUI()
-		wait(0)
-		UiCaptureDelay = UiCaptureDelay + 1
-
-	until DoesWorldExistAt(xMin, yMin, xMax, yMax) -- Chunks will be drawn on the *next* frame.
+		until DoesWorldExistAt(topLeftWorld.x, topLeftWorld.y, bottomRightWorld.x, bottomRightWorld.y)
+		-- Chunks are loaded an will be drawn on the *next* frame.
+	end
 
 	wait(0) -- Without this line empty chunks may still appear, also it's needed for the UI to disappear.
-	if not TriggerCapture(rx, ry) then
+
+	-- Fetch coordinates again, as they may have changed.
+	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = GenerateCaptureRectangle(pos)
+
+	local outputPixelScale = 4
+
+	-- The top left world position needs to be upscaled by the pixel scale.
+	-- Otherwise it's not possible to stitch the images correctly.
+	if not ScreenCapture.Capture(topLeftCapture, bottomRightCapture, (topLeftWorld * outputPixelScale):Rounded(), (bottomRightWorld - topLeftWorld) * outputPixelScale) then
 		UiCaptureProblem = "Screen capture failed. Please restart Noita."
 	end
 
-	-- Reset monitor and PC standby each screenshot.
-	ResetStandbyTimer()
+	-- Reset monitor and PC standby every screenshot.
+	MonitorStandby.ResetTimer()
 end
 
 function startCapturingSpiral()
@@ -245,9 +272,7 @@ function startCapturingSpiral()
 	ox, oy = ox + 256, oy + 256 -- Align screen with ingame chunk grid that is 512x512.
 	local x, y = ox, oy
 
-	local virtualWidth, virtualHeight =
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+	local virtualWidth, virtualHeight = tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
 
 	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
@@ -272,7 +297,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry, entityFile)
+					captureScreenshot(Vec2(x, y), true)
 				end
 				x, y = x + CAPTURE_GRID_SIZE, y
 			end
@@ -280,7 +305,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry, entityFile)
+					captureScreenshot(Vec2(x, y), true)
 				end
 				x, y = x, y + CAPTURE_GRID_SIZE
 			end
@@ -289,7 +314,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry, entityFile)
+					captureScreenshot(Vec2(x, y), true)
 				end
 				x, y = x - CAPTURE_GRID_SIZE, y
 			end
@@ -297,7 +322,7 @@ function startCapturingSpiral()
 			for i = 1, i, 1 do
 				local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 				if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-					captureScreenshot(x, y, rx, ry, entityFile)
+					captureScreenshot(Vec2(x, y), true)
 				end
 				x, y = x, y - CAPTURE_GRID_SIZE
 			end
@@ -311,9 +336,7 @@ function startCapturingHilbert(area)
 
 	local ox, oy = GameGetCameraPos()
 
-	local virtualWidth, virtualHeight =
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
-		tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+	local virtualWidth, virtualHeight = tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
 
 	local virtualHalfWidth, virtualHalfHeight = math.floor(virtualWidth / 2), math.floor(virtualHeight / 2)
 
@@ -342,7 +365,7 @@ function startCapturingHilbert(area)
 
 	local t, tLimit = 0, gridMaxSize * gridMaxSize
 
-	UiProgress = {Progress = 0, Max = gridWidth * gridHeight}
+	UiProgress = { Progress = 0, Max = gridWidth * gridHeight }
 
 	GameSetCameraFree(true)
 
@@ -367,7 +390,7 @@ function startCapturingHilbert(area)
 					x, y = x + 256, y + 256 -- Align screen with ingame chunk grid that is 512x512.
 					local rx, ry = (x - virtualHalfWidth) * CAPTURE_PIXEL_SIZE, (y - virtualHalfHeight) * CAPTURE_PIXEL_SIZE
 					if not Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", rx, ry)) then
-						captureScreenshot(x, y, rx, ry, entityFile)
+						captureScreenshot(Vec2(x, y), true)
 					end
 					UiProgress.Progress = UiProgress.Progress + 1
 				end
@@ -378,4 +401,47 @@ function startCapturingHilbert(area)
 			UiProgress.Done = true
 		end
 	)
+end
+
+---Starts the capturing screenshots at the given interval.
+---This will not move the viewport and is meant to capture the player while playing.
+---@param interval integer|nil -- The interval length in frames. Defaults to 60.
+---@param minDistance number|nil -- The minimum distance between screenshots. This will prevent screenshots if the player doesn't move much.
+---@param maxDistance number|nil -- The maximum distance between screenshots. This will allow more screenshots per interval if the player moves fast.
+function StartCapturingLive(interval, minDistance, maxDistance)
+	interval = interval or 60
+	minDistance = minDistance or 10
+	maxDistance = maxDistance or 50
+
+	local minDistanceSqr, maxDistanceSqr = minDistance ^ 2, maxDistance ^ 2
+
+	--local entityFile = createOrOpenEntityCaptureFile()
+
+	-- Coroutine to capture all entities around the viewport every frame.
+	--[[async_loop(function()
+		local pos = CameraAPI:GetPos() -- Returns the virtual coordinates of the screen center.
+		-- Call the protected function and catch any errors.
+		local ok, err = pcall(captureEntities, entityFile, pos.x, pos.y, 5000)
+		if not ok then
+			print(string.format("Entity capture error: %s", err))
+		end
+		wait(0)
+	end)]]
+
+	local oldPos
+
+	-- Coroutine to calculate next coordinate, and trigger screenshots.
+	async_loop(function()
+		local frames = 0
+		repeat
+			wait(0)
+			frames = frames + 1
+
+			local distanceSqr
+			if oldPos then distanceSqr = CameraAPI.GetPos():DistanceSqr(oldPos) else distanceSqr = math.huge end
+		until (frames >= interval or distanceSqr >= maxDistanceSqr) and distanceSqr >= minDistanceSqr
+
+		captureScreenshot()
+		oldPos = CameraAPI.GetPos()
+	end)
 end

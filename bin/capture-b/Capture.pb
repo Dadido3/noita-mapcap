@@ -1,4 +1,4 @@
-﻿; Copyright (c) 2019-2020 David Vogel
+﻿; Copyright (c) 2019-2022 David Vogel
 ;
 ; This software is released under the MIT License.
 ; https://opensource.org/licenses/MIT
@@ -11,6 +11,8 @@ Structure QueueElement
 	img.i
 	x.i
 	y.i
+	sx.i
+	sy.i
 EndStructure
 
 ; Source: https://www.purebasic.fr/english/viewtopic.php?f=13&t=29981&start=15
@@ -62,7 +64,7 @@ ProcedureDLL AttachProcess(Instance)
 
 	CreateDirectory("mods/noita-mapcap/output/")
 
-	For i = 1 To 4
+	For i = 1 To 6
 		CreateThread(@Worker(), #Null)
 	Next
 EndProcedure
@@ -78,8 +80,14 @@ Procedure Worker(*Dummy)
 		img = Queue()\img
 		x = Queue()\x
 		y = Queue()\y
+		sx = Queue()\sx
+		sy = Queue()\sy
 		DeleteElement(Queue())
 		UnlockMutex(Mutex)
+		
+		If sx > 0 And sy > 0
+		  ResizeImage(img, sx, sy)
+		EndIf
 
 		SaveImage(img, "mods/noita-mapcap/output/" + x + "," + y + ".png", #PB_ImagePlugin_PNG)
 		;SaveImage(img, "" + x + "," + y + ".png", #PB_ImagePlugin_PNG) ; Test
@@ -88,7 +96,11 @@ Procedure Worker(*Dummy)
 	ForEver
 EndProcedure
 
-ProcedureDLL Capture(px.i, py.i)
+; Takes a screenshot of the client area of this process' active window.
+; The portion of the client area that is captured is described by capRect, which is in window coordinates and relative to the client area.
+; x and y defines the top left position of the captured rectangle in scaled world coordinates. The scale depends on the window to world pixel ratio.
+; sx and sy defines the final dimensions that the screenshot will be resized to. No resize will happen if set to 0.
+ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 	Protected hWnd.l = GetProcHwnd()
 	If Not hWnd
 		ProcedureReturn #False
@@ -98,13 +110,19 @@ ProcedureDLL Capture(px.i, py.i)
 	If Not GetRect(@rect)
 		ProcedureReturn #False
 	EndIf
+	
+	; Limit the desired capture area to the actual client area of the window.
+	If *capRect\left < 0 : *capRect\left = 0 : EndIf
+	If *capRect\right > rect\right-rect\left : *capRect\right = rect\right-rect\left : EndIf
+	If *capRect\top < 0 : *capRect\top = 0 : EndIf
+	If *capRect\bottom > rect\bottom-rect\top : *capRect\bottom = rect\bottom-rect\top : EndIf
 
-	imageID = CreateImage(#PB_Any, rect\right-rect\left, rect\bottom-rect\top)
+	imageID = CreateImage(#PB_Any, *capRect\right-*capRect\left, *capRect\bottom-*capRect\top)
 	If Not imageID
 		ProcedureReturn #False
 	EndIf
 
-	; Get DC of whole screen
+	; Get DC of window.
 	windowDC = GetDC_(hWnd)
 	If Not windowDC
 		FreeImage(imageID)
@@ -117,7 +135,7 @@ ProcedureDLL Capture(px.i, py.i)
 		FreeImage(imageID)
 		ProcedureReturn #False
 	EndIf
-	If Not BitBlt_(hDC, 0, 0, rect\right-rect\left, rect\bottom-rect\top, windowDC, 0, 0, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
+	If Not BitBlt_(hDC, 0, 0, *capRect\right-*capRect\left, *capRect\bottom-*capRect\top, windowDC, *capRect\left, *capRect\top, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
 		StopDrawing()
 		ReleaseDC_(hWnd, windowDC)
 		FreeImage(imageID)
@@ -128,17 +146,19 @@ ProcedureDLL Capture(px.i, py.i)
 	ReleaseDC_(hWnd, windowDC)
 
 	LockMutex(Mutex)
-	; Check if the queue has too many elements, if so, wait. (Simulate go's channels)
-	While ListSize(Queue()) > 0
+	; Check if the queue has too many elements, if so, wait. (Emulate go's channels)
+	While ListSize(Queue()) > 1
 		UnlockMutex(Mutex)
-		Delay(10)
+		Delay(1)
 		LockMutex(Mutex)
 	Wend
 	LastElement(Queue())
 	AddElement(Queue())
 	Queue()\img = imageID
-	Queue()\x = px
-	Queue()\y = py
+	Queue()\x = x
+	Queue()\y = y
+	Queue()\sx = sx
+	Queue()\sy = sy
 	UnlockMutex(Mutex)
 
 	SignalSemaphore(Semaphore)
@@ -153,12 +173,13 @@ EndProcedure
 ;Capture(123, 123)
 ;Delay(1000)
 
-; IDE Options = PureBasic 5.72 (Windows - x64)
+; IDE Options = PureBasic 6.00 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 90
-; FirstLine = 77
+; CursorPosition = 94
+; FirstLine = 39
 ; Folding = --
+; Optimizer
 ; EnableThread
 ; EnableXP
 ; Executable = capture.dll
-; Compiler = PureBasic 5.71 LTS (Windows - x86)
+; Compiler = PureBasic 6.00 LTS (Windows - x86)

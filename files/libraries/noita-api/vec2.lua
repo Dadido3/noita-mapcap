@@ -237,12 +237,14 @@ end
 
 ---Returns the squared distance of self to the given vector.
 ---@param v Vec2
+---@return number
 function Vec2:DistanceSqr(v)
 	return (v - self):LengthSqr()
 end
 
 ---Returns the distance of self to the given vector.
 ---@param v Vec2
+---@return number
 function Vec2:Distance(v)
 	return (v - self):Length()
 end
@@ -270,6 +272,49 @@ function Vec2:EqualTo(v, tolerance)
 	if math.abs(v[1] - self[1]) > tolerance then return false end
 	if math.abs(v[2] - self[2]) > tolerance then return false end
 	return true
+end
+
+---Round returns v rounded by the given method.
+---@param x number
+---@param method "nearest"|"floor"|"ceil"|"to-zero"|"away-zero"|nil -- Defaults to "nearest".
+---@return integer
+local function round(x, method)
+	method = method or "nearest"
+
+	if method == "nearest" then
+		return math.floor(x + 0.5)
+	elseif method == "floor" then
+		return math.floor(x)
+	elseif method == "ceil" then
+		return math.ceil(x)
+	elseif method == "to-zero" then
+		if x >= 0 then
+			return math.floor(x)
+		else
+			return math.ceil(x)
+		end
+	elseif method == "away-zero" then
+		if x >= 0 then
+			return math.ceil(x)
+		else
+			return math.floor(x)
+		end
+	end
+
+	error(string.format("invalid rounding method %q", method))
+end
+
+---Round rounds all vector fields individually by the given rounding method.
+---@param method "nearest"|"floor"|"ceil"|"to-zero"|"away-zero"|nil -- Defaults to "nearest".
+function Vec2:Round(method)
+	self[1], self[2] = round(self[1], method), round(self[2], method)
+end
+
+---Round rounds all vector fields individually by the given rounding method.
+---@param method "nearest"|"floor"|"ceil"|"to-zero"|"away-zero"|nil -- Defaults to "nearest".
+---@return Vec2
+function Vec2:Rounded(method)
+	return Vec2(round(self[1], method), round(self[2], method))
 end
 
 -------------------------

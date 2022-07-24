@@ -8,6 +8,7 @@
 --------------------------
 
 local Utils = require("noita-api.utils")
+local ScreenCap = require("screen-capture")
 
 ----------
 -- Code --
@@ -33,7 +34,7 @@ function DrawUI()
 		if not UiProgress then
 			-- Show informations
 			local problem
-			local rect = GetRect()
+			local rect = ScreenCap.GetRect()
 
 			if not rect then
 				GuiTextCentered(modGUI, 0, 0, '!!! WARNING !!! You are not using "Windowed" mode.')
@@ -45,9 +46,7 @@ function DrawUI()
 
 			if rect then
 				local screenWidth, screenHeight = rect.right - rect.left, rect.bottom - rect.top
-				local virtualWidth, virtualHeight =
-					tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")),
-					tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+				local virtualWidth, virtualHeight = tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
 				local ratioX, ratioY = screenWidth / virtualWidth, screenHeight / virtualHeight
 				--GuiTextCentered(modGUI, 0, 0, string.format("SCREEN_RESOLUTION_*: %d, %d", screenWidth, screenHeight))
 				--GuiTextCentered(modGUI, 0, 0, string.format("VIRTUAL_RESOLUTION_*: %d, %d", virtualWidth, virtualHeight))
@@ -108,19 +107,14 @@ function DrawUI()
 			GuiTextCentered(modGUI, 0, 0, "You can freely look around and search a place to start capturing.")
 			GuiTextCentered(modGUI, 0, 0, "When started the mod will take pictures automatically.")
 			GuiTextCentered(modGUI, 0, 0, "Use ESC  to pause, and close the game to stop the process.")
-			GuiTextCentered(
-				modGUI,
-				0,
-				0,
-				'You can resume capturing just by restarting noita and pressing "Start capturing map" again,'
-			)
+			GuiTextCentered(modGUI, 0, 0, 'You can resume capturing just by restarting noita and pressing "Start capturing map" again,')
 			GuiTextCentered(modGUI, 0, 0, "the mod will skip already captured files.")
-			GuiTextCentered(
-				modGUI,
-				0,
-				0,
-				'If you want to start a new map, you have to delete all images from the "output" folder!'
-			)
+			GuiTextCentered(modGUI, 0, 0, 'If you want to start a new map, you have to delete all images from the "output" folder!')
+			--GuiTextCentered(modGUI, 0, 0, " ")
+			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_X"))
+			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
+			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_X"))
+			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_Y"))
 			GuiTextCentered(modGUI, 0, 0, " ")
 			if GuiButton(modGUI, 0, 0, ">> Start capturing map around view <<", 1) then
 				UiProgress = {}
@@ -139,6 +133,10 @@ function DrawUI()
 				UiProgress = {}
 				startCapturingHilbert(CAPTURE_AREA_EXTENDED)
 			end
+			if GuiButton(modGUI, 0, 0, ">> Start capturing run live <<", 1) then
+				UiProgress = {}
+				StartCapturingLive()
+			end
 			GuiTextCentered(modGUI, 0, 0, " ")
 		elseif not UiProgress.Done then
 			-- Show progress
@@ -146,15 +144,9 @@ function DrawUI()
 			GuiTextCentered(modGUI, 0, 0, string.format("Coordinates: %d, %d", x, y))
 			GuiTextCentered(modGUI, 0, 0, string.format("Waiting %d frames...", UiCaptureDelay))
 			if UiProgress.Progress then
-				GuiTextCentered(
-					modGUI,
-					0,
-					0,
-					progressBarString(
-						UiProgress,
-						{BarLength = 100, CharFull = "l", CharEmpty = ".", Format = "|%s| [%d / %d] [%1.2f%%]"}
-					)
-				)
+				GuiTextCentered(modGUI, 0, 0, progressBarString(
+					UiProgress, { BarLength = 100, CharFull = "l", CharEmpty = ".", Format = "|%s| [%d / %d] [%1.2f%%]" }
+				))
 			end
 			if UiCaptureProblem then
 				GuiTextCentered(modGUI, 0, 0, string.format("A problem occurred while capturing: %s", UiCaptureProblem))
