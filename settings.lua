@@ -12,11 +12,13 @@
 local libPath = "mods/noita-mapcap/files/libraries/"
 dofile(libPath .. "noita-api/compatibility.lua")(libPath)
 
-require("mod_settings")
+require("mod_settings") -- Loads Noita's mod settings library from `data/scripts/lib/mod_settings.lua`.
 
 --------------------------
 -- Load library modules --
 --------------------------
+
+local DebugAPI = require("noita-api.debug")
 
 -------------------------------
 -- Load and run script files --
@@ -26,6 +28,12 @@ require("mod_settings")
 -- Code --
 ----------
 
+---Custom button gadget for the settings menu.
+---@param modID string
+---@param gui any
+---@param inMainMenu boolean
+---@param imID any
+---@param setting table
 local function customSettingButton(modID, gui, inMainMenu, imID, setting)
 	local text = setting.ui_name
 
@@ -37,77 +45,93 @@ local function customSettingButton(modID, gui, inMainMenu, imID, setting)
 	mod_setting_tooltip(modID, gui, inMainMenu, setting)
 end
 
+---Round changed value to the closest integer.
+---@param modID string
+---@param gui any
+---@param inMainMenu boolean
+---@param setting table
+---@param oldValue number
+---@param newValue number
+local function roundChange(modID, gui, inMainMenu, setting, oldValue, newValue)
+	ModSettingSetNextValue(mod_setting_get_id(modID, setting), math.floor(newValue + 0.5), false)
+end
+
 -- This is a magic global (eww) that can be used to migrate settings to new mod versions.
 -- Call `mod_settings_get_version()` before `mod_settings_update()` to get the old value.
 mod_settings_version = 1
 
 local modID = "noita-mapcap"
-local modSettings = {
+local modSettings
+modSettings = {
 	{
 		id = "capture-mode",
 		ui_name = "Mode",
-		ui_description = "The capturing mode.\n- Live: Capture as you play along.\n- Area: Capture a defined area of the world\n- Spiral: Capture in a spiral around a starting point indefinitely.",
+		ui_description = "How the mod captures:\n- Live: Capture as you play along.\n- Area: Capture a defined area of the world.\n- Spiral: Capture in a spiral around a starting point indefinitely.",
 		value_default = "live",
 		values = { { "live", "Live" }, { "area", "Area" }, { "spiral", "Spiral" } },
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 	},
 	{
 		id = "capture-mode-spiral-origin",
-		ui_name = "Spiral origin",
+		ui_name = "  Origin",
 		ui_description = "The starting point or center of the spiral.\n- Current position: Your ingame position.\n- World origin: Near the cave entrance.\n- Custom position: Enter your own coordinates.",
 		value_default = "current",
 		values = { { "current", "Current position" }, { "0", "World origin" }, { "custom", "Custom position" } },
 		scope = MOD_SETTING_SCOPE_RUNTIME,
+		show_fn = function() return modSettings:GetNextValue("capture-mode") == "spiral" end,
 	},
 	{
 		id = "capture-mode-spiral-origin-vector",
-		ui_name = "Spiral origin",
+		ui_name = "  Origin",
 		ui_description = "",
 		value_default = "0, 0",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
+		show_fn = function() return not modSettings:Get("capture-mode-spiral-origin").hidden and modSettings:GetNextValue("capture-mode-spiral-origin") == "custom" end,
 	},
 	{
 		id = "area",
-		ui_name = "Area",
-		ui_description = "The area to be captured.",
+		ui_name = "  Rectangle",
+		ui_description = "The area to be captured.\nSee documentation for more information.",
 		value_default = "1x1",
 		values = { { "1x1", "Base layout" }, { "1x3", "Main World" }, { "1.5x3", "Extended" }, { "custom", "Custom" } },
 		scope = MOD_SETTING_SCOPE_RUNTIME,
+		show_fn = function() return modSettings:GetNextValue("capture-mode") == "area" end,
 	},
 	{
 		id = "area-top-left",
-		ui_name = "Area: Top Left corner",
+		ui_name = "    Top left corner",
 		ui_description = "The top left corner of the to be captured rectangle.",
 		value_default = "-512, -512",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
+		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
 	},
 	{
 		id = "area-bottom-right",
-		ui_name = "Area: Bottom right corner",
+		ui_name = "    Bottom right corner",
 		ui_description = "The bottom right corner of the to be captured rectangle.",
 		value_default = "512, 512",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
+		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
 	},
 	{
-		id = "capture-entities",
-		ui_name = "Capture entities",
-		ui_description = "If enabled, the mod will create a JSON file with all encountered entities.\nThis may slow down things a bit.",
-		value_default = false,
-		scope = MOD_SETTING_SCOPE_RUNTIME,
+		ui_fn = mod_setting_vertical_spacing,
+		not_setting = true,
 	},
 	{
 		category_id = "advanced",
 		ui_name = "ADVANCED",
 		ui_description = "- A D V A N C E D -",
 		foldable = true,
+		_folded = true,
 		settings = {
 			{
 				id = "grid-size",
 				ui_name = "Grid size",
-				ui_description = "How many pixels the viewport will move between screenshots.",
+				ui_description = "How many world pixels the viewport will move between screenshots.",
 				value_default = "512",
 				allowed_characters = "0123456789",
 				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
 			},
 			{
 				id = "pixel-size",
@@ -119,6 +143,7 @@ local modSettings = {
 				value_display_multiplier = 1,
 				value_display_formatting = " $0 pixels/pixel",
 				scope = MOD_SETTING_SCOPE_RUNTIME,
+				change_fn = roundChange,
 			},
 			{
 				id = "custom-resolution-live",
@@ -126,6 +151,7 @@ local modSettings = {
 				ui_description = "If enabled, the mod will change the game resolutions to custom values.",
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "live" end,
 			},
 			{
 				id = "custom-resolution-other",
@@ -133,27 +159,71 @@ local modSettings = {
 				ui_description = "If enabled, the mod will change the game resolutions to custom values.",
 				value_default = true,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
 			},
 			{
 				id = "window-resolution",
-				ui_name = "Window resolution",
+				ui_name = "  Window resolution",
 				ui_description = "Size of the window in screen pixels.",
 				value_default = "1024, 1024",
-				scope = MOD_SETTING_SCOPE_RUNTIME,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				show_fn = function()
+					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+				end,
 			},
 			{
 				id = "internal-resolution",
-				ui_name = "Internal resolution",
+				ui_name = "  Internal resolution",
 				ui_description = "Size of the viewport in screen pixels.\nIdeally set to the window resolution.",
 				value_default = "1024, 1024",
-				scope = MOD_SETTING_SCOPE_RUNTIME,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				show_fn = function()
+					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+				end,
 			},
 			{
 				id = "virtual-resolution",
-				ui_name = "Virtual resolution",
+				ui_name = "  Virtual resolution",
 				ui_description = "Size of the viewport in world pixels.",
 				value_default = "1024, 1024",
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				show_fn = function()
+					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+				end,
+			},
+			{
+				id = "capture-entities",
+				ui_name = "Capture entities",
+				ui_description = "If enabled, the mod will create a JSON file with all encountered entities.\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
+				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				ui_fn = mod_setting_vertical_spacing,
+				not_setting = true,
+			},
+			{
+				id = "",
+				ui_name = "Game modifications:",
+				not_setting = true,
+			},
+			{
+				id = "disable-entity-components",
+				ui_name = "  Modify entities",
+				ui_description = "If enabled, the mod will disable some components of all encountered entities.\nThis will:\n- Disable AI\n- Disable falling\n- Disable hovering and rotation animations\n- Reduce explosions\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "disable-shaders-gui-ai",
+				ui_name = "  Disable shaders, GUI and AI",
+				ui_description = "It has the same effect as pressing F5, F8 and F12 in the Noita dev build.\nDoesn't work outside the dev build.",
+				hidden = not DebugAPI:IsDevBuild(), -- Hide in anything else than the dev build.
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},
 		}
 	},
@@ -161,6 +231,7 @@ local modSettings = {
 		category_id = "actions",
 		ui_name = "ACTIONS",
 		foldable = true,
+		_folded = true,
 		settings = {
 			{
 				id = "button-open-output",
@@ -176,39 +247,13 @@ local modSettings = {
 
 ---Hide/unhide some settings based on other settings.
 function modSettings:AutoHide()
-	self:Get("capture-mode-spiral-origin").hidden = false
-	self:Get("capture-mode-spiral-origin-vector").hidden = false
-	self:Get("area").hidden = false
-	self:Get("area-top-left").hidden = false
-	self:Get("area-bottom-right").hidden = false
-	self:Get("advanced.settings.grid-size").hidden = false
-
-	local value = self:GetNextValue("capture-mode")
-	if value == "live" then
-		self:Get("capture-mode-spiral-origin").hidden = true
-		self:Get("capture-mode-spiral-origin-vector").hidden = true
-		self:Get("area").hidden = true
-		self:Get("area-top-left").hidden = true
-		self:Get("area-bottom-right").hidden = true
-		self:Get("advanced.settings.grid-size").hidden = true
-	elseif value == "area" then
-		self:Get("capture-mode-spiral-origin").hidden = true
-		self:Get("capture-mode-spiral-origin-vector").hidden = true
-	elseif value == "spiral" then
-		self:Get("area").hidden = true
-		self:Get("area-top-left").hidden = true
-		self:Get("area-bottom-right").hidden = true
-	end
-
-	local value = self:GetNextValue("capture-mode-spiral-origin")
-	if value ~= "custom" then
-		self:Get("capture-mode-spiral-origin-vector").hidden = true
-	end
-
-	local value = self:GetNextValue("area")
-	if value ~= "custom" then
-		self:Get("area-top-left").hidden = true
-		self:Get("area-bottom-right").hidden = true
+	for i, v in ipairs(self) do
+		if v.show_fn then
+			v.hidden = not v.show_fn()
+		end
+		if type(v.settings) == "table" then
+			modSettings.AutoHide(v.settings)
+		end
 	end
 end
 
@@ -224,9 +269,12 @@ function modSettings:Get(path)
 	-- Split path into first element and rest.
 	local first, rest = path, ""
 	for v in path:gmatch("[^%.]+") do
-		first, rest = v, path:sub(first:len() + 1)
+		first, rest = v, path:sub(v:len() + 2, -1)
 		break
 	end
+
+	-- Abort if element is not a table/array, as we expect a sub element.
+	if type(self) ~= "table" then return nil end
 
 	-- Search array of settings/categories.
 	for _, v in ipairs(self) do
@@ -239,12 +287,8 @@ function modSettings:Get(path)
 		end
 	end
 
-	-- Search in table.
-	if type(self) == "table" and type(self[first]) == "table" then
-		return modSettings.Get(self[first], rest)
-	end
-
-	return nil
+	-- Search in field of table.
+	return modSettings.Get(self[first], rest)
 end
 
 ---Returns combination of modID and settings ID of the given settings element at `path`.
