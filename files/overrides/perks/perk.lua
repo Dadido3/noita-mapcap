@@ -19,7 +19,7 @@ local oldPerkSpawn = perk_spawn
 ---@param dontRemoveOtherPerks boolean
 ---@return NoitaEntity|nil
 function perk_spawn(x, y, perkID, dontRemoveOtherPerks)
-	local entity = EntityAPI.WrapID(oldPerkSpawn(x, y, perkID, dontRemoveOtherPerks))
+	local entity = EntityAPI.Wrap(oldPerkSpawn(x, y, perkID, dontRemoveOtherPerks))
 	if entity == nil then return end
 
 	-- Remove the SpriteOffsetAnimatorComponent components from the entity.
