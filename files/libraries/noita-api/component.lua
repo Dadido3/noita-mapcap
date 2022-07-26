@@ -17,10 +17,10 @@ local NoitaComponent = {}
 NoitaComponent.__index = NoitaComponent
 ComponentAPI.MetaTable = NoitaComponent
 
----WrapID wraps the given component ID and returns a Noita component object.
+---Wraps the given component ID and returns a Noita component object.
 ---@param id number|nil
 ---@return NoitaComponent|nil
-function ComponentAPI.WrapID(id)
+function ComponentAPI.Wrap(id)
 	if id == nil or type(id) ~= "number" then return nil end
 	return setmetatable({ ID = id }, NoitaComponent)
 end
@@ -142,7 +142,7 @@ end
 ---@param ... any
 ---@return table
 local function pack(...)
-	t = {...}
+	local t = {...}
 	t.n = select("#", ...)
 
 	return t

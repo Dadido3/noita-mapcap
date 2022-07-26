@@ -17,9 +17,9 @@
 -- - A positive virtual offset moves the rendered world to the top left.
 -- - The virtual offset needs to be [-2, 0] for the viewport center to be exactly centered, and chunks to align perfectly with the window.
 -- - GameGetCameraBounds returned coordinates are off by a few pixels, also it doesn't have sub pixel precision.
--- - The mouse cursor coordinates in the dev build use the wrong rounding method (It rounds towards zero, instead of floor).
+-- - The mouse cursor coordinates in the dev build use the wrong rounding method (They are rounded towards zero, instead of being rounded towards negative infinity).
 -- - Integer world coordinates map exactly to pixel borders.
--- - The default image ratios of the virtual and internal rectangles don't exactly match, which causes a really small black border.
+-- - The default image ratios of the virtual and internal rectangles don't exactly match, which causes a small line of not correctly rendered pixels at the bottom window.
 
 --------------------------
 -- Load library modules --

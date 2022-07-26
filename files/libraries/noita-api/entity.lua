@@ -18,10 +18,10 @@ local NoitaEntity = {}
 NoitaEntity.__index = NoitaEntity
 EntityAPI.MetaTable = NoitaEntity
 
----WrapID wraps the given entity ID and returns a Noita entity object.
+---Wraps the given entity ID and returns a Noita entity object.
 ---@param id number|nil
 ---@return NoitaEntity|nil
-function EntityAPI.WrapID(id)
+function EntityAPI.Wrap(id)
 	if id == nil or type(id) ~= "number" then return nil end
 	return setmetatable({ ID = id }, NoitaEntity)
 end
@@ -36,7 +36,7 @@ end
 ---@param posY number -- Y coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
 function EntityAPI.Load(filename, posX, posY)
-	return EntityAPI.WrapID(EntityLoad(filename, posX, posY))
+	return EntityAPI.Wrap(EntityLoad(filename, posX, posY))
 end
 
 ---
@@ -45,7 +45,7 @@ end
 ---@param posY number -- Y coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
 function EntityAPI.LoadEndGameItem(filename, posX, posY)
-	return EntityAPI.WrapID(EntityLoadEndGameItem(filename, posX, posY))
+	return EntityAPI.Wrap(EntityLoadEndGameItem(filename, posX, posY))
 end
 
 ---
@@ -75,7 +75,7 @@ end
 ---@param name string
 ---@return NoitaEntity|nil
 function EntityAPI.CreateNew(name)
-	return EntityAPI.WrapID(EntityCreateNew(name))
+	return EntityAPI.Wrap(EntityCreateNew(name))
 end
 
 ---
@@ -94,7 +94,7 @@ end
 ---@return NoitaComponent|nil
 function NoitaEntity:AddComponent(componentTypeName, tableOfComponentValues)
 	local componentID = EntityAddComponent(self.ID, componentTypeName, tableOfComponentValues)
-	return ComponentAPI.WrapID(componentID)
+	return ComponentAPI.Wrap(componentID)
 end
 
 ---
@@ -109,7 +109,7 @@ function NoitaEntity:GetAllComponents()
 	local componentIDs = EntityGetAllComponents(self.ID) or {}
 	local result = {}
 	for _, componentID in ipairs(componentIDs) do
-		table.insert(result, ComponentAPI.WrapID(componentID))
+		table.insert(result, ComponentAPI.Wrap(componentID))
 	end
 	return result
 end
@@ -127,7 +127,7 @@ function NoitaEntity:GetComponents(componentTypeName, tag)
 	end
 	local result = {}
 	for _, componentID in ipairs(componentIDs) do
-		table.insert(result, ComponentAPI.WrapID(componentID))
+		table.insert(result, ComponentAPI.Wrap(componentID))
 	end
 	return result
 end
@@ -143,7 +143,7 @@ function NoitaEntity:GetFirstComponent(componentTypeName, tag)
 	else
 		componentID = EntityGetFirstComponent(self.ID, componentTypeName)
 	end
-	return ComponentAPI.WrapID(componentID)
+	return ComponentAPI.Wrap(componentID)
 end
 
 ---Sets the transform of the entity.
@@ -184,7 +184,7 @@ function NoitaEntity:GetAllChildren()
 	local entityIDs = EntityGetAllChildren(self.ID) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
-		table.insert(result, EntityAPI.WrapID(entityID))
+		table.insert(result, EntityAPI.Wrap(entityID))
 	end
 	return result
 end
@@ -192,13 +192,13 @@ end
 ---
 ---@return NoitaEntity|nil
 function NoitaEntity:GetParent()
-	return EntityAPI.WrapID(EntityGetParent(self.ID))
+	return EntityAPI.Wrap(EntityGetParent(self.ID))
 end
 
 ---Returns the given entity if it has no parent, otherwise walks up the parent hierarchy to the topmost parent and returns it.
 ---@return NoitaEntity|nil
 function NoitaEntity:GetRootEntity()
-	return EntityAPI.WrapID(EntityGetRootEntity(self.ID))
+	return EntityAPI.Wrap(EntityGetRootEntity(self.ID))
 end
 
 ---
@@ -251,7 +251,7 @@ function EntityAPI.GetWithTag(tag)
 	local entityIDs = EntityGetWithTag(tag) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
-		table.insert(result, EntityAPI.WrapID(entityID))
+		table.insert(result, EntityAPI.Wrap(entityID))
 	end
 	return result
 end
@@ -265,7 +265,7 @@ function EntityAPI.GetInRadius(posX, posY, radius)
 	local entityIDs = EntityGetInRadius(posX, posY, radius) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
-		table.insert(result, EntityAPI.WrapID(entityID))
+		table.insert(result, EntityAPI.Wrap(entityID))
 	end
 	return result
 end
@@ -280,7 +280,7 @@ function EntityAPI.GetInRadiusWithTag(posX, posY, radius, tag)
 	local entityIDs = EntityGetInRadiusWithTag(posX, posY, radius, tag) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
-		table.insert(result, EntityAPI.WrapID(entityID))
+		table.insert(result, EntityAPI.Wrap(entityID))
 	end
 	return result
 end
@@ -290,14 +290,14 @@ end
 ---@param posY number -- X coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
 function EntityAPI.GetClosest(posX, posY)
-	return EntityAPI.WrapID(EntityGetClosest(posX, posY))
+	return EntityAPI.Wrap(EntityGetClosest(posX, posY))
 end
 
 ---
 ---@param name string
 ---@return NoitaEntity|nil
 function EntityAPI.GetWithName(name)
-	return EntityAPI.WrapID(EntityGetWithName(name))
+	return EntityAPI.Wrap(EntityGetWithName(name))
 end
 
 ---
@@ -335,7 +335,7 @@ end
 ---@return NoitaComponent|nil
 function NoitaEntity:EntityAddComponent(componentTypeName, tableOfComponentValues)
 	local componentID = EntityAddComponent2(self.ID, componentTypeName, tableOfComponentValues)
-	return ComponentAPI.WrapID(componentID)
+	return ComponentAPI.Wrap(componentID)
 end
 
 -- TODO: Add missing Noita API methods and functions.

@@ -16,7 +16,7 @@ But this would be too complex, as there are a lot of edge cases and stuff that h
 
 ## Usage
 
-1. Copy this into your mod so you get the following file path: `mods/your-mod/files/libraries/noita-api/README.md`.
+1. Copy this library into your mod so you get the following file path: `mods/your-mod/files/libraries/noita-api/README.md`.
 2. Add the following at the beginning of your mod's `init.lua`:
 
     ```lua

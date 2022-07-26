@@ -252,7 +252,7 @@ local function captureScreenshot(pos, ensureLoaded)
 	-- Fetch coordinates again, as they may have changed.
 	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = GenerateCaptureRectangle(pos)
 
-	local outputPixelScale = 4
+	local outputPixelScale = 1
 
 	-- The top left world position needs to be upscaled by the pixel scale.
 	-- Otherwise it's not possible to stitch the images correctly.
