@@ -14,20 +14,28 @@ local ScreenCap = require("screen-capture")
 -- Code --
 ----------
 
-UiCaptureDelay = 0 -- Waiting time in frames
-UiProgress = nil
-UiCaptureProblem = nil
-
-local function progressBarString(progress, look)
-	local factor = progress.Progress / progress.Max
-	local count = math.ceil(look.BarLength * factor)
-	local barString = string.rep(look.CharFull, count) .. string.rep(look.CharEmpty, look.BarLength - count)
-
-	return string.format(look.Format, barString, progress.Progress, progress.Max, factor * 100)
+function UI:SuspendDrawing(frames)
+	self.suspendFrames = math.max(self.suspendFrames or 0, frames)
 end
 
-function DrawUI()
-	if modGUI ~= nil then
+function UI:Draw()
+	self.gui = self.gui or GuiCreate()
+	local gui = self.gui
+
+	-- Skip drawing if we are asked to do so.
+	if self.suspendFrames and self.suspendFrames > 0 then self.suspendFrames = self.suspendFrames - 1 return end
+	self.suspendFrames = nil
+
+	GuiStartFrame(gui)
+
+	GuiLayoutBeginVertical(gui, 50, 20, false, 0, 0)
+
+	GuiTextCentered(gui, 0, 0, "Heyho")
+
+	GuiLayoutEnd(gui)
+
+	if true then return end
+
 		GuiStartFrame(modGUI)
 
 		GuiLayoutBeginVertical(modGUI, 50, 20)
@@ -53,26 +61,16 @@ function DrawUI()
 				if math.abs(ratioX - CAPTURE_PIXEL_SIZE) > 0.0001 or math.abs(ratioY - CAPTURE_PIXEL_SIZE) > 0.0001 then
 					GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Screen and virtual resolution differ.")
 					GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
-					GuiTextCentered(
-						modGUI,
-						0,
-						0,
-						string.format(
-							"- Change the resolution in the game options to %dx%d",
-							virtualWidth * CAPTURE_PIXEL_SIZE,
-							virtualHeight * CAPTURE_PIXEL_SIZE
-						)
-					)
-					GuiTextCentered(
-						modGUI,
-						0,
-						0,
-						string.format(
-							"- Change the virtual resolution in the mod to %dx%d",
-							screenWidth / CAPTURE_PIXEL_SIZE,
-							screenHeight / CAPTURE_PIXEL_SIZE
-						)
-					)
+					GuiTextCentered(modGUI, 0, 0, string.format(
+						"- Change the resolution in the game options to %dx%d",
+						virtualWidth * CAPTURE_PIXEL_SIZE,
+						virtualHeight * CAPTURE_PIXEL_SIZE
+					))
+					GuiTextCentered(modGUI, 0, 0, string.format(
+						"- Change the virtual resolution in the mod to %dx%d",
+						screenWidth / CAPTURE_PIXEL_SIZE,
+						screenHeight / CAPTURE_PIXEL_SIZE
+					))
 					if math.abs(ratioX - ratioY) < 0.0001 then
 						GuiTextCentered(modGUI, 0, 0, string.format("- Change the CAPTURE_PIXEL_SIZE in the mod to %f", ratioX))
 					end
@@ -155,14 +153,4 @@ function DrawUI()
 			GuiTextCentered(modGUI, 0, 0, "Done!")
 		end
 		GuiLayoutEnd(modGUI)
-	end
 end
-
-async_loop(
-	function()
-		-- When capturing is active, DrawUI is called from a different coroutine
-		-- This ensures that the text is drawn *after* a screenshot has been grabbed
-		if not UiProgress or UiProgress.Done then DrawUI() end
-		wait(0)
-	end
-)

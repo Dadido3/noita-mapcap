@@ -31,14 +31,14 @@ ffi.cdef([[
 ---Takes a screenshot of the client area of this process' active window.
 ---@param topLeft Vec2 -- Screenshot rectangle's top left coordinate relative to the window's client area in screen pixels.
 ---@param bottomRight Vec2 -- Screenshot rectangle's bottom right coordinate relative to the window's client area in screen pixels. The pixel is not included in the screenshot area.
----@param topLeftWorld Vec2 -- The corresponding scaled world coordinates of the screenshot rectangles' top left corner.
+---@param topLeftOutput Vec2 -- The corresponding scaled world coordinates of the screenshot rectangles' top left corner.
 ---@param finalDimensions Vec2|nil -- The final dimensions that the screenshot will be resized to. If set to zero, no resize will happen.
 ---@return boolean
-function ScreenCap.Capture(topLeft, bottomRight, topLeftWorld, finalDimensions)
+function ScreenCap.Capture(topLeft, bottomRight, topLeftOutput, finalDimensions)
 	finalDimensions = finalDimensions or Vec2(0, 0)
 
 	local rect = ffi.new("RECT", { math.floor(topLeft.x + 0.5), math.floor(topLeft.y + 0.5), math.floor(bottomRight.x + 0.5), math.floor(bottomRight.y + 0.5) })
-	return res.Capture(rect, math.floor(topLeftWorld.x + 0.5), math.floor(topLeftWorld.y + 0.5), math.floor(finalDimensions.x + 0.5), math.floor(finalDimensions.y + 0.5))
+	return res.Capture(rect, math.floor(topLeftOutput.x + 0.5), math.floor(topLeftOutput.y + 0.5), math.floor(finalDimensions.x + 0.5), math.floor(finalDimensions.y + 0.5))
 end
 
 ---Returns the client rectangle of the "Main" window of this process in screen coordinates.

@@ -11,7 +11,7 @@ ffi.cdef([[
 	int SetThreadExecutionState(int esFlags);
 ]])
 
--- Reset computer and monitor standby timer
+-- Reset computer and monitor standby timer.
 function MonitorStandby.ResetTimer()
 	ffi.C.SetThreadExecutionState(3) -- ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
 end

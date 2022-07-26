@@ -25,13 +25,21 @@ local CameraAPI = require("noita-api.camera")
 local DebugAPI = require("noita-api.debug")
 local Vec2 = require("noita-api.vec2")
 
+-----------------------
+-- Global namespaces --
+-----------------------
+
+Capture = Capture or {}
+Config = Config or {}
+UI = UI or {}
+
 -------------------------------
 -- Load and run script files --
 -------------------------------
 
 dofile("mods/noita-mapcap/files/capture.lua")
+dofile("mods/noita-mapcap/files/config.lua")
 dofile("mods/noita-mapcap/files/ui.lua")
---dofile("mods/noita-mapcap/files/blablabla.lua")
 
 --------------------
 -- Hook callbacks --
@@ -53,25 +61,6 @@ end
 ---Ensures chunks around the player have been loaded & created.
 ---@param playerEntityID integer
 function OnPlayerSpawned(playerEntityID)
-	modGUI = GuiCreate()
-
-	-- Start entity capturing right when the player spawn.
-	--DebugEntityCapture()
-
-	--[[async(function()
-		wait(0)
-		CameraAPI.SetCameraFree(true)
-
-		local origin = Vec2(512, -512)
-		CameraAPI.SetPos(origin)
-
-		DebugAPI.Mark(origin, "origin")
-
-		local tl, br = Coords:ValidRenderingRect()
-		local tlWorld, brWorld = Coords:ToWorld(tl), Coords:ToWorld(br)
-		DebugAPI.Mark(tlWorld, "tl")
-		DebugAPI.Mark(brWorld, "br")
-	end)]]
 end
 
 ---Called when the player dies.
@@ -92,6 +81,8 @@ end
 
 ---Called *every* time the game has finished updating the world.
 function OnWorldPostUpdate()
+	-- Draw UI after coroutines have been resumed.
+	UI:Draw()
 end
 
 ---Called when the biome config is loaded.
@@ -126,10 +117,10 @@ end
 ---------------
 
 -- Override virtual resolution and some other stuff.
---ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/1024.xml")
-ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
+--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/64.xml")
+--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
 --ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/no-ui.xml")
-ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/offset.xml")
+--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/offset.xml")
 
 -- Remove hover animation of newly created perks.
 ModLuaFileAppend("data/scripts/perks/perk.lua", "mods/noita-mapcap/files/overrides/perks/perk.lua")
