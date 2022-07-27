@@ -5,8 +5,6 @@
 
 -- Some code to make Noita's lua conform more to standard lua.
 
--- TODO: Make Noita-API module to work with several mods using it
-
 -- Stupid way to prevent this code from being called more than once per sandbox.
 -- Calling this lua file with dofile_once would still cause the setup function to be called multiple times.
 if _NoitaAPICompatibilityWrapperGuard_ then return function(dummy) end end
@@ -123,7 +121,7 @@ local function setup(libPath)
 	package.path = package.path .. "./" .. libPath .. "?/init.lua;"
 
 	-- Add the library directory of Noita itself.
-	package.path = package.path .. "./data/scripts/lib/?.lua;"
+	package.path = package.path .. "./data/scripts/lib/?.lua;" -- TODO: Get rid of Noita's lib path, create replacement libs for stuff in there
 end
 
 return setup

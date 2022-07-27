@@ -20,9 +20,10 @@ end
 -- Load library modules --
 --------------------------
 
-local Coords = require("coordinates")
 local CameraAPI = require("noita-api.camera")
+local Coords = require("coordinates")
 local DebugAPI = require("noita-api.debug")
+local LiveReload = require("noita-api.live-reload")
 local Vec2 = require("noita-api.vec2")
 
 -----------------------
@@ -47,6 +48,14 @@ dofile("mods/noita-mapcap/files/ui.lua")
 
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
+	-- Override virtual resolution and some other stuff.
+	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/64.xml")
+	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
+	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/no-ui.xml")
+	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/offset.xml")
+
+	-- Remove hover animation of newly created perks.
+	ModLuaFileAppend("data/scripts/perks/perk.lua", "mods/noita-mapcap/files/overrides/perks/perk.lua")
 end
 
 ---Called in order upon loading a new(?) game.
@@ -83,6 +92,11 @@ end
 function OnWorldPostUpdate()
 	-- Draw UI after coroutines have been resumed.
 	UI:Draw()
+
+	-- Reload mod every 60 frames.
+	-- This allows live updates to the mod while Noita is running.
+	-- !!! DISABLE THIS LINE AND THE CORRESPONDING REQUIRE BEFORE COMMITTING !!!
+	LiveReload:Reload("mods/noita-mapcap/", 60)
 end
 
 ---Called when the biome config is loaded.
@@ -111,16 +125,3 @@ end
 ---Please be careful with this, as not everything will behave well when called while the game is paused.
 function OnPausePreUpdate()
 end
-
----------------
--- Overrides --
----------------
-
--- Override virtual resolution and some other stuff.
---ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/64.xml")
---ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
---ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/no-ui.xml")
---ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/offset.xml")
-
--- Remove hover animation of newly created perks.
-ModLuaFileAppend("data/scripts/perks/perk.lua", "mods/noita-mapcap/files/overrides/perks/perk.lua")
