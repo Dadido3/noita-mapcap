@@ -33,10 +33,11 @@ end
 ---
 ---Just put this into your `OnWorldPreUpdate` or `OnWorldPostUpdate` callback:
 ---
----	LiveReload:Reload("mods/your-mod/") -- The trailing path separator is needed!
+---	LiveReload:Reload("mods/your-mod/", 60) -- The trailing path separator is needed!
 ---@param modPath string
 ---@param interval integer
 function LiveReload:Reload(modPath, interval)
+	interval = interval or 60
 	self.Counter = (self.Counter or 0) + 1
 	if self.Counter < interval then return end
 	self.Counter = nil
