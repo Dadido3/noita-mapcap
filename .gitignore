@@ -106,3 +106,4 @@ $RECYCLE.BIN/
 /output/
 /dist/
 /bin/stitch/output.png
+/files/magic-numbers/generated.xml

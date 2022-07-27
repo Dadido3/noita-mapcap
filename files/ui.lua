@@ -3,17 +3,120 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+-----------------------
+-- Load global stuff --
+-----------------------
+
+-- TODO: Wrap Noita utilities and wrap them into a table: https://stackoverflow.com/questions/9540732/loadfile-without-polluting-global-environment
+require("utilities") -- Loads Noita's utilities from `data/scripts/lib/utilitites.lua`.
+
 --------------------------
 -- Load library modules --
 --------------------------
-
-local Utils = require("noita-api.utils")
-local ScreenCap = require("screen-capture")
 
 ----------
 -- Code --
 ----------
 
+---Returns unique IDs for the widgets.
+---`_ResetID` has to be called every time before the UI is rebuilt.
+---@return integer
+function UI:_GenID()
+	self.CurrentID = (self.CurrentID or 0) + 1
+	return self.CurrentID
+end
+
+function UI:_ResetID()
+	self.CurrentID = nil
+end
+
+function UI:_DrawToolbar()
+	local gui = self.gui
+	GuiZSet(gui, 0)
+
+	GuiLayoutBeginHorizontal(gui, 2, 2, true, 2, 2)
+
+	if Capture.MapCapturingCtx:IsRunning() then
+		local clicked, clickedRight = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/stop-16x16.png")
+		GuiTooltip(gui, "Stop capture", "Stop the capturing process.\n \nRight click: Reset any modifications that this mod has done to Noita.")
+		if clicked then Capture:StopCapturing() end
+		if clickedRight then Message:ShowResetNoitaSettings() end
+	else
+		local clicked, clickedRight = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/record-16x16.png")
+		GuiTooltip(gui, "Start capture", "Start the capturing process based on mod settings.\n \nRight click: Reset any modifications that this mod has done to Noita.")
+		if clicked then Capture:StartCapturing() end
+		if clickedRight then Message:ShowResetNoitaSettings() end
+	end
+
+	local clicked = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/open-output-16x16.png")
+	GuiTooltip(gui, "Open output directory", "Reveals the output directory in your file browser.")
+	if clicked then os.execute("start .\\mods\\noita-mapcap\\output\\") end
+
+	GuiLayoutEnd(gui)
+end
+
+function UI:_DrawMessages(messages)
+	local gui = self.gui
+
+	-- Abort if there is no messages list.
+	if not messages then return end
+	
+	GuiZSet(gui, 0)
+
+	-- Unfortunately you can't stack multiple layout containers with the same direction.
+	-- So keep track of the y position manually.
+	local posY = 60
+	for key, message in pairs(messages) do
+		GuiZSet(gui, -10)
+		GuiBeginAutoBox(gui)
+
+		GuiLayoutBeginHorizontal(gui, 27, posY, true, 5, 0) posY = posY + 20
+
+		if message.Type == "warning" or message.Type == "error" then
+			GuiImage(gui, self:_GenID(), 0, 0, "mods/noita-mapcap/files/ui-gfx/warning-16x16.png", 1, 1, 0, 0, 0, "")
+		elseif message.Type == "hint" or message.Type == "info" then
+			GuiImage(gui, self:_GenID(), 0, 0, "mods/noita-mapcap/files/ui-gfx/hint-16x16.png", 1, 1, 0, 0, 0, "")
+		else
+			GuiImage(gui, self:_GenID(), 0, 0, "mods/noita-mapcap/files/ui-gfx/hint-16x16.png", 1, 1, 0, 0, 0, "")
+		end
+		
+		GuiLayoutBeginVertical(gui, 0, 0, false, 0, 0)
+		if type(message.Lines) == "table" then
+			for _, line in ipairs(message.Lines) do
+				GuiText(gui, 0, 0, tostring(line)) posY = posY + 11
+			end
+		end
+		if type(message.Actions) == "table" then
+			posY = posY + 11
+			for _, action in ipairs(message.Actions) do
+				local clicked = GuiButton(gui, self:_GenID(), 0, 11, ">" .. action.Name .. " <") posY = posY + 11
+				if action.Hint or action.HintDesc then
+					GuiTooltip(gui, action.Hint or "", action.HintDesc or "")
+				end
+				if clicked then
+					local ok, err = pcall(action.Callback)
+					if not ok then
+						Message:ShowRuntimeError("MessageAction", "Message action error:", err)
+					end
+					messages[key] = nil
+				end
+			end
+		end
+		GuiLayoutEnd(gui)
+
+		local clicked = GuiImageButton(gui, self:_GenID(), 5, 0, "", "mods/noita-mapcap/files/ui-gfx/dismiss-8x8.png")
+		--GuiTooltip(gui, "Dismiss message", "")
+		if clicked then messages[key] = nil end
+
+		GuiLayoutEnd(gui)
+
+		GuiZSet(gui, -9)
+		GuiEndAutoBoxNinePiece(gui, 5, 0, 0, false, 0, "data/ui_gfx/decorations/9piece0_gray.png", "data/ui_gfx/decorations/9piece0_gray.png")
+	end
+end
+
+---Stops the UI from drawing for the next few frames.
+---@param frames integer
 function UI:SuspendDrawing(frames)
 	self.suspendFrames = math.max(self.suspendFrames or 0, frames)
 end
@@ -26,131 +129,15 @@ function UI:Draw()
 	if self.suspendFrames and self.suspendFrames > 0 then self.suspendFrames = self.suspendFrames - 1 return end
 	self.suspendFrames = nil
 
+	-- Reset ID generator.
+	self:_ResetID()
+
 	GuiStartFrame(gui)
 
-	GuiLayoutBeginVertical(gui, 50, 20, false, 0, 0)
+	GuiIdPushString(gui, "noita-mapcap")
 
-	GuiTextCentered(gui, 0, 0, "Heyho")
+	self:_DrawToolbar()
+	self:_DrawMessages(Message.List)
 
-	GuiLayoutEnd(gui)
-
-	if true then return end
-
-		GuiStartFrame(modGUI)
-
-		GuiLayoutBeginVertical(modGUI, 50, 20)
-		if not UiProgress then
-			-- Show informations
-			local problem
-			local rect = ScreenCap.GetRect()
-
-			if not rect then
-				GuiTextCentered(modGUI, 0, 0, '!!! WARNING !!! You are not using "Windowed" mode.')
-				GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
-				GuiTextCentered(modGUI, 0, 0, '- Change the window mode in the game options to "Windowed"')
-				GuiTextCentered(modGUI, 0, 0, " ")
-				problem = true
-			end
-
-			if rect then
-				local screenWidth, screenHeight = rect.right - rect.left, rect.bottom - rect.top
-				local virtualWidth, virtualHeight = tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
-				local ratioX, ratioY = screenWidth / virtualWidth, screenHeight / virtualHeight
-				--GuiTextCentered(modGUI, 0, 0, string.format("SCREEN_RESOLUTION_*: %d, %d", screenWidth, screenHeight))
-				--GuiTextCentered(modGUI, 0, 0, string.format("VIRTUAL_RESOLUTION_*: %d, %d", virtualWidth, virtualHeight))
-				if math.abs(ratioX - CAPTURE_PIXEL_SIZE) > 0.0001 or math.abs(ratioY - CAPTURE_PIXEL_SIZE) > 0.0001 then
-					GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Screen and virtual resolution differ.")
-					GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
-					GuiTextCentered(modGUI, 0, 0, string.format(
-						"- Change the resolution in the game options to %dx%d",
-						virtualWidth * CAPTURE_PIXEL_SIZE,
-						virtualHeight * CAPTURE_PIXEL_SIZE
-					))
-					GuiTextCentered(modGUI, 0, 0, string.format(
-						"- Change the virtual resolution in the mod to %dx%d",
-						screenWidth / CAPTURE_PIXEL_SIZE,
-						screenHeight / CAPTURE_PIXEL_SIZE
-					))
-					if math.abs(ratioX - ratioY) < 0.0001 then
-						GuiTextCentered(modGUI, 0, 0, string.format("- Change the CAPTURE_PIXEL_SIZE in the mod to %f", ratioX))
-					end
-					GuiTextCentered(modGUI, 0, 0, '- Make sure that the console is not selected')
-					GuiTextCentered(modGUI, 0, 0, " ")
-					problem = true
-				end
-			end
-
-			if not Utils.FileExists("mods/noita-mapcap/bin/capture-b/capture.dll") then
-				GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Can't find library for screenshots.")
-				GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
-				GuiTextCentered(modGUI, 0, 0, "- Redownload a release of this mod from GitHub, don't download the sourcecode")
-				GuiTextCentered(modGUI, 0, 0, " ")
-				problem = true
-			end
-
-			if not Utils.FileExists("mods/noita-mapcap/bin/stitch/stitch.exe") then
-				GuiTextCentered(modGUI, 0, 0, "!!! WARNING !!! Can't find software for stitching.")
-				GuiTextCentered(modGUI, 0, 0, "You can still take screenshots, but you won't be able to stitch those screenshots.")
-				GuiTextCentered(modGUI, 0, 0, "To fix the problem, do one of these:")
-				GuiTextCentered(modGUI, 0, 0, "- Redownload a release of this mod from GitHub, don't download the sourcecode")
-				GuiTextCentered(modGUI, 0, 0, " ")
-				problem = true
-			end
-
-			if not problem then
-				GuiTextCentered(modGUI, 0, 0, "No problems found.")
-				GuiTextCentered(modGUI, 0, 0, " ")
-			end
-
-			GuiTextCentered(modGUI, 0, 0, "You can freely look around and search a place to start capturing.")
-			GuiTextCentered(modGUI, 0, 0, "When started the mod will take pictures automatically.")
-			GuiTextCentered(modGUI, 0, 0, "Use ESC  to pause, and close the game to stop the process.")
-			GuiTextCentered(modGUI, 0, 0, 'You can resume capturing just by restarting noita and pressing "Start capturing map" again,')
-			GuiTextCentered(modGUI, 0, 0, "the mod will skip already captured files.")
-			GuiTextCentered(modGUI, 0, 0, 'If you want to start a new map, you have to delete all images from the "output" folder!')
-			--GuiTextCentered(modGUI, 0, 0, " ")
-			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_X"))
-			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y"))
-			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_X"))
-			--GuiTextCentered(modGUI, 0, 0, MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_Y"))
-			GuiTextCentered(modGUI, 0, 0, " ")
-			if GuiButton(modGUI, 0, 0, ">> Start capturing map around view <<", 1) then
-				UiProgress = {}
-				startCapturingSpiral()
-			end
-			GuiTextCentered(modGUI, 0, 0, " ")
-			if GuiButton(modGUI, 0, 0, ">> Start capturing base layout <<", 1) then
-				UiProgress = {}
-				startCapturingHilbert(CAPTURE_AREA_BASE_LAYOUT)
-			end
-			if GuiButton(modGUI, 0, 0, ">> Start capturing main world <<", 1) then
-				UiProgress = {}
-				startCapturingHilbert(CAPTURE_AREA_MAIN_WORLD)
-			end
-			if GuiButton(modGUI, 0, 0, ">> Start capturing extended map <<", 1) then
-				UiProgress = {}
-				startCapturingHilbert(CAPTURE_AREA_EXTENDED)
-			end
-			if GuiButton(modGUI, 0, 0, ">> Start capturing run live <<", 1) then
-				UiProgress = {}
-				StartCapturingLive()
-			end
-			GuiTextCentered(modGUI, 0, 0, " ")
-		elseif not UiProgress.Done then
-			-- Show progress
-			local x, y = GameGetCameraPos()
-			GuiTextCentered(modGUI, 0, 0, string.format("Coordinates: %d, %d", x, y))
-			GuiTextCentered(modGUI, 0, 0, string.format("Waiting %d frames...", UiCaptureDelay))
-			if UiProgress.Progress then
-				GuiTextCentered(modGUI, 0, 0, progressBarString(
-					UiProgress, { BarLength = 100, CharFull = "l", CharEmpty = ".", Format = "|%s| [%d / %d] [%1.2f%%]" }
-				))
-			end
-			if UiCaptureProblem then
-				GuiTextCentered(modGUI, 0, 0, string.format("A problem occurred while capturing: %s", UiCaptureProblem))
-			end
-		else
-			GuiTextCentered(modGUI, 0, 0, "Done!")
-		end
-		GuiLayoutEnd(modGUI)
+	GuiIdPop(gui)
 end

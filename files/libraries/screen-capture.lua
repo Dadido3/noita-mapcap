@@ -42,14 +42,15 @@ function ScreenCap.Capture(topLeft, bottomRight, topLeftOutput, finalDimensions)
 end
 
 ---Returns the client rectangle of the "Main" window of this process in screen coordinates.
----@return any
+---@return Vec2|nil topLeft
+---@return Vec2|nil bottomRight
 function ScreenCap.GetRect()
 	local rect = ffi.new("RECT")
 	if not res.GetRect(rect) then
-		return nil
+		return nil, nil
 	end
 
-	return rect
+	return Vec2(rect.left, rect.top), Vec2(rect.right, rect.bottom)
 end
 
 return ScreenCap

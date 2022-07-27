@@ -12,6 +12,7 @@
 local libPath = "mods/noita-mapcap/files/libraries/"
 dofile(libPath .. "noita-api/compatibility.lua")(libPath)
 
+-- TODO: Replace Noita's mod settings lib with something better. Or at least wrap it: https://stackoverflow.com/questions/9540732/loadfile-without-polluting-global-environment
 require("mod_settings") -- Loads Noita's mod settings library from `data/scripts/lib/mod_settings.lua`.
 
 --------------------------
@@ -84,7 +85,8 @@ modSettings = {
 		id = "capture-mode-spiral-origin-vector",
 		ui_name = "  Origin",
 		ui_description = "",
-		value_default = "0, 0",
+		value_default = "0,0",
+		allowed_characters = "0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 		show_fn = function() return not modSettings:Get("capture-mode-spiral-origin").hidden and modSettings:GetNextValue("capture-mode-spiral-origin") == "custom" end,
 	},
@@ -101,7 +103,8 @@ modSettings = {
 		id = "area-top-left",
 		ui_name = "    Top left corner",
 		ui_description = "The top left corner of the to be captured rectangle.",
-		value_default = "-512, -512",
+		value_default = "-512,-512",
+		allowed_characters = "0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
 	},
@@ -109,7 +112,8 @@ modSettings = {
 		id = "area-bottom-right",
 		ui_name = "    Bottom right corner",
 		ui_description = "The bottom right corner of the to be captured rectangle.",
-		value_default = "512, 512",
+		value_default = "512,512",
+		allowed_characters = "0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
 	},
@@ -134,9 +138,9 @@ modSettings = {
 				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
 			},
 			{
-				id = "pixel-size",
-				ui_name = "Pixel size",
-				ui_description = "How big a single resulting pixel will be.\nThis is the ratio of image to world pixels.\nA setting of 0 disables any scaling.",
+				id = "pixel-scale",
+				ui_name = "Pixel scale",
+				ui_description = "How big a single resulting pixel will be.\nThis is the ratio of image to world pixels.\nA setting of 0 disables any scaling.\n \nDon't change while capturing,\nOr you will get unstitchable results.",
 				value_default = 1,
 				value_min = 0,
 				value_max = 8,
@@ -165,7 +169,8 @@ modSettings = {
 				id = "window-resolution",
 				ui_name = "  Window resolution",
 				ui_description = "Size of the window in screen pixels.",
-				value_default = "1024, 1024",
+				value_default = "1024,1024",
+				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
@@ -176,7 +181,8 @@ modSettings = {
 				id = "internal-resolution",
 				ui_name = "  Internal resolution",
 				ui_description = "Size of the viewport in screen pixels.\nIdeally set to the window resolution.",
-				value_default = "1024, 1024",
+				value_default = "1024,1024",
+				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
@@ -187,12 +193,58 @@ modSettings = {
 				id = "virtual-resolution",
 				ui_name = "  Virtual resolution",
 				ui_description = "Size of the viewport in world pixels.",
-				value_default = "1024, 1024",
+				value_default = "1024,1024",
+				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
 						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
 				end,
+			},
+			{
+				ui_fn = mod_setting_vertical_spacing,
+				not_setting = true,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "live" end,
+			},
+			{
+				id = "live-interval",
+				ui_name = "Capture interval",
+				ui_description = "Capturing interval in frames.",
+				value_default = 60,
+				value_min = 5,
+				value_max = 240,
+				value_display_multiplier = 1,
+				value_display_formatting = " $0 frames",
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "live" end,
+			},
+			{
+				id = "live-min-distance",
+				ui_name = "Min. capture distance",
+				ui_description = "The distance the viewport has to move to allow another screenshot.\nIn world pixels.",
+				value_default = 10,
+				value_min = 0,
+				value_max = 200,
+				value_display_multiplier = 1,
+				value_display_formatting = " $0 pixels",
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "live" end,
+			},
+			{
+				id = "live-max-distance",
+				ui_name = "Max. capture distance",
+				ui_description = "The distance the viewport has to move to force another screenshot.\nIn world pixels.",
+				value_default = 50,
+				value_min = 0,
+				value_max = 200,
+				value_display_multiplier = 1,
+				value_display_formatting = " $0 pixels",
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "live" end,
+			},
+			{
+				ui_fn = mod_setting_vertical_spacing,
+				not_setting = true,
 			},
 			{
 				id = "capture-entities",
@@ -224,22 +276,6 @@ modSettings = {
 				hidden = not DebugAPI:IsDevBuild(), -- Hide in anything else than the dev build.
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
-			},
-		}
-	},
-	{
-		category_id = "actions",
-		ui_name = "ACTIONS",
-		foldable = true,
-		_folded = true,
-		settings = {
-			{
-				id = "button-open-output",
-				ui_name = "Open output directory",
-				ui_description = "Reveals the output directory in your file browser.",
-				scope = MOD_SETTING_SCOPE_RUNTIME,
-				ui_fn = customSettingButton,
-				change_fn = function() print("test") end,
 			},
 		}
 	},

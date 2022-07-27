@@ -64,7 +64,12 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 
 	---Top left in output coordinates.
 	---@type Vec2
-	local outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
+	local outputTopLeft
+	if outputPixelScale > 0 then
+		outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
+	else
+		outputTopLeft = topLeftWorld
+	end
 
 	-- Check if the file exists, and if we are allowed to overwrite it.
 	if dontOverwrite and Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", outputTopLeft.x, outputTopLeft.y)) then
@@ -77,7 +82,7 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 		repeat
 			-- Prematurely stop capturing if that is requested by the context.
 			if ctx and ctx:IsStopping() then return end
-			
+
 			if delayFrames > 100 then
 				-- Wiggle the screen a bit, as chunks sometimes don't want to load.
 				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-100, 100), math.random(-100, 100))) end
@@ -94,14 +99,18 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	end
 
 	-- Suspend UI drawing for 1 frame.
-	UI.SuspendDrawing(1)
+	UI:SuspendDrawing(1)
 
 	wait(0)
 
 	-- Fetch coordinates again, as they may have changed.
 	if not pos then
 		topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
-		outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
+		if outputPixelScale > 0 then
+			outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
+		else
+			outputTopLeft = topLeftWorld
+		end
 	end
 
 	-- The top left world position needs to be upscaled by the pixel scale.
@@ -119,7 +128,7 @@ end
 ---@param scope "init"|"do"|"end"
 local function mapCapturingCtxErrHandler(err, scope)
 	print(string.format("Failed to capture map: %s", err))
-	-- TODO: Forward error to user interface
+	Message:ShowRuntimeError("MapCaptureError", "Failed to capture map:", tostring(err))
 end
 
 ---Starts the capturing process in a spiral around origin.
@@ -128,6 +137,11 @@ end
 ---@param captureGridSize number -- The grid size in world pixels.
 ---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
 function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
+
+	-- Create file that signals that there are files in the output directory.
+	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
+	if file ~= nil then file:close() end
+
 	---Origin rounded to capture grid.
 	---@type Vec2
 	local origin = (origin / captureGridSize):Rounded("Floor") * captureGridSize
@@ -180,6 +194,11 @@ end
 ---@param captureGridSize number -- The grid size in world pixels.
 ---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
 function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outputPixelScale)
+
+	-- Create file that signals that there are files in the output directory.
+	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
+	if file ~= nil then file:close() end
+
 	---The rectangle in grid coordinates.
 	---@type Vec2, Vec2
 	local gridTopLeft, gridBottomRight = (topLeft / captureGridSize):Rounded("floor"), (bottomRight / captureGridSize):Rounded("floor")
@@ -240,6 +259,10 @@ function Capture:StartCapturingLive(interval, minDistance, maxDistance, outputPi
 	interval = interval or 60
 	minDistance = minDistance or 10
 	maxDistance = maxDistance or 50
+
+	-- Create file that signals that there are files in the output directory.
+	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
+	if file ~= nil then file:close() end
 
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
@@ -429,8 +452,31 @@ function Capture:StartCapturingEntities(store, modify)
 	---@param scope "init"|"do"|"end"
 	local function handleErr(err, scope)
 		print(string.format("Failed to capture entities: %s", err))
+		Message:ShowRuntimeError("EntitiesCaptureError", "Failed to capture entities:", tostring(err))
 	end
 
 	-- Run process, if there is no other running right now.
 	self.EntityCapturingCtx:Run(handleInit, handleDo, handleEnd, handleErr)
+end
+
+---Starts the capturing process based on user/mod settings.
+function Capture:StartCapturing()
+	local mode = ModSettingGet("noita-mapcap.capture-mode")
+	local outputPixelScale = ModSettingGet("noita-mapcap.pixel-scale")
+
+	if mode == "live" then
+		local interval = ModSettingGet("noita-mapcap.live-interval")
+		local minDistance = ModSettingGet("noita-mapcap.live-min-distance")
+		local maxDistance = ModSettingGet("noita-mapcap.live-max-distance")
+
+		self:StartCapturingLive(interval, minDistance, maxDistance, outputPixelScale)
+	else
+		Message:ShowRuntimeError("StartCapturing", string.format("Unknown capturing mode %q", tostring(mode)))
+	end
+end
+
+---Stops all capturing processes.
+function Capture:StopCapturing()
+	self.EntityCapturingCtx:Stop()
+	self.MapCapturingCtx:Stop()
 end

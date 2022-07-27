@@ -12,6 +12,7 @@
 local libPath = "mods/noita-mapcap/files/libraries/"
 dofile(libPath .. "noita-api/compatibility.lua")(libPath)
 
+-- TODO: Replace Noita's coroutine lib with something better
 if not async then
 	require("coroutines") -- Loads Noita's coroutines library from `data/scripts/lib/coroutines.lua`.
 end
@@ -23,7 +24,7 @@ end
 local CameraAPI = require("noita-api.camera")
 local Coords = require("coordinates")
 local DebugAPI = require("noita-api.debug")
---local LiveReload = require("noita-api.live-reload")
+local LiveReload = require("noita-api.live-reload")
 local Vec2 = require("noita-api.vec2")
 
 -----------------------
@@ -31,7 +32,10 @@ local Vec2 = require("noita-api.vec2")
 -----------------------
 
 Capture = Capture or {}
+Check = Check or {}
 Config = Config or {}
+Message = Message or {}
+Modification = Modification or {}
 UI = UI or {}
 
 -------------------------------
@@ -40,6 +44,9 @@ UI = UI or {}
 
 dofile("mods/noita-mapcap/files/capture.lua")
 dofile("mods/noita-mapcap/files/config.lua")
+dofile("mods/noita-mapcap/files/check.lua")
+dofile("mods/noita-mapcap/files/message.lua")
+dofile("mods/noita-mapcap/files/modification.lua")
 dofile("mods/noita-mapcap/files/ui.lua")
 
 --------------------
@@ -48,9 +55,13 @@ dofile("mods/noita-mapcap/files/ui.lua")
 
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
+	-- Set magic numbers based on mod settings.
+	local config, magic = Modification.RequiredChanges()
+	Modification.SetMagicNumbers(magic)
+
 	-- Override virtual resolution and some other stuff.
-	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/64.xml")
-	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
+	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/1024.xml")
+	ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/fast-cam.xml")
 	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/no-ui.xml")
 	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/offset.xml")
 
@@ -84,19 +95,29 @@ end
 
 ---Called *every* time the game is about to start updating the world.
 function OnWorldPreUpdate()
-	-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
-	wake_up_waiting_threads(1)
+	Message:CatchException("OnWorldPreUpdate", function ()
+		
+		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
+		wake_up_waiting_threads(1)
+
+	end)
 end
 
 ---Called *every* time the game has finished updating the world.
 function OnWorldPostUpdate()
-	-- Draw UI after coroutines have been resumed.
-	UI:Draw()
-
 	-- Reload mod every 60 frames.
 	-- This allows live updates to the mod while Noita is running.
 	-- !!! DISABLE THIS LINE AND THE CORRESPONDING REQUIRE BEFORE COMMITTING !!!
 	--LiveReload:Reload("mods/noita-mapcap/", 60)
+
+	Message:CatchException("OnWorldPostUpdate", function ()
+
+		Check:Resolutions(60)
+
+		-- Draw UI after coroutines have been resumed.
+		UI:Draw()
+
+	end)
 end
 
 ---Called when the biome config is loaded.
@@ -109,6 +130,8 @@ function OnMagicNumbersAndWorldSeedInitialized()
 	-- Get resolutions for correct coordinate transformations.
 	-- This needs to be done once all magic numbers are set.
 	Coords:ReadResolutions()
+
+	Check:Startup()
 end
 
 ---Called when the game is paused or unpaused.

@@ -34,18 +34,20 @@ local Vec2 = require("noita-api.vec2")
 -- Code --
 ----------
 
-local virtualOffsetPixelPerfect = Vec2(-2, 0)
-
 ---@class Coords
 ---@field InternalResolution Vec2 -- Size of the internal rectangle in window pixels.
 ---@field WindowResolution Vec2 -- Size of the window client area in window pixels.
 ---@field VirtualResolution Vec2 -- Size of the virtual rectangle in world/virtual pixels.
 ---@field VirtualOffset Vec2 -- Offset of the virtual rectangle in world/virtual pixels.
+---@field VirtualOffsetPixelPerfect Vec2 -- Offset of the virtual rectangle that maps chunks perfectly to the window.
+---@field FullscreenMode integer -- The fullscreen mode the game is in. 0 is windowed.
 local Coords = {
 	InternalResolution = Vec2(0, 0),
 	WindowResolution = Vec2(0, 0),
 	VirtualResolution = Vec2(0, 0),
 	VirtualOffset = Vec2(0, 0),
+	VirtualOffsetPixelPerfect = Vec2(-2, 0),
+	FullscreenMode = 0,
 }
 
 ---Reads and updates the internal, window and virtual resolutions from Noita's config files and API.
@@ -62,6 +64,7 @@ function Coords:ReadResolutions()
 	self.InternalResolution = Vec2(tonumber(xml.attr["internal_size_w"]), tonumber(xml.attr["internal_size_h"]))
 	self.VirtualResolution = Vec2(tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y")))
 	self.VirtualOffset = Vec2(tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_Y")))
+	self.FullscreenMode = tonumber(xml.attr["fullscreen"]) or 0
 
 	f:close()
 	return nil
@@ -130,7 +133,7 @@ function Coords:ToWindow(world, viewportCenter)
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
 
-	return internalTopLeft + (self.VirtualResolution / 2 + world - viewportCenter - virtualOffsetPixelPerfect + self.VirtualOffset) * pixelScale
+	return internalTopLeft + (self.VirtualResolution / 2 + world - viewportCenter - self.VirtualOffsetPixelPerfect + self.VirtualOffset) * pixelScale
 end
 
 ---Converts the given window coordinates into world/virtual coordinates.
@@ -143,7 +146,7 @@ function Coords:ToWorld(window, viewportCenter)
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
 
-	return viewportCenter - self.VirtualResolution / 2 + (window - internalTopLeft) / pixelScale + virtualOffsetPixelPerfect - self.VirtualOffset
+	return viewportCenter - self.VirtualResolution / 2 + (window - internalTopLeft) / pixelScale + self.VirtualOffsetPixelPerfect - self.VirtualOffset
 end
 
 -------------
