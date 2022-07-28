@@ -81,6 +81,9 @@ end
 ---Ensures chunks around the player have been loaded & created.
 ---@param playerEntityID integer
 function OnPlayerSpawned(playerEntityID)
+	-- Set camera free based on mod settings.
+	-- We need to do this here, otherwise it will bug up or delete the player entity.
+	Modification.SetCameraFree()
 end
 
 ---Called when the player dies.
@@ -91,14 +94,12 @@ end
 ---Called once the game world is initialized.
 ---Doesn't ensure any chunks around the player.
 function OnWorldInitialized()
-	-- Set camera free based on mod settings.
-	Modification.SetCameraFree() -- BUG: Calling this here has the side effect of the player entity not being loaded. Also the player UI will be gone
 end
 
 ---Called *every* time the game is about to start updating the world.
 function OnWorldPreUpdate()
 	Message:CatchException("OnWorldPreUpdate", function ()
-		
+
 		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
 		wake_up_waiting_threads(1)
 
