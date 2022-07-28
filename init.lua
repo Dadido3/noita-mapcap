@@ -91,6 +91,8 @@ end
 ---Called once the game world is initialized.
 ---Doesn't ensure any chunks around the player.
 function OnWorldInitialized()
+	-- Set camera free based on mod settings.
+	Modification.SetCameraFree()
 end
 
 ---Called *every* time the game is about to start updating the world.

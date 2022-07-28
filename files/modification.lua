@@ -10,10 +10,11 @@
 -- Load library modules --
 --------------------------
 
+local CameraAPI = require("noita-api.camera")
+local Coords = require("coordinates")
 local NXML = require("luanxml.nxml")
 local Utils = require("noita-api.utils")
 local Vec2 = require("noita-api.vec2")
-local Coords = require("coordinates")
 
 ----------
 -- Code --
@@ -93,6 +94,23 @@ function Modification.RequiredChanges()
 	config["fullscreen"] = "0"
 
 	return config, magic
+end
+
+---Sets the camera free if required by the mod settings.
+---@param force boolean|nil -- If true, the camera will be set free regardless.
+function Modification.SetCameraFree(force)
+	if force ~= nil then CameraAPI.SetCameraFree(force) return end
+
+	local captureMode = ModSettingGet("noita-mapcap.capture-mode")
+	local spiralOrigin = ModSettingGet("noita-mapcap.capture-mode-spiral-origin")
+
+	-- Allow free roaming when in spiral mode with origin being the current position.
+	if captureMode == "spiral" and spiralOrigin == "current" then
+		CameraAPI.SetCameraFree(true)
+		return
+	end
+
+	CameraAPI.SetCameraFree(false)
 end
 
 ---Will change the game settings according to `Modification.RequiredChanges()`.

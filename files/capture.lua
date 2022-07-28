@@ -154,7 +154,7 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
-		CameraAPI.SetCameraFree(true)
+		Modification.SetCameraFree(true)
 
 		local i = 1
 		repeat
@@ -183,8 +183,14 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 		until ctx:IsStopping()
 	end
 
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		Modification.SetCameraFree()
+	end
+
 	-- Run process, if there is no other running right now.
-	self.MapCapturingCtx:Run(nil, handleDo, nil, mapCapturingCtxErrHandler)
+	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
 end
 
 ---Starts the capturing process of the given area.
@@ -222,7 +228,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
-		CameraAPI.SetCameraFree(true)
+		Modification.SetCameraFree(true)
 		ctx.progressCurrent, ctx.progressEnd = 0, gridSize.x * gridSize.y
 
 		while t < tLimit do
@@ -245,8 +251,14 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 		end
 	end
 
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		Modification.SetCameraFree()
+	end
+
 	-- Run process, if there is no other running right now.
-	self.MapCapturingCtx:Run(nil, handleDo, nil, mapCapturingCtxErrHandler)
+	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
 end
 
 ---Starts the live capturing process.
@@ -267,6 +279,8 @@ function Capture:StartCapturingLive(interval, minDistance, maxDistance, outputPi
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
+		Modification.SetCameraFree(false)
+
 		local oldPos
 		local minDistanceSqr, maxDistanceSqr = minDistance ^ 2, maxDistance ^ 2
 
@@ -286,8 +300,14 @@ function Capture:StartCapturingLive(interval, minDistance, maxDistance, outputPi
 		until ctx:IsStopping()
 	end
 
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		Modification.SetCameraFree()
+	end
+
 	-- Run process, if there is no other running right now.
-	self.MapCapturingCtx:Run(nil, handleDo, nil, mapCapturingCtxErrHandler)
+	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
 end
 
 ---Gathers all entities on the screen (around x, y within radius), serializes them, appends them into entityFile and modifies those entities.
