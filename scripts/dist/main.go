@@ -31,7 +31,7 @@ func main() {
 	os.MkdirAll(filepath.Join(*dist), 0755)
 
 	toCopy := []string{
-		"AREAS.md", "compatibility.xml", "init.lua", "LICENSE", "mod.xml", "README.md",
+		"AREAS.md", "compatibility.xml", "init.lua", "LICENSE", "mod.xml", "README.md", "settings.lua",
 
 		filepath.Join("bin", "capture-b", "capture.dll"), filepath.Join("bin", "capture-b", "README.md"),
 		filepath.Join("bin", "stitch", "stitch.exe"), filepath.Join("bin", "stitch", "README.md"),
