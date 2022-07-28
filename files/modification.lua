@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 -- Noita settings/configuration modifications.
--- We try to keep modifications to a minimum, but some things have to be changed in order for the mod to work correctly.
+-- We try to keep non volatile modifications to a minimum, but some things have to be changed in order for the mod to work correctly.
 
 --------------------------
 -- Load library modules --
@@ -85,8 +85,8 @@ function Modification.RequiredChanges()
 	end
 
 	-- Set virtual offset to be pixel perfect.
-	--magic["VIRTUAL_RESOLUTION_OFFSET_X"] = tostring(Coords.VirtualOffsetPixelPerfect.x)
-	--magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = tostring(Coords.VirtualOffsetPixelPerfect.y)
+	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = tostring(Coords.VirtualOffsetPixelPerfect.x)
+	magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = tostring(Coords.VirtualOffsetPixelPerfect.y)
 
 	-- Always expect a fullscreen mode of 0 (windowed).
 	-- Capturing will not work in fullscreen.
