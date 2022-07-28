@@ -30,6 +30,12 @@ function UI:_ResetID()
 	self.CurrentID = nil
 end
 
+---Stops the UI from drawing for the next few frames.
+---@param frames integer
+function UI:SuspendDrawing(frames)
+	self.suspendFrames = math.max(self.suspendFrames or 0, frames)
+end
+
 function UI:_DrawToolbar()
 	local gui = self.gui
 	GuiZSet(gui, 0)
@@ -113,12 +119,6 @@ function UI:_DrawMessages(messages)
 		GuiZSet(gui, -9)
 		GuiEndAutoBoxNinePiece(gui, 5, 0, 0, false, 0, "data/ui_gfx/decorations/9piece0_gray.png", "data/ui_gfx/decorations/9piece0_gray.png")
 	end
-end
-
----Stops the UI from drawing for the next few frames.
----@param frames integer
-function UI:SuspendDrawing(frames)
-	self.suspendFrames = math.max(self.suspendFrames or 0, frames)
 end
 
 function UI:Draw()
