@@ -86,9 +86,9 @@ modSettings = {
 		ui_name = "  Origin",
 		ui_description = "",
 		value_default = "0,0",
-		allowed_characters = "0123456789,",
+		allowed_characters = "-0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
-		show_fn = function() return not modSettings:Get("capture-mode-spiral-origin").hidden and modSettings:GetNextValue("capture-mode-spiral-origin") == "custom" end,
+		show_fn = function() return not modSettings:Get("capture-mode-spiral-origin.hidden") and modSettings:GetNextValue("capture-mode-spiral-origin") == "custom" end,
 	},
 	{
 		id = "area",
@@ -104,18 +104,18 @@ modSettings = {
 		ui_name = "    Top left corner",
 		ui_description = "The top left corner of the to be captured rectangle.",
 		value_default = "-512,-512",
-		allowed_characters = "0123456789,",
+		allowed_characters = "-0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
-		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
+		show_fn = function() return not modSettings:Get("area.hidden") and modSettings:GetNextValue("area") == "custom" end,
 	},
 	{
 		id = "area-bottom-right",
 		ui_name = "    Bottom right corner",
 		ui_description = "The bottom right corner of the to be captured rectangle.",
 		value_default = "512,512",
-		allowed_characters = "0123456789,",
+		allowed_characters = "-0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
-		show_fn = function() return not modSettings:Get("area").hidden and modSettings:GetNextValue("area") == "custom" end,
+		show_fn = function() return not modSettings:Get("area.hidden") and modSettings:GetNextValue("area") == "custom" end,
 	},
 	{
 		ui_fn = mod_setting_vertical_spacing,
@@ -173,8 +173,8 @@ modSettings = {
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
-					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
-						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
 				end,
 			},
 			{
@@ -185,8 +185,8 @@ modSettings = {
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
-					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
-						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
 				end,
 			},
 			{
@@ -197,8 +197,8 @@ modSettings = {
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 				show_fn = function()
-					return (not modSettings:Get("advanced.settings.custom-resolution-live").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
-						or (not modSettings:Get("advanced.settings.custom-resolution-other").hidden and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
+					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
+						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
 				end,
 			},
 			{
