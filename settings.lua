@@ -273,9 +273,9 @@ modSettings = {
 				id = "disable-physics",
 				ui_name = "  Disable pixel and entity physics",
 				ui_description = "Will freeze all pixel simulations and rigid body dynamics.",
+				hidden = not DebugAPI.IsDevBuild(),
 				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
-				show_fn = function() return DebugAPI.IsDevBuild() end,
 			},
 			{
 				id = "disable-postfx",
@@ -297,7 +297,7 @@ modSettings = {
 				ui_description = "It has the same effect as pressing F5, F8 and F12 in the Noita dev build.\nDoesn't work outside the dev build.",
 				hidden = not DebugAPI:IsDevBuild(), -- Hide in anything else than the dev build.
 				value_default = false,
-				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
 		}
 	},

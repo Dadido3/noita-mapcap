@@ -55,9 +55,10 @@ dofile("mods/noita-mapcap/files/ui.lua")
 
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
-	-- Set magic numbers based on mod settings.
-	local config, magic = Modification.RequiredChanges()
+	-- Set magic numbers and other stuff based on mod settings.
+	local config, magic, memory = Modification.RequiredChanges()
 	Modification.SetMagicNumbers(magic)
+	Modification.SetMemoryOptions(memory)
 
 	-- Override virtual resolution and some other stuff.
 	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/1024.xml")
@@ -141,6 +142,10 @@ end
 ---@param isPaused boolean
 ---@param isInventoryPause boolean
 function OnPausedChanged(isPaused, isInventoryPause)
+	-- Set some stuff based on mod settings.
+	-- Normally this would be in `OnModSettingsChanged`, but that doesn't seem to be called.
+	local config, magic, memory = Modification.RequiredChanges()
+	Modification.SetMemoryOptions(memory)
 end
 
 ---Will be called when the game is unpaused, if player changed any mod settings while the game was paused.

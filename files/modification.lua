@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 -- Noita settings/configuration modifications.
--- We try to keep non volatile modifications to a minimum, but some things have to be changed in order for the mod to work correctly.
+-- We try to keep persistent modifications to a minimum, but some things have to be changed in order for the mod to work correctly.
 
 --------------------------
 -- Load library modules --
@@ -12,6 +12,7 @@
 
 local CameraAPI = require("noita-api.camera")
 local Coords = require("coordinates")
+local ffi = require("ffi")
 local NXML = require("luanxml.nxml")
 local Utils = require("noita-api.utils")
 local Vec2 = require("noita-api.vec2")
@@ -64,11 +65,60 @@ function Modification.SetMagicNumbers(magic)
 	ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/generated.xml")
 end
 
+---Changes some options directly by manipulating process memory.
+---
+---Related issue: https://github.com/Dadido3/noita-mapcap/issues/14.
+---@param memory table
+function Modification.SetMemoryOptions(memory)
+	-- Lookup table with the following hierarchy:
+	-- DevBuild -> OS -> BuildDate -> Option -> Address.
+	local lookup = {
+		[true] = {
+			Windows = {
+				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG build.
+					mPostFxDisabled = 0x010E3B6C,
+					mGuiDisabled = 0x010E3B6D,
+					mFreezeAI = 0x010E3B73,
+				},
+				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam build.
+					mPostFxDisabled = 0x010EDEBC,
+					mGuiDisabled = 0x010EDEBD,
+					mFreezeAI = 0x010EDEC3,
+				},
+			},
+		},
+	}
+
+	-- Look up the tree and set options accordingly.
+
+	local level1 = lookup[DebugGetIsDevBuild()]
+	if level1 == nil then return end
+
+	local level2 = level1[ffi.os]
+	if level2 == nil then return end
+
+	local level3
+	for k, v in pairs(level2) do
+		if ffi.string(ffi.cast("char*", k)) == v._BuildString then
+			level3 = v
+			break
+		end
+	end
+
+	for k, v in pairs(memory) do
+		local address = level3[k]
+		if address ~= nil then
+			ffi.cast("char*", address)[0] = v
+		end
+	end
+end
+
 ---Returns tables with user requested game configuration changes.
 ---@return table config -- List of `config.xml` attributes that should be changed.
 ---@return table magic -- List of `magic_number.xml` attributes that should be changed.
+---@return table memory -- List of options in RAM of this process that should be changed.
 function Modification.RequiredChanges()
-	local config, magic = {}, {}
+	local config, magic, memory = {}, {}, {}
 
 	-- Does the user request a custom resolution?
 	local customResolution = (ModSettingGet("noita-mapcap.custom-resolution-live") and ModSettingGet("noita-mapcap.capture-mode") == "live")
@@ -104,7 +154,13 @@ function Modification.RequiredChanges()
 	magic["DEBUG_PAUSE_BOX2D"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
 	magic["DEBUG_DISABLE_POSTFX_DITHERING"] = ModSettingGet("noita-mapcap.disable-postfx") and "1" or "0"
 
-	return config, magic
+	if ModSettingGet("noita-mapcap.disable-shaders-gui-ai") then
+		memory["mPostFxDisabled"] = 1
+		memory["mGuiDisabled"] = 1
+		memory["mFreezeAI"] = 1
+	end
+
+	return config, magic, memory
 end
 
 ---Sets the camera free if required by the mod settings.
@@ -132,7 +188,7 @@ function Modification.AutoSet()
 	Modification.SetConfig(config)
 end
 
----Will reset all settings that may have been changed by this mod.
+---Will reset all persistent settings that may have been changed by this mod.
 ---
 ---This will force close Noita!
 function Modification.Reset()
