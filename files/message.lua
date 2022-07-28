@@ -35,8 +35,10 @@ end
 ---@param id string
 ---@param func function
 function Message:CatchException(id, func)
-	local ok, err = pcall(func)
+	local ok, err = xpcall(func, debug.traceback)
 	if not ok then
+
+		print(string.format("An exception happened in %s: %s", id, err))
 		self:ShowRuntimeError(id, string.format("An exception happened in %s", id), err)
 	end
 end
