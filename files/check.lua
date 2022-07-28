@@ -83,5 +83,6 @@ function Check:Resolutions(interval)
 			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Expected virtual resolution is %s. But got %s.", expected, Coords.VirtualResolution))
 		end
 	end
+	-- TODO: Check virtual resolution offset
 
 end

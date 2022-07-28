@@ -263,14 +263,19 @@ end
 
 ---Starts the live capturing process.
 ---Use `Capture.MapCapturingCtx` to stop, control or view the process.
----@param interval integer|nil -- The interval length in frames. Defaults to 60.
----@param minDistance number|nil -- The minimum distance between screenshots. This will prevent screenshots if the player doesn't move much.
----@param maxDistance number|nil -- The maximum distance between screenshots. This will allow more screenshots per interval if the player moves fast.
 ---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-function Capture:StartCapturingLive(interval, minDistance, maxDistance, outputPixelScale)
-	interval = interval or 60
-	minDistance = minDistance or 10
-	maxDistance = maxDistance or 50
+function Capture:StartCapturingLive(outputPixelScale)
+
+	---Queries the mod settings for the live capture parameters.
+	---@return integer interval -- The interval length in frames. Defaults to 30.
+	---@return number minDistanceSqr -- The minimum (squared) distance between screenshots. This will prevent screenshots if the player doesn't move much.
+	---@return number maxDistanceSqr -- The maximum (squared) distance between screenshots. This will allow more screenshots per interval if the player moves fast.
+	local function querySettings()
+		local interval = tonumber(ModSettingGet("noita-mapcap.live-interval")) or 30
+		local minDistance = tonumber(ModSettingGet("noita-mapcap.live-min-distance")) or 10
+		local maxDistance = tonumber(ModSettingGet("noita-mapcap.live-max-distance")) or 50
+		return interval, minDistance ^ 2, maxDistance ^ 2
+	end
 
 	-- Create file that signals that there are files in the output directory.
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
@@ -282,9 +287,10 @@ function Capture:StartCapturingLive(interval, minDistance, maxDistance, outputPi
 		Modification.SetCameraFree(false)
 
 		local oldPos
-		local minDistanceSqr, maxDistanceSqr = minDistance ^ 2, maxDistance ^ 2
 
 		repeat
+			local interval, minDistanceSqr, maxDistanceSqr = querySettings()
+
 			-- Wait until we are allowed to take a new screenshot.
 			local delayFrames = 0
 			repeat
@@ -489,11 +495,7 @@ function Capture:StartCapturing()
 		local captureGridSize = tonumber(ModSettingGet("noita-mapcap.grid-size"))
 
 		if mode == "live" then
-			local interval = ModSettingGet("noita-mapcap.live-interval")
-			local minDistance = ModSettingGet("noita-mapcap.live-min-distance")
-			local maxDistance = ModSettingGet("noita-mapcap.live-max-distance")
-
-			self:StartCapturingLive(interval, minDistance, maxDistance, outputPixelScale)
+			self:StartCapturingLive(outputPixelScale)
 		elseif mode == "area" then
 			local area = ModSettingGet("noita-mapcap.area")
 			if area == "custom" then

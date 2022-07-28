@@ -128,6 +128,7 @@ function UI:Draw()
 	local gui = self.gui
 
 	-- Skip drawing if we are asked to do so.
+	-- TODO: Find a way to susped UI drawing, but still being able to receive events
 	if self.suspendFrames and self.suspendFrames > 0 then self.suspendFrames = self.suspendFrames - 1 return end
 	self.suspendFrames = nil
 
