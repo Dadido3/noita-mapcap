@@ -5,13 +5,15 @@
 
 local Vec2 = require("noita-api.vec2")
 
+-- List of components that will be disabled on every encountered entity.
+-- This is only used when modifying entities, not when capturing/storing them.
 Config.ComponentsToDisable = {
 	"AnimalAIComponent",
 	"SimplePhysicsComponent",
 	"CharacterPlatformingComponent",
 	"WormComponent",
 	"WormAIComponent",
-	"CameraBoundComponent", -- Disabling this component will prevent entites from being killed/reset when they go offscreen. If they are reset, all tags will be reset and we may capture these entities multiple times. This has some side effects, like longleg.xml and zombie_weak.xml will respawn every revisit, as the spawner doesn't get deleted.
+	--"CameraBoundComponent", -- This is already removed when capturing/storing entities. Not needed when we only modify entities.
 	--"PhysicsBodyCollisionDamageComponent",
 	--"ExplodeOnDamageComponent",
 	--"DamageModelComponent",

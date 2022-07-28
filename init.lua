@@ -92,7 +92,7 @@ end
 ---Doesn't ensure any chunks around the player.
 function OnWorldInitialized()
 	-- Set camera free based on mod settings.
-	Modification.SetCameraFree()
+	Modification.SetCameraFree() -- BUG: Calling this here has the side effect of the player entity not being loaded. Also the player UI will be gone
 end
 
 ---Called *every* time the game is about to start updating the world.

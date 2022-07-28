@@ -344,6 +344,14 @@ local function captureModifyEntities(file, modify, x, y, radius)
 				file:write(",\n\t", JSON.Marshal(rootEntity), "\n", "]")
 			end
 
+			-- Disabling this component will prevent entites from being killed/reset when they go offscreen.
+			-- If they are reset, all tags will be reset and we may capture these entities multiple times.
+			-- This has some side effects, like longleg.xml and zombie_weak.xml will respawn every revisit, as their spawner doesn't get deleted. (Or something similar to this)
+			local components = rootEntity:GetComponents("CameraBoundComponent")
+			for _, component in ipairs(components) do
+				rootEntity:SetComponentsEnabled(component, false)
+			end
+
 			-- Prevent recapturing.
 			rootEntity:AddTag("MapCaptured")
 		end
