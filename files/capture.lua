@@ -223,7 +223,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
 		CameraAPI.SetCameraFree(true)
-		ctx.progressEnd = gridSize.x * gridSize.y
+		ctx.progressCurrent, ctx.progressEnd = 0, gridSize.x * gridSize.y
 
 		while t < tLimit do
 			-- Prematurely stop capturing if that is requested by the context.
@@ -301,7 +301,7 @@ local function captureModifyEntities(file, modify, x, y, radius)
 	for _, entity in ipairs(entities) do
 		-- Get to the root entity, as we are exporting entire entity trees.
 		local rootEntity = entity:GetRootEntity() or entity
-	
+
 		-- Make sure to only export entities when they are encountered the first time.
 		if file and not rootEntity:HasTag("MapCaptured") then
 			--print(rootEntity:GetFilename(), "got captured!")
@@ -461,18 +461,46 @@ end
 
 ---Starts the capturing process based on user/mod settings.
 function Capture:StartCapturing()
-	local mode = ModSettingGet("noita-mapcap.capture-mode")
-	local outputPixelScale = ModSettingGet("noita-mapcap.pixel-scale")
+	Message:CatchException("Capture:StartCapturing", function()
 
-	if mode == "live" then
-		local interval = ModSettingGet("noita-mapcap.live-interval")
-		local minDistance = ModSettingGet("noita-mapcap.live-min-distance")
-		local maxDistance = ModSettingGet("noita-mapcap.live-max-distance")
+		local mode = ModSettingGet("noita-mapcap.capture-mode")
+		local outputPixelScale = ModSettingGet("noita-mapcap.pixel-scale")
+		local captureGridSize = tonumber(ModSettingGet("noita-mapcap.grid-size"))
 
-		self:StartCapturingLive(interval, minDistance, maxDistance, outputPixelScale)
-	else
-		Message:ShowRuntimeError("StartCapturing", string.format("Unknown capturing mode %q", tostring(mode)))
-	end
+		if mode == "live" then
+			local interval = ModSettingGet("noita-mapcap.live-interval")
+			local minDistance = ModSettingGet("noita-mapcap.live-min-distance")
+			local maxDistance = ModSettingGet("noita-mapcap.live-max-distance")
+
+			self:StartCapturingLive(interval, minDistance, maxDistance, outputPixelScale)
+		elseif mode == "area" then
+			local area = ModSettingGet("noita-mapcap.area")
+			if area == "custom" then
+				local topLeft = Vec2(ModSettingGet("noita-mapcap.area-top-left"))
+				local bottomRight = Vec2(ModSettingGet("noita-mapcap.area-bottom-right"))
+
+				self:StartCapturingArea(topLeft, bottomRight, captureGridSize, outputPixelScale)
+			else
+				local predefinedArea = Config.CaptureArea[area]
+				if predefinedArea then
+					self:StartCapturingArea(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale)
+				else
+					Message:ShowRuntimeError("PredefinedArea", string.format("Unknown predefined capturing area %q", tostring(area)))
+				end
+			end
+		elseif mode == "spiral" then
+			local origin = ModSettingGet("noita-mapcap.capture-mode-spiral-origin")
+			if origin == "custom" then
+				local originVec = Vec2(ModSettingGet("noita-mapcap.capture-mode-spiral-origin-vector"))
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+			else
+				Message:ShowRuntimeError("SpiralOrigin", string.format("Unknown spiral origin %q", tostring(origin)))
+			end
+		else
+			Message:ShowRuntimeError("StartCapturing", string.format("Unknown capturing mode %q", tostring(mode)))
+		end
+
+	end)
 end
 
 ---Stops all capturing processes.
