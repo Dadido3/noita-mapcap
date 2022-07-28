@@ -85,11 +85,13 @@ function UI:_DrawMessages(messages)
 		else
 			GuiImage(gui, self:_GenID(), 0, 0, "mods/noita-mapcap/files/ui-gfx/hint-16x16.png", 1, 1, 0, 0, 0, "")
 		end
-		
+
 		GuiLayoutBeginVertical(gui, 0, 0, false, 0, 0)
 		if type(message.Lines) == "table" then
 			for _, line in ipairs(message.Lines) do
-				GuiText(gui, 0, 0, tostring(line)) posY = posY + 11
+				for splitLine in tostring(line):gmatch("[^\n]+") do
+					GuiText(gui, 0, 0, splitLine) posY = posY + 11
+				end
 			end
 		end
 		if type(message.Actions) == "table" then
