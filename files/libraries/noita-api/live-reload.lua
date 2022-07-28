@@ -45,6 +45,7 @@ function LiveReload:Reload(modPath, interval)
 	local res, err = dofile(modPath .. "init.lua")
 	if err then
 		print(string.format("Error reloading mod: %s", err))
+		error(string.format("Error reloading mod: %s", err))
 	end
 end
 
