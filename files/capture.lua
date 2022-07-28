@@ -144,7 +144,7 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 
 	---Origin rounded to capture grid.
 	---@type Vec2
-	local origin = (origin / captureGridSize):Rounded("Floor") * captureGridSize
+	local origin = (origin / captureGridSize):Rounded("floor") * captureGridSize
 
 	---The position in world coordinates.
 	---Centered to chunks.
@@ -492,6 +492,12 @@ function Capture:StartCapturing()
 			local origin = ModSettingGet("noita-mapcap.capture-mode-spiral-origin")
 			if origin == "custom" then
 				local originVec = Vec2(ModSettingGet("noita-mapcap.capture-mode-spiral-origin-vector"))
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+			elseif origin == "0" then
+				local originVec = Vec2(0, 0)
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+			elseif origin == "current" then
+				local originVec = CameraAPI:GetPos()
 				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
 			else
 				Message:ShowRuntimeError("SpiralOrigin", string.format("Unknown spiral origin %q", tostring(origin)))
