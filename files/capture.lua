@@ -15,8 +15,8 @@ local JSON = require("noita-api.json")
 local MonitorStandby = require("monitor-standby")
 local ProcessRunner = require("process-runner")
 local ScreenCapture = require("screen-capture")
-local Vec2 = require("noita-api.vec2")
 local Utils = require("noita-api.utils")
+local Vec2 = require("noita-api.vec2")
 
 ------------------
 -- Global stuff --
@@ -83,7 +83,7 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 			-- Prematurely stop capturing if that is requested by the context.
 			if ctx and ctx:IsStopping() then return end
 
-			if delayFrames > 100 then
+			if delayFrames > 100 then -- TODO: Consider smaller timeout to start wiggling
 				-- Wiggle the screen a bit, as chunks sometimes don't want to load.
 				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-100, 100), math.random(-100, 100))) end
 				wait(0)
@@ -94,7 +94,8 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 			wait(0)
 			delayFrames = delayFrames + 1
 
-		until DoesWorldExistAt(topLeftWorld.x, topLeftWorld.y, bottomRightWorld.x, bottomRightWorld.y)
+			local topLeftBounds, bottomRightBounds = CameraAPI:Bounds()
+		until DoesWorldExistAt(topLeftBounds.x, topLeftBounds.y, bottomRightBounds.x, bottomRightBounds.y)
 		-- Chunks are loaded and will be drawn on the *next* frame.
 	end
 
