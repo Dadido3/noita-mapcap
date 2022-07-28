@@ -102,7 +102,7 @@ modSettings = {
 	{
 		id = "area-top-left",
 		ui_name = "    Top left corner",
-		ui_description = "The top left corner of the to be captured rectangle.",
+		ui_description = "The top left corner of the to be captured rectangle.\n \nDefault: -512,-512", -- TODO: Fix "right click for default" for text inputs
 		value_default = "-512,-512",
 		allowed_characters = "-0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
@@ -111,7 +111,7 @@ modSettings = {
 	{
 		id = "area-bottom-right",
 		ui_name = "    Bottom right corner",
-		ui_description = "The bottom right corner of the to be captured rectangle.",
+		ui_description = "The bottom right corner of the to be captured rectangle.\n \nDefault: 512,512",
 		value_default = "512,512",
 		allowed_characters = "-0123456789,",
 		scope = MOD_SETTING_SCOPE_RUNTIME,
@@ -131,7 +131,7 @@ modSettings = {
 			{
 				id = "grid-size",
 				ui_name = "Grid size",
-				ui_description = "How many world pixels the viewport will move between screenshots.",
+				ui_description = "How many world pixels the viewport will move between screenshots.\n \nDefault: 512",
 				value_default = "512",
 				allowed_characters = "0123456789",
 				scope = MOD_SETTING_SCOPE_RUNTIME,
@@ -168,7 +168,7 @@ modSettings = {
 			{
 				id = "window-resolution",
 				ui_name = "  Window resolution",
-				ui_description = "Size of the window in screen pixels.",
+				ui_description = "Size of the window in screen pixels.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
@@ -180,7 +180,7 @@ modSettings = {
 			{
 				id = "internal-resolution",
 				ui_name = "  Internal resolution",
-				ui_description = "Size of the viewport in screen pixels.\nIdeally set to the window resolution.",
+				ui_description = "Size of the viewport in screen pixels.\nIdeally set to the window resolution.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
@@ -192,7 +192,7 @@ modSettings = {
 			{
 				id = "virtual-resolution",
 				ui_name = "  Virtual resolution",
-				ui_description = "Size of the viewport in world pixels.",
+				ui_description = "Size of the viewport in world pixels.\nIdeally set to the window resolution.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
