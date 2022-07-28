@@ -93,6 +93,11 @@ function Modification.RequiredChanges()
 	-- Capturing will not work in fullscreen.
 	config["fullscreen"] = "0"
 
+	magic["DRAW_PARALLAX_BACKGROUND"] = ModSettingGet("noita-mapcap.disable-background") and "0" or "1"
+	magic["DEBUG_PAUSE_GRID_UPDATE"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
+	magic["DEBUG_PAUSE_BOX2D"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
+	magic["DEBUG_DISABLE_POSTFX_DITHERING"] = ModSettingGet("noita-mapcap.disable-postfx") and "1" or "0"
+
 	return config, magic
 end
 

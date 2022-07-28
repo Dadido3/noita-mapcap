@@ -263,8 +263,30 @@ modSettings = {
 				not_setting = true,
 			},
 			{
+				id = "disable-background",
+				ui_name = "  Disable parallax background",
+				ui_description = "Turns the world background black.",
+				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+			},
+			{
+				id = "disable-physics",
+				ui_name = "  Disable pixel and entity physics",
+				ui_description = "Will freeze all pixel simulations and rigid body dynamics.",
+				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				show_fn = function() return DebugAPI.IsDevBuild() end,
+			},
+			{
+				id = "disable-postfx",
+				ui_name = "  Disable post FX",
+				ui_description = "Will disable the following postprocessing:\n- Dithering",
+				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+			},
+			{
 				id = "modify-entities",
-				ui_name = "  Modify entities",
+				ui_name = "  Disable entity logic",
 				ui_description = "If enabled, the mod will disable some components of all encountered entities.\nThis will:\n- Disable AI\n- Disable falling\n- Disable hovering and rotation animations\n- Reduce explosions\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
