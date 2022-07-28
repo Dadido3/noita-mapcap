@@ -83,9 +83,9 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 			-- Prematurely stop capturing if that is requested by the context.
 			if ctx and ctx:IsStopping() then return end
 
-			if delayFrames > 100 then -- TODO: Consider smaller timeout to start wiggling
+			if delayFrames > 30 then
 				-- Wiggle the screen a bit, as chunks sometimes don't want to load.
-				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-100, 100), math.random(-100, 100))) end
+				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-10, 10), math.random(-10, 10))) end
 				wait(0)
 				delayFrames = delayFrames + 1
 				if pos then CameraAPI.SetPos(pos) end
