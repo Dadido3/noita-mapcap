@@ -56,7 +56,7 @@ function Message:ShowResetNoitaSettings()
 			"Press the following button to reset the settings and close Noita automatically:",
 		},
 		Actions = {
-			{ Name = "Reset and close", Hint = nil, HintDesc = nil, Callback = function() Modification:Reset() end },
+			{ Name = "Reset and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = function() Modification:Reset() end },
 		},
 	}
 end
@@ -76,11 +76,11 @@ function Message:ShowSetNoitaSettings(callback, desc)
 			"Press the button at the bottom to set up and close Noita automatically.",
 			"Alternatively disable `Use custom resolution` in the mod settings.",
 			" ",
-			"You can always reset these settings by right clicking the `start capture`",
+			"You can always reset any custom settings by right clicking the `start capture`",
 			"button at the top left.",
 		},
 		Actions = {
-			{ Name = "Setup and close", Hint = nil, HintDesc = nil, Callback = callback },
+			{ Name = "Setup and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = callback },
 		},
 	}
 end
