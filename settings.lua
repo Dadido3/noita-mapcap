@@ -263,7 +263,7 @@ modSettings = {
 				not_setting = true,
 			},
 			{
-				id = "disable-entity-components",
+				id = "modify-entities",
 				ui_name = "  Modify entities",
 				ui_description = "If enabled, the mod will disable some components of all encountered entities.\nThis will:\n- Disable AI\n- Disable falling\n- Disable hovering and rotation animations\n- Reduce explosions\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
 				value_default = false,

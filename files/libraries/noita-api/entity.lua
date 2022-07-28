@@ -340,6 +340,20 @@ end
 
 -- TODO: Add missing Noita API methods and functions.
 
+---
+---@return boolean
+function NoitaEntity:IsPlayer()
+	return IsPlayer(self.ID)
+end
+
+---
+---@return boolean
+function NoitaEntity:IsInvisible()
+	return IsInvisible(self.ID)
+end
+
+-- TODO: Add missing Noita API methods and functions.
+
 -------------------------
 -- JSON Implementation --
 -------------------------

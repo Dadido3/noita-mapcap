@@ -322,7 +322,8 @@ local function captureModifyEntities(file, modify, x, y, radius)
 		end
 
 		-- Make sure to only modify entities when they are encountered the first time.
-		if modify and not rootEntity:HasTag("MapModified") then
+		-- Also, don't modify the player.
+		if modify and not rootEntity:IsPlayer() and not rootEntity:HasTag("MapModified") then
 			-- Disable some components.
 			for _, componentTypeName in ipairs(Config.ComponentsToDisable) do
 				local components = rootEntity:GetComponents(componentTypeName)
@@ -505,6 +506,11 @@ function Capture:StartCapturing()
 		else
 			Message:ShowRuntimeError("StartCapturing", string.format("Unknown capturing mode %q", tostring(mode)))
 		end
+
+		-- Start entity capturing and modification, if wanted.
+		local captureEntities = ModSettingGet("noita-mapcap.capture-entities")
+		local modifyEntities = ModSettingGet("noita-mapcap.modify-entities")
+		self:StartCapturingEntities(captureEntities, modifyEntities)
 
 	end)
 end
