@@ -42,6 +42,8 @@ function UI:_DrawToolbar()
 
 	GuiLayoutBeginHorizontal(gui, 2, 2, true, 2, 2)
 
+	local captureMode = tostring(ModSettingGet("noita-mapcap.capture-mode"))
+
 	if Capture.MapCapturingCtx:IsRunning() then
 		local clicked, clickedRight = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/stop-16x16.png")
 		GuiTooltip(gui, "Stop capture", "Stop the capturing process.\n \nRight click: Reset any modifications that this mod has done to Noita.")
@@ -49,7 +51,7 @@ function UI:_DrawToolbar()
 		if clickedRight then Message:ShowResetNoitaSettings() end
 	else
 		local clicked, clickedRight = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/record-16x16.png")
-		GuiTooltip(gui, "Start capture", "Start the capturing process based on mod settings.\n \nRight click: Reset any modifications that this mod has done to Noita.")
+		GuiTooltip(gui, string.format("Start %s capture", captureMode), "Go into mod settings to configure the capturing process.\n \nRight click: Reset any modifications that this mod has done to Noita.")
 		if clicked then Capture:StartCapturing() end
 		if clickedRight then Message:ShowResetNoitaSettings() end
 	end
