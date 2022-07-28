@@ -46,8 +46,11 @@ function DebugAPI.IsDevBuild()
 	return DebugGetIsDevBuild()
 end
 
----Trailer mode disables drawing of most UI elements.
----Similar, if not exactly the same, to F12 in the dev build.
+---Enables the trailer mode and some other things:
+---
+--- - Disables ingame GUI.
+--- - Opens fog of war everywhere (Not the same as disabling it completely).
+--- - Enables `mTrailerMode`, whatever that does.
 ---
 ---No idea how to disable it, beside pressing F12 in dev build.
 function DebugAPI.EnableTrailerMode()
