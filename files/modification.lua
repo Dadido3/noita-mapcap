@@ -83,6 +83,12 @@ function Modification.RequiredChanges()
 		config["backbuffer_height"] = config["window_h"]
 		magic["VIRTUAL_RESOLUTION_X"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).x)
 		magic["VIRTUAL_RESOLUTION_Y"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).y)
+	else
+		-- Only reset some stuff that is independent to the users chosen resolution.
+		config["internal_size_w"] = "1280"
+		config["internal_size_h"] = "720"
+		magic["VIRTUAL_RESOLUTION_X"] = "427"
+		magic["VIRTUAL_RESOLUTION_Y"] = "242"
 	end
 
 	-- Set virtual offset to be pixel perfect.

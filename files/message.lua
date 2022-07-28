@@ -74,13 +74,28 @@ function Message:ShowSetNoitaSettings(callback, desc)
 			desc or "",
 			" ",
 			"Press the button at the bottom to set up and close Noita automatically.",
-			"Alternatively disable `Use custom resolution` in the mod settings.",
 			" ",
 			"You can always reset any custom settings by right clicking the `start capture`",
 			"button at the top left.",
 		},
 		Actions = {
 			{ Name = "Setup and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = callback },
+		},
+	}
+end
+
+---Request the user to restart Noita.
+---@param desc string -- What's wrong.
+function Message:ShowRequestRestart(desc)
+	self.List = self.List or {}
+
+	self.List["RequestRestart"] = {
+		Type = "warning",
+		Lines = {
+			"It seems that not all requested settings are applied to Noita:",
+			desc or "",
+			" ",
+			"To resolve this issue, restart the game.",
 		},
 	}
 end

@@ -171,7 +171,7 @@ modSettings = {
 				ui_description = "Size of the window in screen pixels.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
-				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
 						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
@@ -183,7 +183,7 @@ modSettings = {
 				ui_description = "Size of the viewport in screen pixels.\nIdeally set to the window resolution.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
-				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
 						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))
@@ -195,7 +195,7 @@ modSettings = {
 				ui_description = "Size of the viewport in world pixels.\nIdeally set to the window resolution.\n \nDefault: 1024,1024",
 				value_default = "1024,1024",
 				allowed_characters = "0123456789,",
-				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 				show_fn = function()
 					return (not modSettings:Get("advanced.settings.custom-resolution-live.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-live"))
 						or (not modSettings:Get("advanced.settings.custom-resolution-other.hidden") and modSettings:GetNextValue("advanced.settings.custom-resolution-other"))

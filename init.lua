@@ -113,7 +113,8 @@ function OnWorldPostUpdate()
 		-- !!! DISABLE THIS LINE AND THE CORRESPONDING REQUIRE BEFORE COMMITTING !!!
 		--LiveReload:Reload("mods/noita-mapcap/", 60)
 
-		Check:Resolutions(60)
+		-- Run checks every 60 frames.
+		Check:Regular(60)
 
 		-- Draw UI after coroutines have been resumed.
 		UI:Draw()
