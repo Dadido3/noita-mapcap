@@ -79,6 +79,7 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	if pos then CameraAPI.SetPos(pos) end
 	if ensureLoaded then
 		local delayFrames = 0
+		if ctx then ctx.state.WaitFrames = delayFrames end
 		repeat
 			-- Prematurely stop capturing if that is requested by the context.
 			if ctx and ctx:IsStopping() then return end
@@ -88,11 +89,13 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-10, 10), math.random(-10, 10))) end
 				wait(0)
 				delayFrames = delayFrames + 1
+				if ctx then ctx.state.WaitFrames = delayFrames end
 				if pos then CameraAPI.SetPos(pos) end
 			end
 
 			wait(0)
 			delayFrames = delayFrames + 1
+			if ctx then ctx.state.WaitFrames = delayFrames end
 
 			local topLeftBounds, bottomRightBounds = CameraAPI:Bounds()
 		until DoesWorldExistAt(topLeftBounds.x, topLeftBounds.y, bottomRightBounds.x, bottomRightBounds.y)
@@ -230,7 +233,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
 		Modification.SetCameraFree(true)
-		ctx.progressCurrent, ctx.progressEnd = 0, gridSize.x * gridSize.y
+		ctx.state = {Current = 0, Max = gridSize.x * gridSize.y}
 
 		while t < tLimit do
 			-- Prematurely stop capturing if that is requested by the context.
@@ -245,7 +248,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 				local pos = (hilbertPos + gridTopLeft) * captureGridSize
 				pos:Add(Vec2(256, 256)) -- Move to chunk center -- TODO: Align chunks with top left pixel
 				captureScreenshot(pos, true, true, ctx, outputPixelScale)
-				ctx.progressCurrent = ctx.progressCurrent + 1
+				ctx.state.Current = ctx.state.Current + 1
 			end
 
 			t = t + 1

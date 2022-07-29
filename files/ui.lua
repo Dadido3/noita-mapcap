@@ -68,7 +68,7 @@ function UI:_DrawMessages(messages)
 
 	-- Abort if there is no messages list.
 	if not messages then return end
-	
+
 	GuiZSet(gui, 0)
 
 	-- Unfortunately you can't stack multiple layout containers with the same direction.
@@ -125,6 +125,38 @@ function UI:_DrawMessages(messages)
 	end
 end
 
+function UI:_DrawProgress()
+	local gui = self.gui
+
+	-- Check if there is progress to show.
+	local state = Capture.MapCapturingCtx:GetState()
+	if not state then return end
+
+	local factor
+	if state.Current and state.Max > 0 then
+		factor = state.Current / state.Max
+	end
+
+	local width, height = GuiGetScreenDimensions(gui)
+	local widthHalf, heightHalf = math.floor(width/2), math.floor(height/2)
+	GuiZSet(gui, -20)
+
+	local barWidth = width - 60
+	local y = heightHalf
+	if factor then
+		GuiImageNinePiece(gui, self:_GenID(), 30, y, barWidth, 9, 1, "mods/noita-mapcap/files/ui-gfx/progress-a.png", "mods/noita-mapcap/files/ui-gfx/progress-a.png")
+		GuiImageNinePiece(gui, self:_GenID(), 30, y, math.floor(barWidth * factor + 0.5), 9, 1, "mods/noita-mapcap/files/ui-gfx/progress-b.png", "mods/noita-mapcap/files/ui-gfx/progress-b.png")
+		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Align_HorizontalCenter)
+		GuiText(gui, widthHalf, y, string.format("%d of %d (%.1f%%)", state.Current, state.Max, factor*100)) y = y + 11
+		y = y + 15
+	end
+
+	if state.WaitFrames then
+		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Align_HorizontalCenter)
+		GuiText(gui, widthHalf, y, string.format("Waiting for %d frames.", state.WaitFrames)) y = y + 11
+	end
+end
+
 function UI:Draw()
 	self.gui = self.gui or GuiCreate()
 	local gui = self.gui
@@ -143,6 +175,7 @@ function UI:Draw()
 
 	self:_DrawToolbar()
 	self:_DrawMessages(Message.List)
+	self:_DrawProgress()
 
 	GuiIdPop(gui)
 end

@@ -21,8 +21,7 @@ local ProcessRunner = {}
 ---@class ProcessRunnerCtx
 ---@field running boolean|nil
 ---@field stopping boolean|nil
----@field progressCurrent number|nil
----@field progressEnd number|nil
+---@field state table|nil
 local Context = {}
 Context.__index = Context
 
@@ -52,11 +51,11 @@ function Context:IsStopping()
 	return self.stopping or false
 end
 
----Returns the progress of the process.
----@return number current
----@return number end
-function Context:GetProgress()
-	return self.progressCurrent or 0, self.progressEnd or 0
+---Returns a table with information about the current state of the process.
+---Will return nil if there is no process.
+---@return table|nil -- Custom to the process.
+function Context:GetState()
+	return self.state
 end
 
 ---Tells the currently running process to stop.
@@ -74,12 +73,12 @@ end
 ---@param doFunc fun(ctx:ProcessRunnerCtx)|nil -- Called after `initFunc` has been run.
 ---@param endFunc fun(ctx:ProcessRunnerCtx)|nil -- Called after `doFunc` has been run.
 ---@param errFunc fun(err:string, scope:"init"|"do"|"end") -- Called on any error.
+---@return boolean -- True if process was started successfully.
 function Context:Run(initFunc, doFunc, endFunc, errFunc)
-	if self.running then return end
+	if self.running then return false end
+	self.running, self.stopping, self.state = true, false, {}
 
 	async(function()
-		self.running, self.stopping, self.progressCurrent, self.progressEnd = true, false, nil, nil
-
 		-- Init function.
 		if initFunc then
 			local ok, err = pcall(initFunc, self)
@@ -110,8 +109,10 @@ function Context:Run(initFunc, doFunc, endFunc, errFunc)
 			end
 		end
 
-		self.running, self.stopping = false, false
+		self.running, self.stopping, self.state = false, false, nil
 	end)
+
+	return true
 end
 
 return ProcessRunner
