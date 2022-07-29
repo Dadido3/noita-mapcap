@@ -99,11 +99,21 @@ function Modification.SetMemoryOptions(memory)
 				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG build.
 					mPostFxDisabled = 0x010E3B6C,
 					mGuiDisabled = 0x010E3B6D,
+					mGuiHalfSize = 0x010E3B6E,
+					mFogOfWarOpenEverywhere = 0x010E3B6F,
+					mTrailerMode = 0x010E3B70,
+					mDayTimeRotationPause = 0x010E3B71,
+					mPlayerNeverDies = 0x010E3B72,
 					mFreezeAI = 0x010E3B73,
 				},
 				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam build.
 					mPostFxDisabled = 0x010EDEBC,
 					mGuiDisabled = 0x010EDEBD,
+					mGuiHalfSize = 0x010EDEBE,
+					mFogOfWarOpenEverywhere = 0x010EDEBF,
+					mTrailerMode = 0x010EDEC0,
+					mDayTimeRotationPause = 0x010EDEC1,
+					mPlayerNeverDies = 0x010EDEC2,
 					mFreezeAI = 0x010EDEC3,
 				},
 			},
@@ -179,8 +189,8 @@ function Modification.RequiredChanges()
 	end
 
 	-- Set virtual offset to prevent/reduce not correctly drawn pixels at the window border.
-	magic["GRID_RENDER_BORDER"] = "2" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
-	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-2"
+	magic["GRID_RENDER_BORDER"] = "3" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
+	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-3"
 	magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "0"
 
 	-- Always expect a fullscreen mode of 0 (windowed).
@@ -191,6 +201,8 @@ function Modification.RequiredChanges()
 	config["screenshake_intensity"] = "0"
 
 	magic["DRAW_PARALLAX_BACKGROUND"] = ModSettingGet("noita-mapcap.disable-background") and "0" or "1"
+
+	-- These magic numbers seem only to work in the dev build.
 	magic["DEBUG_PAUSE_GRID_UPDATE"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
 	magic["DEBUG_PAUSE_BOX2D"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
 	magic["DEBUG_DISABLE_POSTFX_DITHERING"] = ModSettingGet("noita-mapcap.disable-postfx") and "1" or "0"
@@ -210,6 +222,7 @@ function Modification.RequiredChanges()
 		memory["mPostFxDisabled"] = 1
 		memory["mGuiDisabled"] = 1
 		memory["mFreezeAI"] = 1
+		memory["mTrailerMode"] = 1 -- Is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
 	end
 
 	return config, magic, memory, patches
