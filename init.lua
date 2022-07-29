@@ -56,9 +56,10 @@ dofile("mods/noita-mapcap/files/ui.lua")
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
 	-- Set magic numbers and other stuff based on mod settings.
-	local config, magic, memory = Modification.RequiredChanges()
+	local config, magic, memory, patches = Modification.RequiredChanges()
 	Modification.SetMagicNumbers(magic)
 	Modification.SetMemoryOptions(memory)
+	Modification.PatchFiles(patches)
 
 	-- Override virtual resolution and some other stuff.
 	--ModMagicNumbersFileAdd("mods/noita-mapcap/files/magic-numbers/1024.xml")
@@ -99,7 +100,7 @@ end
 
 ---Called *every* time the game is about to start updating the world.
 function OnWorldPreUpdate()
-	Message:CatchException("OnWorldPreUpdate", function ()
+	Message:CatchException("OnWorldPreUpdate", function()
 
 		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
 		wake_up_waiting_threads(1)
@@ -109,7 +110,7 @@ end
 
 ---Called *every* time the game has finished updating the world.
 function OnWorldPostUpdate()
-	Message:CatchException("OnWorldPostUpdate", function ()
+	Message:CatchException("OnWorldPostUpdate", function()
 		-- Reload mod every 60 frames.
 		-- This allows live updates to the mod while Noita is running.
 		-- !!! DISABLE THIS LINE AND THE CORRESPONDING REQUIRE BEFORE COMMITTING !!!
@@ -144,7 +145,7 @@ end
 function OnPausedChanged(isPaused, isInventoryPause)
 	-- Set some stuff based on mod settings.
 	-- Normally this would be in `OnModSettingsChanged`, but that doesn't seem to be called.
-	local config, magic, memory = Modification.RequiredChanges()
+	local config, magic, memory, patches = Modification.RequiredChanges()
 	Modification.SetMemoryOptions(memory)
 end
 

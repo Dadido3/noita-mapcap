@@ -280,7 +280,7 @@ modSettings = {
 			{
 				id = "disable-postfx",
 				ui_name = "  Disable post FX",
-				ui_description = "Will disable the following postprocessing:\n- Dithering",
+				ui_description = "Will disable the following postprocessing:\n- Dithering\n- Refraction\n- Lighting\n- Fog of war\n- Glow\n- Gamma correction",
 				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},

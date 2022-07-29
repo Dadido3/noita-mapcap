@@ -6,6 +6,12 @@
 -- Noita settings/configuration modifications.
 -- We try to keep persistent modifications to a minimum, but some things have to be changed in order for the mod to work correctly.
 
+-- There are 4 ways Noita can be modified by code:
+-- - `config.xml`: These are persistent, and Noita needs to be force closed when changed from inside a mod.
+-- - `magic_numbers.xml`: Persistent per world, can only be applied at mod startup.
+-- - Process memory: Volatile, can be modified at runtime. Needs correct memory addresses to function.
+-- - File patching: Volatile, can only be applied at mod startup.
+
 --------------------------
 -- Load library modules --
 --------------------------
@@ -113,12 +119,28 @@ function Modification.SetMemoryOptions(memory)
 	end
 end
 
+---Applies patches to game files based on in the given table.
+---
+---Should be called on mod initialization only.
+---@param patches table
+function Modification.PatchFiles(patches)
+	-- Change constants in post_final.frag.
+	if patches.PostFinalConst then
+		local postFinal = ModTextFileGetContent("data/shaders/post_final.frag")
+		for k, v in pairs(patches.PostFinalConst) do
+			postFinal = postFinal:gsub(string.format("const bool %s%%s+=[^;]+;", k), string.format("const bool %s = %s;", k, tostring(v)))
+		end
+		ModTextFileSetContent("data/shaders/post_final.frag", postFinal)
+	end
+end
+
 ---Returns tables with user requested game configuration changes.
 ---@return table config -- List of `config.xml` attributes that should be changed.
 ---@return table magic -- List of `magic_number.xml` attributes that should be changed.
 ---@return table memory -- List of options in RAM of this process that should be changed.
+---@return table patches -- List of patches that should be applied to game files.
 function Modification.RequiredChanges()
-	local config, magic, memory = {}, {}, {}
+	local config, magic, memory, patches = {}, {}, {}, {}
 
 	-- Does the user request a custom resolution?
 	local customResolution = (ModSettingGet("noita-mapcap.custom-resolution-live") and ModSettingGet("noita-mapcap.capture-mode") == "live")
@@ -154,13 +176,24 @@ function Modification.RequiredChanges()
 	magic["DEBUG_PAUSE_BOX2D"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
 	magic["DEBUG_DISABLE_POSTFX_DITHERING"] = ModSettingGet("noita-mapcap.disable-postfx") and "1" or "0"
 
+	if ModSettingGet("noita-mapcap.disable-postfx") then
+		patches.PostFinalConst = {
+			ENABLE_REFRACTION       = false,
+			ENABLE_LIGHTING         = false,
+			ENABLE_FOG_OF_WAR       = false,
+			ENABLE_GLOW             = false,
+			ENABLE_GAMMA_CORRECTION = false,
+			ENABLE_PATH_DEBUG       = false,
+		}
+	end
+
 	if ModSettingGet("noita-mapcap.disable-shaders-gui-ai") then
 		memory["mPostFxDisabled"] = 1
 		memory["mGuiDisabled"] = 1
 		memory["mFreezeAI"] = 1
 	end
 
-	return config, magic, memory
+	return config, magic, memory, patches
 end
 
 ---Sets the camera free if required by the mod settings.

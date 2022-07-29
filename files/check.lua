@@ -58,7 +58,7 @@ function Check:Regular(interval)
 	end
 
 	-- Check if we have the required settings.
-	local config, magic = Modification.RequiredChanges()
+	local config, magic, patches = Modification.RequiredChanges()
 	if config["fullscreen"] then
 		local expected = tonumber(config["fullscreen"])
 		if expected ~= Coords.FullscreenMode then
@@ -93,7 +93,7 @@ function Check:Regular(interval)
 	end
 
 	-- Request a restart if the user has changed specific mod settings.
-	local restartModSettings = {"disable-background", "disable-physics", "disable-postfx", "disable-shaders-gui-ai"}
+	local restartModSettings = {"disable-background", "disable-physics", "disable-postfx"}
 	for i, v in ipairs(restartModSettings) do
 		local settingID = "noita-mapcap." .. v
 		if ModSettingGetNextValue(settingID) ~= ModSettingGet(settingID) then
