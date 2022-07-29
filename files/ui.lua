@@ -18,6 +18,30 @@ require("utilities") -- Loads Noita's utilities from `data/scripts/lib/utilitite
 -- Code --
 ----------
 
+---Splits the given string to fit inside maxLength.
+---@param gui userdata
+---@param text string
+---@param maxLength number -- In UI pixels.
+---@return string[]
+local function splitString(gui, text, maxLength)
+	local splitted = {}
+
+	local first, rest = text, ""
+
+	while first:len() > 0 do
+		local width, height = GuiGetTextDimensions(gui, first, 1, 2)
+		if width <= maxLength then
+			table.insert(splitted, first)
+			first, rest = rest, ""
+		else
+			first, rest = first:sub(1, -2), first:sub(-1, -1) .. rest
+		end
+	end
+		
+
+	return splitted
+end
+
 ---Returns unique IDs for the widgets.
 ---`_ResetID` has to be called every time before the UI is rebuilt.
 ---@return integer
@@ -69,6 +93,8 @@ function UI:_DrawMessages(messages)
 	-- Abort if there is no messages list.
 	if not messages then return end
 
+	local screenWidth, screenHeight = GuiGetScreenDimensions(gui)
+
 	GuiZSet(gui, 0)
 
 	-- Unfortunately you can't stack multiple layout containers with the same direction.
@@ -92,7 +118,9 @@ function UI:_DrawMessages(messages)
 		if type(message.Lines) == "table" then
 			for _, line in ipairs(message.Lines) do
 				for splitLine in tostring(line):gmatch("[^\n]+") do
-					GuiText(gui, 0, 0, splitLine) posY = posY + 11
+					for _, splitLine in ipairs(splitString(gui, splitLine, screenWidth - 80)) do
+						GuiText(gui, 0, 0, splitLine) posY = posY + 11
+					end
 				end
 			end
 		end
