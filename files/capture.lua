@@ -60,6 +60,11 @@ end
 local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPixelScale)
 	outputPixelScale = outputPixelScale or 0
 
+	local rectTopLeft, rectBottomRight = ScreenCapture.GetRect()
+	if Coords.WindowResolution ~= rectBottomRight - rectTopLeft then
+		error(string.format("window size seems to have changed from %s to %s", Coords.WindowResolution, rectBottomRight - rectTopLeft))
+	end
+
 	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
 
 	---Top left in output coordinates.
@@ -131,7 +136,7 @@ end
 ---@param err string
 ---@param scope "init"|"do"|"end"
 local function mapCapturingCtxErrHandler(err, scope)
-	print(string.format("Failed to capture map: %s", err))
+	print(string.format("Failed to capture map: %s.", err))
 	Message:ShowRuntimeError("MapCaptureError", "Failed to capture map:", tostring(err))
 end
 
@@ -151,9 +156,9 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 	local origin = (origin / captureGridSize):Rounded("floor") * captureGridSize
 
 	---The position in world coordinates.
-	---Centered to chunks.
+	---Centered to the grid.
 	---@type Vec2
-	local pos = origin + Vec2(256, 256) -- TODO: Align chunks with top left pixel
+	local pos = origin + Vec2(captureGridSize/2, captureGridSize/2)
 
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
@@ -246,7 +251,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 				---Position in world coordinates.
 				---@type Vec2
 				local pos = (hilbertPos + gridTopLeft) * captureGridSize
-				pos:Add(Vec2(256, 256)) -- Move to chunk center -- TODO: Align chunks with top left pixel
+				pos:Add(Vec2(captureGridSize/2, captureGridSize/2)) -- Move to center of grid cell.
 				captureScreenshot(pos, true, true, ctx, outputPixelScale)
 				ctx.state.Current = ctx.state.Current + 1
 			end
