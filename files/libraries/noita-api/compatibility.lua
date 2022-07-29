@@ -10,14 +10,16 @@
 if _NoitaAPICompatibilityWrapperGuard_ then return function(dummy) end end
 _NoitaAPICompatibilityWrapperGuard_ = true
 
--- Override print function to behave more like the standard lua one.
 local oldPrint = print
-function print(...)
-	local arg = { ... }
-	local stringArgs = {}
 
-	for i, v in ipairs(arg) do
-		table.insert(stringArgs, tostring(v))
+-- Emulated print function that behaves more like the standard lua one.
+function print(...)
+	local n = select("#", ...)
+
+	--for i, v in ipairs(arg) do
+	local stringArgs = {}
+	for i = 1, n do
+		table.insert(stringArgs, tostring(select(i, ...)))
 	end
 
 	oldPrint(unpack(stringArgs))
@@ -42,25 +44,40 @@ package.loaded = package.loaded or {
 	--os = os,
 }
 
+local oldDofile = dofile
+
+---Emulated dofile to execute a lua script from disk and circumvent any caching.
+---Noita for some reason caches script files (Or loads them into its virtual filesystem)(Or caches compiled bytecode), so reloading script files from disk does not work without this.
+---
+---This conforms more with standard lua.
+---@param path string
+---@return any ...
+function dofile(path)
+	local func, err = loadfile(path)
+	if not func then error(err) end
+
+	return func()
+end
+
 local oldRequire = require
 
 local recursionSet = {}
-local recursionLast
 
 ---Emulated require function in case the Lua API is restricted.
 ---It's probably good enough for most usecases.
 ---
----We need to override the default require in any case, as only dofile can access stuff in the virtual filesystem.
+---We need to override the default require in any case, as only dofile and loadfile can access stuff in the virtual filesystem.
 ---@param modName string
----@return any
+---@return any ...
 function require(modName)
 	-- Check if package was already loaded, return previous result.
 	if package.loaded[modName] ~= nil then return package.loaded[modName] end
 
 	if recursionSet[modName] then
-		error(string.format("Cyclic dependency with module %q called by %q", modName, recursionLast))
+		recursionSet = {}
+		error(string.format("Cyclic dependency with module %q", modName))
 	end
-	recursionSet[modName], recursionLast = true, modName
+	recursionSet[modName] = true
 
 	local notFoundStr = ""
 
@@ -71,7 +88,7 @@ function require(modName)
 
 		if res == nil then res = true end
 		package.loaded[modName] = res
-		recursionSet[modName], recursionLast = nil, nil
+		recursionSet[modName] = nil
 		return res
 	else
 		notFoundStr = notFoundStr .. string.format("\tno field package.preload['%s']\n", modName)
@@ -84,14 +101,22 @@ function require(modName)
 		local filePath = string.gsub(pathEntry, "?", modPath, 1) -- Insert modPath into "?" placeholder.
 		local fixedPath = string.gsub(filePath, "^%.[\\/]", "") -- Need to remove "./" or ".\" at the beginning, as Noita allows only "data" and "mods".
 		if fixedPath:sub(1, 4) == "data" or fixedPath:sub(1, 4) == "mods" then -- Ignore everything other than data and mod root path elements. It's not perfect, but this is just there to prevent console spam.
-			local res, err = dofile(fixedPath)
-			if err then
-				notFoundStr = notFoundStr .. string.format("\tno file '%s'\n", filePath)
-			else
+			local func, err = loadfile(fixedPath)
+			if func then
+				local state, res = pcall(func)
+				if not state then
+					recursionSet = {}
+					error(res)
+				end
 				if res == nil then res = true end
 				package.loaded[modName] = res
-				recursionSet[modName], recursionLast = nil, nil
+				recursionSet[modName] = nil
 				return res
+			elseif err and err:sub(1, 45) == "Error loading lua script - file doesn't exist" then -- I hate to do that.
+				notFoundStr = notFoundStr .. string.format("\tno file '%s'\n", filePath)
+			else
+				recursionSet = {}
+				error(err)
 			end
 		else
 			notFoundStr = notFoundStr .. string.format("\tnot allowed '%s'\n", filePath)
@@ -102,14 +127,14 @@ function require(modName)
 	if oldRequire then
 		local ok, res = pcall(oldRequire, modName)
 		if ok then
-			recursionSet[modName], recursionLast = nil, nil
+			recursionSet[modName] = nil
 			return res
 		else
 			notFoundStr = notFoundStr .. string.format("\toriginal require:%s", res)
 		end
 	end
 
-	recursionSet[modName], recursionLast = nil, nil
+	recursionSet = {}
 	error(string.format("module %q not found:\n%s", modName, notFoundStr))
 end
 

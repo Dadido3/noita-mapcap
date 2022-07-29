@@ -24,7 +24,7 @@ end
 local CameraAPI = require("noita-api.camera")
 local Coords = require("coordinates")
 local DebugAPI = require("noita-api.debug")
---local LiveReload = require("noita-api.live-reload")
+local LiveReload = require("noita-api.live-reload")
 local Vec2 = require("noita-api.vec2")
 
 -----------------------
@@ -120,7 +120,7 @@ function OnWorldPostUpdate()
 	Message:CatchException("OnWorldPostUpdate", function()
 		-- Reload mod every 60 frames.
 		-- This allows live updates to the mod while Noita is running.
-		-- !!! DISABLE THIS LINE AND THE CORRESPONDING REQUIRE BEFORE COMMITTING !!!
+		-- !!! DISABLE THE FOLLOWING LINE BEFORE COMMITTING !!!
 		--LiveReload:Reload("mods/noita-mapcap/", 60)
 
 		-- Run checks every 60 frames.

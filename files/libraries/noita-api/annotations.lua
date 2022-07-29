@@ -1416,10 +1416,6 @@ function SetValueBool(key, value) end
 ---@param default_value number
 ---@return boolean
 function GetValueBool(key, default_value) end
----Returns the script's return value, if any. Returns nil,error_string if the script had errors.
----@param filename string
----@return any script_return_type, string|nil error_string
-function dofile(filename) end
 ---Runs the script only once per lua context, returns the script's return value, if any. Returns nil,error_string if the script had errors. For performance reasons it is recommended scripts use dofile_once(), unless the standard dofile behaviour is required.
 ---@param filename string
 ---@return any script_return_type, string|nil error_string
