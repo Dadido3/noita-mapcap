@@ -153,7 +153,7 @@ function Modification.PatchFiles(patches)
 	if patches.PostFinalConst then
 		local postFinal = ModTextFileGetContent("data/shaders/post_final.frag")
 		for k, v in pairs(patches.PostFinalConst) do
-			postFinal = postFinal:gsub(string.format("const bool %s%%s+=[^;]+;", k), string.format("const bool %s = %s;", k, tostring(v)))
+			postFinal = postFinal:gsub(string.format(" %s%%s+=[^;]+;", k), string.format(" %s = %s;", k, tostring(v)), 1)
 		end
 		ModTextFileSetContent("data/shaders/post_final.frag", postFinal)
 	end
@@ -217,6 +217,10 @@ function Modification.RequiredChanges()
 			ENABLE_GLOW             = false,
 			ENABLE_GAMMA_CORRECTION = false,
 			ENABLE_PATH_DEBUG       = false,
+			FOG_FOREGROUND          = "vec4(0.0,0.0,0.0,1.0)",
+			FOG_BACKGROUND          = "vec3(0.0,0.0,0.0)",
+			FOG_FOREGROUND_NIGHT    = "vec4(0.0,0.0,0.0,1.0)",
+			FOG_BACKGROUND_NIGHT    = "vec3(0.0,0.0,0.0)",
 		}
 	end
 
