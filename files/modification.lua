@@ -180,18 +180,20 @@ function Modification.RequiredChanges()
 		config["backbuffer_height"] = config["window_h"]
 		magic["VIRTUAL_RESOLUTION_X"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).x)
 		magic["VIRTUAL_RESOLUTION_Y"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).y)
+		-- Set virtual offset to prevent/reduce not correctly drawn pixels at the window border.
+		magic["GRID_RENDER_BORDER"] = "3" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
+		magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-3"
+		magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "0"
 	else
-		-- Only reset some stuff that is independent to the users chosen resolution.
+		-- Reset some values if there is no custom resolution requested.
 		config["internal_size_w"] = "1280"
 		config["internal_size_h"] = "720"
 		magic["VIRTUAL_RESOLUTION_X"] = "427"
 		magic["VIRTUAL_RESOLUTION_Y"] = "242"
+		magic["GRID_RENDER_BORDER"] = "2"
+		magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-1"
+		magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "-1"
 	end
-
-	-- Set virtual offset to prevent/reduce not correctly drawn pixels at the window border.
-	magic["GRID_RENDER_BORDER"] = "3" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
-	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-3"
-	magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "0"
 
 	-- Always expect a fullscreen mode of 0 (windowed).
 	-- Capturing will not work in fullscreen.
