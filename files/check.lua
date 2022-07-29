@@ -46,6 +46,9 @@ function Check:Regular(interval)
 	if self.Counter > 0 then return end
 	self.Counter = interval
 
+	-- Remove some messages, so they will automatically disappear when the problem is solved.
+	Message:CloseAutoclose()
+
 	-- Compare Noita config and actual window resolution.
 	local topLeft, bottomRight = ScreenCap.GetRect() -- Actual window client area.
 	if topLeft and bottomRight then
@@ -105,6 +108,22 @@ function Check:Regular(interval)
 		if ModSettingGetNextValue(settingID) ~= ModSettingGet(settingID) then
 			Message:ShowRequestRestart(string.format("Setting %s got changed from %s to %s.", v, tostring(ModSettingGet(settingID)), tostring(ModSettingGetNextValue(settingID))))
 		end
+	end
+
+	-- Check if capture grid size is smaller than the virtual resolution.
+	-- This is not perfect, as it doesn't take rounding and cropping into account, so the actual captured area may be a few pixels smaller.
+	local mode = ModSettingGet("noita-mapcap.capture-mode")
+	local captureGridSize = tonumber(ModSettingGet("noita-mapcap.grid-size"))
+	if mode ~= "live" and (Coords.VirtualResolution.x < captureGridSize or Coords.VirtualResolution.y < captureGridSize) then
+		Message:ShowGeneralSettingsProblem(
+			"The virtual resolution is smaller than the capture grid size.",
+			"This means that you will get black areas in your final stitched image.",
+			" ",
+			"Apply either of the following in the mod settings:",
+			string.format("- Set the grid size to at most %s.", math.min(Coords.VirtualResolution.x, Coords.VirtualResolution.y)),
+			string.format("- Increase the custom resolutions to at least %s in any direction.", captureGridSize),
+			"- Change capture mode to `live`."
+		)
 	end
 
 end

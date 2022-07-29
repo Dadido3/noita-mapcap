@@ -17,6 +17,18 @@ local Coords = require("coordinates")
 -- Code --
 ----------
 
+---Removes all messages with the autoclose flag.
+---Use this before you recreate all auto closing messages.
+function Message:CloseAutoclose()
+	self.List = self.List or {}
+
+	for k, message in pairs(self.List) do
+		if message.Autoclose then
+			self.List[k] = nil
+		end
+	end
+end
+
 ---Add a general runtime error message to the message list.
 ---This will always overwrite the last runtime error with the same id.
 ---@param id string
@@ -82,6 +94,7 @@ function Message:ShowSetNoitaSettings(callback, desc)
 		Actions = {
 			{ Name = "Setup and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = callback },
 		},
+		Autoclose = true, -- This message will automatically close.
 	}
 end
 
@@ -98,6 +111,7 @@ function Message:ShowRequestRestart(desc)
 			" ",
 			"To resolve this issue, restart the game.",
 		},
+		Autoclose = true, -- This message will automatically close.
 	}
 end
 
@@ -118,6 +132,7 @@ function Message:ShowWrongResolution(callback, desc)
 		Actions = {
 			{ Name = "Query settings again", Hint = nil, HintDesc = nil, Callback = function() Coords:ReadResolutions() end },
 		},
+		Autoclose = true, -- This message will automatically close.
 	}
 end
 
@@ -136,6 +151,18 @@ function Message:ShowOutputNonEmpty()
 		Actions = {
 			{ Name = "Open output directory", Hint = nil, HintDesc = nil, Callback = function() os.execute("start .\\mods\\noita-mapcap\\output\\") end },
 		},
+	}
+end
+
+---Tell the user that some settings are not optimal.
+---@param ... string
+function Message:ShowGeneralSettingsProblem(...)
+	self.List = self.List or {}
+
+	self.List["GeneralSettingsProblem"] = {
+		Type = "hint",
+		Lines = { ... },
+		Autoclose = true, -- This message will automatically close.
 	}
 end
 

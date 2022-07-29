@@ -114,9 +114,11 @@ function UI:_DrawMessages(messages)
 		end
 		GuiLayoutEnd(gui)
 
-		local clicked = GuiImageButton(gui, self:_GenID(), 5, 0, "", "mods/noita-mapcap/files/ui-gfx/dismiss-8x8.png")
-		--GuiTooltip(gui, "Dismiss message", "")
-		if clicked then messages[key] = nil end
+		if not message.Autoclose then
+			local clicked = GuiImageButton(gui, self:_GenID(), 5, 0, "", "mods/noita-mapcap/files/ui-gfx/dismiss-8x8.png")
+			--GuiTooltip(gui, "Dismiss message", "")
+			if clicked then messages[key] = nil end
+		end
 
 		GuiLayoutEnd(gui)
 
