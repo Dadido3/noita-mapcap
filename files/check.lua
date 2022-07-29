@@ -99,7 +99,7 @@ function Check:Regular(interval)
 	end
 
 	-- Request a restart if the user has changed specific mod settings.
-	local restartModSettings = {"disable-background", "disable-physics", "disable-postfx"}
+	local restartModSettings = {"disable-background", "disable-ui", "disable-physics", "disable-postfx"}
 	for i, v in ipairs(restartModSettings) do
 		local settingID = "noita-mapcap." .. v
 		if ModSettingGetNextValue(settingID) ~= ModSettingGet(settingID) then

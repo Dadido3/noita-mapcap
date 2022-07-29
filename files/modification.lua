@@ -231,6 +231,17 @@ function Modification.RequiredChanges()
 		memory["mTrailerMode"] = 1 -- Is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
 	end
 
+	-- Disables or hides most of the UI.
+	-- The game is still somewhat playable this way.
+	if ModSettingGet("noita-mapcap.disable-ui") then
+		magic["INVENTORY_GUI_ALWAYS_VISIBLE"] = "0"
+		magic["UI_BARS2_OFFSET_X"] = "100"
+	else
+		-- Reset to default.
+		magic["INVENTORY_GUI_ALWAYS_VISIBLE"] = "1"
+		magic["UI_BARS2_OFFSET_X"] = "-40"
+	end
+
 	return config, magic, memory, patches
 end
 

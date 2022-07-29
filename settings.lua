@@ -278,6 +278,13 @@ modSettings = {
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},
 			{
+				id = "disable-ui",
+				ui_name = "  Disable UI",
+				ui_description = "Hides and disables some of the UI.",
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+			},
+			{
 				id = "disable-physics",
 				ui_name = "  Disable pixel and entity physics",
 				ui_description = "Will freeze all pixel simulations and rigid body dynamics.",
