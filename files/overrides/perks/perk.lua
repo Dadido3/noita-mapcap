@@ -17,7 +17,7 @@ local oldPerkSpawn = perk_spawn
 ---@param y number
 ---@param perkID integer
 ---@param dontRemoveOtherPerks boolean
----@return NoitaEntity|nil
+---@return number|nil
 function perk_spawn(x, y, perkID, dontRemoveOtherPerks)
 	local entity = EntityAPI.Wrap(oldPerkSpawn(x, y, perkID, dontRemoveOtherPerks))
 	if entity == nil then return end
@@ -27,4 +27,6 @@ function perk_spawn(x, y, perkID, dontRemoveOtherPerks)
 	for _, component in ipairs(components) do
 		entity:RemoveComponent(component)
 	end
+
+	return entity.ID
 end
