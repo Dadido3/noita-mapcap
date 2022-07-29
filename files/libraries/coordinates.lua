@@ -15,11 +15,12 @@
 -- - Everything outside the internal rectangle is black.
 -- - Everything outside the virtual rectangle is not rendered correctly.
 -- - A positive virtual offset moves the rendered world to the top left.
--- - The virtual offset needs to be [-2, 0] for the viewport center to be exactly centered, and chunks to align perfectly with the window.
 -- - GameGetCameraBounds returned coordinates are off by a few pixels, also it doesn't have sub pixel precision.
 -- - The mouse cursor coordinates in the dev build use the wrong rounding method (They are rounded towards zero, instead of being rounded towards negative infinity).
 -- - Integer world coordinates map exactly to pixel borders.
 -- - The default image ratios of the virtual and internal rectangles don't exactly match, which causes a small line of not correctly rendered pixels at the bottom window.
+-- - The GRID_RENDER_BORDER magic number adds the given amount of world pixels to the virtual rectangle's width. This happens after fitting, so a positive value will make it wider than the internal rectangle. The virtual rectangle will always be aligned to start at the left side of the internal rectangle, though.
+-- - The virtual offset needs to be [-GRID_RENDER_BORDER, 0] for the viewport center to be exactly centered, and chunks to align perfectly with the window.
 
 --------------------------
 -- Load library modules --
@@ -39,14 +40,14 @@ local Vec2 = require("noita-api.vec2")
 ---@field WindowResolution Vec2 -- Size of the window client area in window pixels.
 ---@field VirtualResolution Vec2 -- Size of the virtual rectangle in world/virtual pixels.
 ---@field VirtualOffset Vec2 -- Offset of the virtual rectangle in world/virtual pixels.
----@field VirtualOffsetPixelPerfect Vec2 -- Offset of the virtual rectangle that maps chunks perfectly to the window.
+---@field VirtualBorder number -- The magic number "GRID_RENDER_BORDER" in world/virtual pixels.
 ---@field FullscreenMode integer -- The fullscreen mode the game is in. 0 is windowed.
 local Coords = {
 	InternalResolution = Vec2(0, 0),
 	WindowResolution = Vec2(0, 0),
 	VirtualResolution = Vec2(0, 0),
 	VirtualOffset = Vec2(0, 0),
-	VirtualOffsetPixelPerfect = Vec2(-2, 0),
+	VirtualBorder = 0,
 	FullscreenMode = 0,
 }
 
@@ -64,6 +65,7 @@ function Coords:ReadResolutions()
 	self.InternalResolution = Vec2(tonumber(xml.attr["internal_size_w"]), tonumber(xml.attr["internal_size_h"]))
 	self.VirtualResolution = Vec2(tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_Y")))
 	self.VirtualOffset = Vec2(tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_X")), tonumber(MagicNumbersGetValue("VIRTUAL_RESOLUTION_OFFSET_Y")))
+	self.VirtualBorder = tonumber(MagicNumbersGetValue("GRID_RENDER_BORDER")) or 0
 	self.FullscreenMode = tonumber(xml.attr["fullscreen"]) or 0
 
 	f:close()
@@ -133,7 +135,7 @@ function Coords:ToWindow(world, viewportCenter)
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
 
-	return internalTopLeft + (self.VirtualResolution / 2 + world - viewportCenter - self.VirtualOffsetPixelPerfect + self.VirtualOffset) * pixelScale
+	return internalTopLeft + (self.VirtualResolution / 2 + world - viewportCenter + Vec2(self.VirtualBorder, 0) + self.VirtualOffset) * pixelScale
 end
 
 ---Converts the given window coordinates into world/virtual coordinates.
@@ -146,7 +148,7 @@ function Coords:ToWorld(window, viewportCenter)
 	local internalTopLeft, internalBottomRight = self:InternalRect()
 	local pixelScale = self:PixelScale()
 
-	return viewportCenter - self.VirtualResolution / 2 + (window - internalTopLeft) / pixelScale + self.VirtualOffsetPixelPerfect - self.VirtualOffset
+	return viewportCenter - self.VirtualResolution / 2 + (window - internalTopLeft) / pixelScale - Vec2(self.VirtualBorder, 0) - self.VirtualOffset
 end
 
 -------------
@@ -166,34 +168,34 @@ end
 ---
 --- Table contents:
 ---
---- - `InternalRes`, `WindowRes`, `VirtualRes`, `VirtualOffset` -- are the settings from the above mentioned config files.
+--- - `InternalRes`, `WindowRes`, `VirtualRes`, `VirtualBorder` -- are the settings from the above mentioned config files.
 --- - `WindowTopLeft` contains the resulting world coordinates of the window's top left pixel with GameSetCameraPos(0, 0).
 --- - `WindowCenter` contains the resulting world coordinates of the window's center pixel with GameSetCameraPos(0, 0).
 --- - `RenderedTopLeft`, `RenderedBottomRight` describe the rectangle in world coordinates that contains correctly rendered chunks. Everything outside this rectangle may either just be a blank background image or completely black.
 local testTable = {
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(512, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-256, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-256, -512), RenderedBottomRight = Vec2(256, 0) },
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 512), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -256), WindowCenter = Vec2(0, 256), RenderedTopLeft = Vec2(-512, -256), RenderedBottomRight = Vec2(512, 256) },
-	{ InternalRes = Vec2(512, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 512), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
-	{ InternalRes = Vec2(1024, 512), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -768), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 2048), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -1024), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
-	{ InternalRes = Vec2(1024, 512), WindowRes = Vec2(1024, 512), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
-	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
-	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(2048, 1024), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-1024, -512), RenderedBottomRight = Vec2(1024, 512) },
-	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(512, 2048), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-256, -1024), WindowCenter = Vec2(0, -896), RenderedTopLeft = Vec2(-256, -1024), RenderedBottomRight = Vec2(256, -768) },
-	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 16), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-512, -8), WindowCenter = Vec2(0, 248), RenderedTopLeft = Vec2(-512, -8), RenderedBottomRight = Vec2(512, 8) },
-	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(32, 16), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-16, -8), WindowCenter = Vec2(0, 8), RenderedTopLeft = Vec2(-16, -8), RenderedBottomRight = Vec2(16, 8) },
-	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(1920, 1080), VirtualRes = Vec2(427, 242), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-213.5, -121), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
-	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(1920, 1200), VirtualRes = Vec2(427, 242), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-213.5, -134.34375), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
-	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(2048, 1080), VirtualRes = Vec2(427, 242), VirtualOffset = Vec2(-2, 0), WindowTopLeft = Vec2(-227.73333, -121), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(512, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-256, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-256, -512), RenderedBottomRight = Vec2(256, 0) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 512), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -256), WindowCenter = Vec2(0, 256), RenderedTopLeft = Vec2(-512, -256), RenderedBottomRight = Vec2(512, 256) },
+	{ InternalRes = Vec2(512, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 512), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
+	{ InternalRes = Vec2(1024, 512), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -768), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 2048), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -1024), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 512) },
+	{ InternalRes = Vec2(1024, 512), WindowRes = Vec2(1024, 512), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
+	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -512), WindowCenter = Vec2(0, -256), RenderedTopLeft = Vec2(-512, -512), RenderedBottomRight = Vec2(512, 0) },
+	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(2048, 1024), VirtualBorder = 2, WindowTopLeft = Vec2(-1024, -512), WindowCenter = Vec2(0, 0), RenderedTopLeft = Vec2(-1024, -512), RenderedBottomRight = Vec2(1024, 512) },
+	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(512, 2048), VirtualBorder = 2, WindowTopLeft = Vec2(-256, -1024), WindowCenter = Vec2(0, -896), RenderedTopLeft = Vec2(-256, -1024), RenderedBottomRight = Vec2(256, -768) },
+	{ InternalRes = Vec2(2048, 1024), WindowRes = Vec2(2048, 1024), VirtualRes = Vec2(1024, 16), VirtualBorder = 2, WindowTopLeft = Vec2(-512, -8), WindowCenter = Vec2(0, 248), RenderedTopLeft = Vec2(-512, -8), RenderedBottomRight = Vec2(512, 8) },
+	{ InternalRes = Vec2(1024, 1024), WindowRes = Vec2(1024, 1024), VirtualRes = Vec2(32, 16), VirtualBorder = 2, WindowTopLeft = Vec2(-16, -8), WindowCenter = Vec2(0, 8), RenderedTopLeft = Vec2(-16, -8), RenderedBottomRight = Vec2(16, 8) },
+	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(1920, 1080), VirtualRes = Vec2(427, 242), VirtualBorder = 2, WindowTopLeft = Vec2(-213.5, -121), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
+	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(1920, 1200), VirtualRes = Vec2(427, 242), VirtualBorder = 2, WindowTopLeft = Vec2(-213.5, -134.34375), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
+	{ InternalRes = Vec2(1280, 720), WindowRes = Vec2(2048, 1080), VirtualRes = Vec2(427, 242), VirtualBorder = 2, WindowTopLeft = Vec2(-227.73333, -121), WindowCenter = Vec2(0, -0.90625), RenderedTopLeft = Vec2(-213.5, -121), RenderedBottomRight = Vec2(213.5, 119.1875) },
 }
 
 ---Tests all possible test cases.
 ---Throws an error in case any test fails.
 local function testToWindow()
 	for i, v in ipairs(testTable) do
-		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualOffset = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualOffset
+		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualBorder = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualBorder
 
 		---@type Vec2
 		local viewportCenter = Vec2(0, 0)
@@ -214,7 +216,7 @@ end
 ---Throws an error in case any test fails.
 local function testToWorld()
 	for i, v in ipairs(testTable) do
-		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualOffset = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualOffset
+		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualBorder = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualBorder
 
 		---@type Vec2
 		local viewportCenter = Vec2(0, 0)
@@ -235,7 +237,7 @@ end
 ---Throws an error in case any test fails.
 local function testValidRenderingRect()
 	for i, v in ipairs(testTable) do
-		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualOffset = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualOffset
+		Coords.InternalResolution, Coords.WindowResolution, Coords.VirtualResolution, Coords.VirtualBorder = v.InternalRes, v.WindowRes, v.VirtualRes, v.VirtualBorder
 
 		---@type Vec2
 		local viewportCenter = Vec2(0, 0)

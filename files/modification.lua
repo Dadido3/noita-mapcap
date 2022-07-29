@@ -163,9 +163,10 @@ function Modification.RequiredChanges()
 		magic["VIRTUAL_RESOLUTION_Y"] = "242"
 	end
 
-	-- Set virtual offset to be pixel perfect.
-	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = tostring(Coords.VirtualOffsetPixelPerfect.x)
-	magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = tostring(Coords.VirtualOffsetPixelPerfect.y)
+	-- Set virtual offset to prevent/reduce not correctly drawn pixels at the window border.
+	magic["GRID_RENDER_BORDER"] = "2" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
+	magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-2"
+	magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "0"
 
 	-- Always expect a fullscreen mode of 0 (windowed).
 	-- Capturing will not work in fullscreen.
