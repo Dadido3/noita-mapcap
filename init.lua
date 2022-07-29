@@ -55,6 +55,10 @@ dofile("mods/noita-mapcap/files/ui.lua")
 
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
+	if ModSettingGet("noita-mapcap.seed") ~= "" then
+		SetWorldSeed(tonumber(ModSettingGet("noita-mapcap.seed")) or 0)
+	end
+
 	-- Read Noita's config to be used in checks later on.
 	Check.StartupConfig = Modification.GetConfig()
 

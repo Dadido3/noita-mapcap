@@ -129,6 +129,14 @@ modSettings = {
 		_folded = true,
 		settings = {
 			{
+				id = "seed",
+				ui_name = "World seed",
+				ui_description = "Lock the world to the given seed\n \nClear field to use a random seed.",
+				value_default = DebugAPI.IsDevBuild() and "123" or "",
+				allowed_characters = "0123456789",
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
 				id = "grid-size",
 				ui_name = "Grid size",
 				ui_description = "How many world pixels the viewport will move between screenshots.\n \nDefault: 512",
