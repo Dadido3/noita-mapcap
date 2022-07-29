@@ -27,6 +27,21 @@ local Vec2 = require("noita-api.vec2")
 -- Code --
 ----------
 
+---Reads the current config from `config.xml` and returns it as table.
+---@return table<string, string> config
+function Modification.GetConfig()
+	local configFilename = Utils.GetSpecialDirectory("save-shared") .. "config.xml"
+
+	-- Read and modify config.
+	local f, err = io.open(configFilename, "r")
+	if not f then error(string.format("failed to read config file: %s", err)) end
+	local xml = NXML.parse(f:read("*a"))
+
+	f:close()
+
+	return xml.attr
+end
+
 ---Will update Noita's `config.xml` with the values in the given table.
 ---
 ---This will force close Noita!
@@ -172,6 +187,9 @@ function Modification.RequiredChanges()
 	-- Capturing will not work in fullscreen.
 	config["fullscreen"] = "0"
 
+	-- Also disable screenshake.
+	config["screenshake_intensity"] = "0"
+
 	magic["DRAW_PARALLAX_BACKGROUND"] = ModSettingGet("noita-mapcap.disable-background") and "0" or "1"
 	magic["DEBUG_PAUSE_GRID_UPDATE"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
 	magic["DEBUG_PAUSE_BOX2D"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "0"
@@ -233,6 +251,7 @@ function Modification.Reset()
 		internal_size_h = "720",
 		backbuffer_width = "1280",
 		backbuffer_height = "720",
+		screenshake_intensity = "0.7",
 	}
 
 	Modification.SetConfig(config)

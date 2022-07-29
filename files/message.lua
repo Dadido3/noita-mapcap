@@ -52,6 +52,7 @@ function Message:ShowResetNoitaSettings()
 		Lines = {
 			"You requested to reset some game settings like:",
 			"- Custom resolutions",
+			"- Screenshake intensity",
 			" ",
 			"Press the following button to reset the settings and close Noita automatically:",
 		},

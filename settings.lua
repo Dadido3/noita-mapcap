@@ -285,17 +285,17 @@ modSettings = {
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},
 			{
-				id = "modify-entities",
-				ui_name = "  Disable entity logic",
-				ui_description = "If enabled, the mod will disable some components of all encountered entities.\nThis will:\n- Disable AI\n- Disable falling\n- Disable hovering and rotation animations\n- Reduce explosions\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
-				value_default = false,
-				scope = MOD_SETTING_SCOPE_RUNTIME,
-			},
-			{
 				id = "disable-shaders-gui-ai",
 				ui_name = "  Disable shaders, GUI and AI",
 				ui_description = "It has the same effect as pressing F5, F8 and F12 in the Noita dev build.\nDoesn't work outside the dev build.",
 				hidden = not DebugAPI:IsDevBuild(), -- Hide in anything else than the dev build.
+				value_default = DebugAPI.IsDevBuild(), -- Defaults to true in dev build, false in regular Noita.
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "modify-entities",
+				ui_name = "  Disable entity logic",
+				ui_description = "If enabled, the mod will disable some components of all encountered entities.\nThis will:\n- Disable AI\n- Disable falling\n- Disable hovering and rotation animations\n- Reduce explosions\n \nThis may slow down things a bit.\nAnd it may make Noita more likely to crash.\nUse at your own risk.",
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},

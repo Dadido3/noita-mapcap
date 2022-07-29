@@ -77,6 +77,12 @@ function Check:Regular(interval)
 			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Internal resolution is %s. Expected %s.", Coords.InternalResolution, expected))
 		end
 	end
+	if config["screenshake_intensity"] then
+		local expected = config.screenshake_intensity
+		if expected ~= self.StartupConfig.screenshake_intensity then
+			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Screenshake intensity is %s, expected %s.", self.StartupConfig.screenshake_intensity, expected))
+		end
+	end
 
 	-- Magic numbers stuff doesn't need a forced restart, just a normal restart by the user.
 	if magic["VIRTUAL_RESOLUTION_X"] and magic["VIRTUAL_RESOLUTION_Y"] then

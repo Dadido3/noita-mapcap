@@ -55,6 +55,9 @@ dofile("mods/noita-mapcap/files/ui.lua")
 
 ---Called in order upon loading a new(?) game.
 function OnModPreInit()
+	-- Read Noita's config to be used in checks later on.
+	Check.StartupConfig = Modification.GetConfig()
+
 	-- Set magic numbers and other stuff based on mod settings.
 	local config, magic, memory, patches = Modification.RequiredChanges()
 	Modification.SetMagicNumbers(magic)

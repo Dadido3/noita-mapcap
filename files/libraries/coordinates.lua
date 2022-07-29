@@ -20,7 +20,7 @@
 -- - Integer world coordinates map exactly to pixel borders.
 -- - The default image ratios of the virtual and internal rectangles don't exactly match, which causes a small line of not correctly rendered pixels at the bottom window.
 -- - The GRID_RENDER_BORDER magic number adds the given amount of world pixels to the virtual rectangle's width. This happens after fitting, so a positive value will make it wider than the internal rectangle. The virtual rectangle will always be aligned to start at the left side of the internal rectangle, though.
--- - The virtual offset needs to be [-GRID_RENDER_BORDER, 0] for the viewport center to be exactly centered, and chunks to align perfectly with the window.
+-- - The virtual offset needs to be [-GRID_RENDER_BORDER, 0] for the viewport center to be exactly centered to the window or virtual rectangle.
 
 --------------------------
 -- Load library modules --
