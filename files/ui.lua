@@ -84,6 +84,10 @@ function UI:_DrawToolbar()
 	GuiTooltip(gui, "Open output directory", "Reveals the output directory in your file browser.")
 	if clicked then os.execute("start .\\mods\\noita-mapcap\\output\\") end
 
+	local clicked = GuiImageButton(gui, self:_GenID(), 0, 0, "", "mods/noita-mapcap/files/ui-gfx/stitch-16x16.png")
+	GuiTooltip(gui, "Open stitch directory", "Reveals the directory of the stitching tool in your file browser.")
+	if clicked then os.execute("start .\\mods\\noita-mapcap\\bin\\stitch\\") end
+
 	GuiLayoutEnd(gui)
 end
 

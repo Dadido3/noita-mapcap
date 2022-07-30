@@ -1,6 +1,7 @@
-# Noita MapCapture addon [![Build Status](https://travis-ci.com/Dadido3/noita-mapcap.svg?branch=master)](https://travis-ci.com/Dadido3/noita-mapcap)
+# Noita map capture addon [![Build Status](https://travis-ci.com/Dadido3/noita-mapcap.svg?branch=master)](https://travis-ci.com/Dadido3/noita-mapcap)
 
-Addon that captures a Noita world and saves it as image.
+A mod for Noita that can capture images of the world and stitch them into one large image.
+It works with the regular Noita and the dev build.
 
 ![missing image](images/example2.png)
 
@@ -8,113 +9,181 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
 
 ## System requirements
 
-- Windows Vista, ..., 10. (64 bit OS for stitching)
+- Windows Vista, ..., 10, 11. (64 bit OS for stitching)
 - A few GB of free drive space.
 - 4 or more GB of RAM for gigapixel images. (But it works with less as long as the software doesn't run out of virtual memory)
-- A processor.
-- Optionally a monitor, keyboard and mouse to interact with the mod/software.
-- A sound card to listen to music while it's grabbing screenshots.
-  Capturing and stitching the "extended" map will take about 180 minutes (160 + 20).
+
+## Installation
+
+1. Have Noita installed.
+2. Download the [latest release of the mod from this link](https://github.com/Dadido3/noita-mapcap/releases/latest) (The `noita-mapcap-windows-amd64.zip`, not the source code)
+3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
+  You can open the mods folder by clicking `Open mod folder` from within the Noita mod menu.
+4. Refresh the mod list.
+5. Enable the `MapCapture` mod.
 
 ## Usage
 
-1. Have Noita installed.
-2. Download the [latest release of the mod from this link](https://github.com/Dadido3/noita-mapcap/releases/latest) (The `Windows.x86.7z`, not the source)
-3. Unpack it into your mods folder, so that you get the following file structure `.../Noita/mods/noita-mapcap/mod.xml`.
-4. Set your resolution to 1280x720, and use the `Windowed` mode. (Not `Fullscreen (Windowed)`!) If you have to use a different resolution, see [Advanced stuff](#advanced-stuff).
-5. Enable the mod and restart Noita.
-6. In the game you should see text on screen.
-    - Either press `>> Start capturing map around view <<` to capture in a spiral around your current view.
-    - Or press any other option to capture [specific areas](AREAS.md).
-7. The screen will jump around, and the game will take screenshots automatically.
-    - Screenshots are saved in `.../Noita/mods/noita-mapcap/output/`.
-    - Don't move the game window outside of screen space. You can cover it with other windows, and continue using your PC.
-    - Don't minimize the game window.
-    - If you need to pause, use the ESC menu.
-    - Also, make sure that the console window isn't selected, as you will end up with screenshots of the console instead of the game. You can select and use any other window while it's capturing screenshots, though.
-    - Noita may crash in the process or show error messages. If you encounter an `ASSERT FAILED!` message click on `Ignore always`. If Noita crashes you can restart it, load your save and start capturing again. It will continue from where it stopped. More information/details about this can be found [here](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723571110).
-8. When you think you are done, close Noita.
-9. Start `.../Noita/mods/noita-mapcap/bin/stitch/stitch.exe`.
-    - Use the default values to create a complete stitch.
-    - It will take the screenshots from the `output` folder.
-10. The result will be saved as `.../Noita/mods/noita-mapcap/bin/stitch/output.png` if not defined otherwise.
+You can use the mod with either the regular Noita, or the dev build `noita_dev.exe` that is located in the game installation directory.
+Using `noita_dev.exe` has the advantage that you can freeze pixel and rigid body simulations. Also, it uses a different location for its savegames, which means you don't have to worry about any save you may have left unfinished on the regular build.
 
-## How to do a full map capture with minimal trouble
+Every setting you want or need to change can be found inside the `mod settings` tab of the game options.
+By default the mod settings will be set to useful values.
+An explanation for every setting can be found in the [Mod settings](#mod-settings) section.
 
-For the best experience and result, `noita_dev.exe` should be used.
-This has the advantage of disabling the fog of war, and it can speed up the capturing process quite a bit, as a larger screen can be captured.
-Here is a step by step explanation how to do so:
+Once you have changed the mod settings to your liking you can start or resume a game with the mod enabled.
+You may see message boxes that suggest actions.
+This can happen if the mod detects game settings that do not align with what you have set in the mod settings.
+All you need to do is follow the given instructions, like:
 
-1. Have the mod installed and enabled as described in [Usage](#usage).
+![Auto setup requester example](images/requester-autosetup.png)
 
-2. Change the following values inside of `.../Noita/mods/noita-mapcap/files/magic_numbers.xml` to
+> ![Hint](files/ui-gfx/hint-16x16.png) Most of the changes this mod does to Noita are non permanent and will be gone after a restart or a new game, except:
+>
+> - Window, internal and virtual resolutions, if requested.
+> - Screen shake intensity, which will always be disabled.
+>
+> You can always *right* click ![Record button](files/ui-gfx/record-16x16.png) to reset the above mentioned settings back to Noita's default.
 
-    ``` xml
-    <MagicNumbers
-        VIRTUAL_RESOLUTION_X="1024"
-        VIRTUAL_RESOLUTION_Y="1024"
-        ...
-    >
-    ```
+After all issue have been resolved you are free to start capturing.
 
-3. Change the following values inside of `.../Noita/save_shared/config.xml` (Not the one in AppData!) to
+To the top left of the window are 3 buttons:
 
-    ``` xml
-    <Config
-        ...
-        backbuffer_height="1024"
-        backbuffer_width="1024"
-        internal_size_h="1024"
-        internal_size_w="1024"
-        window_h="1024"
-        window_w="1024"
-        fullscreen="0"
-        ...
-    >
-    ```
+- ![Record button](files/ui-gfx/record-16x16.png)/![Stop button](files/ui-gfx/stop-16x16.png) Starts/Stops the capturing process based on your mod settings.
+  You can always restart a capture, and it will resume where it was stopped.
 
-    If that file doesn't exist do step 5, and come back here, and continue from step 3.
+- ![Output directory button](files/ui-gfx/open-output-16x16.png) Reveals the output directory in your file browser.
+  This will contain raw screenshots that later can be stitched.
 
-4. Patch your `.../Noita/noita_dev.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
-    This is optional, but it prevents crashes from Noita running out of memory.
+- ![Stitch button](files/ui-gfx/stitch-16x16.png) Reveals the directory of the stitch tool in your file browser.
 
-5. Start `.../Noita/noita_dev.exe`.
+To stitch the final result, click ![Stitch button](files/ui-gfx/stitch-16x16.png) to open the directory of the stitching tool.
+Start `stitch.exe` and proceed with the default values.
+After a few minutes the file `output.png` will be created.
 
-6. When the game is loaded (When you can control your character):
-    - Press `F5`, `F8` and `F12` (In that order).
+## Mod settings
 
-7. Press the `>> Start capturing extended map <<` button.
 
-8. Wait a few hours until it's complete.
 
-9. Stitch the image as described in [Usage](#usage).
+> ![Hint](files/ui-gfx/hint-16x16.png) Use *right* mouse button to reset any mod setting to their default.
 
-## Advanced stuff
+- `Mode`: Defines what the mod captures, and how it captures it:
 
-If you use `noita_dev.exe`, you can enable the debug mode by pressing `F5`. Once in debug mode, you can use `F8` to toggle shaders (Includes fog of war), and you can use `F12` to disable the UI. There are some more options in the `F7` and `Shift + F7` menu.
+  - `Live`: The mod will capture as you play along.
+    The end result is a map with the path of your run.
 
-You can capture in a different resolution if you want or need to. If you do so, you have to adjust some values inside of the mod.
+  - `Area`: Captures a defined rectangle of the world.
+    You can either use [predefined areas](AREAS.md), or enter custom coordinates.
 
-The following two equations have to be true:
+  - `Spiral`: Will capture the world in a spiral.
+    The center starting point of the spiral can either be your current viewport, the world center or some custom coordinates.
 
-$$\begin{align*}
-\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_X}}{\text{VIRTUAL\\_RESOLUTION\\_X}}\\
-\text{CAPTURE\\_PIXEL\\_SIZE} &= \frac{\text{SCREEN\\_RESOLUTION\\_Y}}{\text{VIRTUAL\\_RESOLUTION\\_Y}}
-\end{align*}$$
+### Advanced mod settings
 
-- Where `CAPTURE_PIXEL_SIZE` can be found inside `.../Noita/mods/noita-mapcap/files/capture.lua`
-- `VIRTUAL_RESOLUTION_*` can be found inside `.../Noita/mods/noita-mapcap/files/magic_numbers.xml`
-- and `SCREEN_RESOLUTION_*` is the screen resolution you have set up in noita.
+- `World seed`: If non empty, this will set the next new game to this seed.
 
-You can also change how much the tiles overlap by adjusting the `CAPTURE_GRID_SIZE` in `.../Noita/mods/noita-mapcap/files/capture.lua`. If you increase the grid size, you can capture more area per time. But on the other hand the stitcher may not be able to remove artifacts if the tiles don't overlap enough.
+- `Grid size`: The amount of world pixels the viewport will move between the screenshots.
 
-The rectangles for the different capture modes are defined in `.../Noita/mods/noita-mapcap/files/capture.lua`.
+- `Pixel scale`: The resulting pixel size of the screenshots.
+  If greater than 0, all screenshots will be rescaled to have the given pixel size.
 
-As the resulting stitched image is really big, you can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723591552) that addresses how you can view, convert or even self-host your images.
+- `Use custom resolution`: If enabled, the mod will change the game resolutions to the given values.
+
+- `Capture interval`: Interval between screen captures, when in live mode.
+
+- `Min. capture distance`: The distance in world pixels the viewport has to move to allow another screenshot.
+  Only used in live mode.
+
+- `Max. capture distance`: The distance in world pixels the viewport has to move to force another screenshot.
+  Only used in live mode.
+
+- `Capture entities`: If enabled, the mod will capture all entities, their children, parameters and components and write them into `output/entities.json`.
+  > ![Warning](files/ui-gfx/warning-16x16.png) This can slow down capturing a bit, it may also make Noita more unstable.
+
+- `Disable parallax background`: Will replace the world background with black pixels.
+
+- `Disable UI`: Will disable inventory UI.
+  But the UI can still appear if triggered by mouse wheel or something similar.
+
+- `Disable pixel and entity physics`: Will disable/stop pixel and rigid body simulation.
+  Only works in dev build.
+
+- `Disable post FX`: Disables most postprocessing effects like:
+  - Dithering
+  - Refraction
+  - Lighting
+  - Fog of war
+  - Glow
+  - Gamma correction
+
+- `Disable shaders, GUI and AI`: Also disables all postprocessing, any in game UI and will freeze all mobs.
+  Only works in dev build.
+
+- `Disable entity logic`: Will modify all encountered entities:
+  - Disables AI
+  - Disables falling
+  - Disables hovering and rotation animations
+  - Reduces explosions
+
+  > ![Warning](files/ui-gfx/warning-16x16.png) This can slow down capturing a bit, it may also make Noita more unstable.
+
+### Example settings
+
+Use this for capturing a run live. The sliders are at their default values:
+
+![Live capture example settings](images/mod-settings-live.png)
+
+Use this to capture the base layout with minimal trouble. The sliders are at their default values:
+
+![Area capture example settings](images/mod-settings-area.png)
+
+## Troubleshooting
+
+### Noita crashes a lot
+
+There is not a lot you can do about it:
+
+- You can try to increase the usable address space of your `.../Noita/noita_dev.exe` or `.../Noita/noita.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
+  This will help with any crashes that are related to out of memory exceptions.
+
+- You can disable the replay recorder.
+
+More information/details about this can be found [here](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723571110).
+
+### I get "ASSERT FAILED!" messages
+
+These can't really be prevented.
+All you can do is to click `Ignore always`.
+
+Alternatively you can run the same capture in the regular Noita (non dev build), which has these messages disabled.
+With the exception that you can't disable the pixel and rigid body simulations it works as good as in the dev build.
+
+### The mod messed up my game
+
+Custom resolution settings are retained even if you restart Noita or start a new game.
+In the worst case they will cause the game world to not render correctly, or they will make your game only use a fraction of the window.
+
+To reset any permanent settings that may have been set by the mod:
+
+1. Enable the mod.
+2. Start a new game.
+3. *Right* click ![Record button](files/ui-gfx/record-16x16.png) and follow instructions.
+
+Alternatively, you can reset **all** game settings by deleting:
+
+- `"%appdata%\..\LocalLow\Nolla_Games_Noita\save_shared\config.xml"` for the regular Noita.
+- `"...\Noita\save_shared\config.xml"` for the dev build.
+
+## Additional information
+
+The resulting stitched images are quite big.
+You can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723591552) that addresses how you can view, convert or even self-host your images.
 
 ## Acknowledgements
 
-This addon uses the [LuaNXML](https://github.com/zatherz/luanxml) library by [Zatherz](https://github.com/zatherz).
+This mod uses the [LuaNXML](https://github.com/zatherz/luanxml) library by [Zatherz](https://github.com/zatherz).
+
+Thanks to [Daniel Niccoli](https://github.com/danielniccoli) for figuring out how to change some in game options by manipulating process memory.
 
 ## License
 
