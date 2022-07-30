@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/1lann/promptui"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/manifoldco/promptui"
 )
 
 var flagInputPath = flag.String("input", filepath.Join(".", "..", "..", "output"), "The source path of the image tiles to be stitched.")
