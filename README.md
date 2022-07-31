@@ -24,7 +24,7 @@ A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom
 
 ## Usage
 
-You can use the mod with either the regular Noita, or the dev build `noita_dev.exe` that is located in the game installation directory.
+You can use the mod with either the regular Noita version, or the dev build `noita_dev.exe` that is located in the game installation directory.
 Using `noita_dev.exe` has the advantage that you can freeze pixel and rigid body simulations. Also, it uses a different location for its savegames, which means you don't have to worry about any save you may have left unfinished on the regular build.
 
 Every setting you want or need to change can be found inside the `mod settings` tab of the game options.
@@ -129,11 +129,13 @@ After a few minutes the file `output.png` will be created.
 
 ### Example settings
 
-Use this for capturing a run live. The sliders are at their default values:
+Use this for capturing while you are playing the game.
+The sliders are at their default values:
 
 ![Live capture example settings](images/mod-settings-live.png)
 
-Use this to capture the base layout with minimal trouble. The sliders are at their default values:
+Use this to capture the [base layout](AREAS.md#base-layout) with the least amount of glitches and artifacts.
+The sliders are at their default values:
 
 ![Area capture example settings](images/mod-settings-area.png)
 
