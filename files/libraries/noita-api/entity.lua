@@ -35,7 +35,7 @@ end
 ---@param posX number -- X coordinate in world (virtual) pixels.
 ---@param posY number -- Y coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
-function EntityAPI.Load(filename, posX, posY)
+function EntityAPI.Load(filename, posX, posY) -- TODO: Change to use Vec2 object
 	return EntityAPI.Wrap(EntityLoad(filename, posX, posY))
 end
 
@@ -44,7 +44,7 @@ end
 ---@param posX number -- X coordinate in world (virtual) pixels.
 ---@param posY number -- Y coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
-function EntityAPI.LoadEndGameItem(filename, posX, posY)
+function EntityAPI.LoadEndGameItem(filename, posX, posY) -- TODO: Change to use Vec2 object
 	return EntityAPI.Wrap(EntityLoadEndGameItem(filename, posX, posY))
 end
 
@@ -52,7 +52,7 @@ end
 ---@param filename string
 ---@param posX number -- X coordinate in world (virtual) pixels.
 ---@param posY number -- Y coordinate in world (virtual) pixels.
-function EntityAPI.LoadCameraBound(filename, posX, posY)
+function EntityAPI.LoadCameraBound(filename, posX, posY) -- TODO: Change to use Vec2 object
 	return EntityLoadCameraBound(filename, posX, posY)
 end
 
@@ -152,7 +152,7 @@ end
 ---@param rotation number
 ---@param scaleX number
 ---@param scaleY number
-function NoitaEntity:SetTransform(x, y, rotation, scaleX, scaleY)
+function NoitaEntity:SetTransform(x, y, rotation, scaleX, scaleY) -- TODO: Change to use Vec2 object
 	return EntitySetTransform(self.ID, x, y, rotation, scaleX, scaleY)
 end
 
@@ -162,13 +162,13 @@ end
 ---@param rotation number
 ---@param scaleX number
 ---@param scaleY number
-function NoitaEntity:SetAndApplyTransform(x, y, rotation, scaleX, scaleY)
+function NoitaEntity:SetAndApplyTransform(x, y, rotation, scaleX, scaleY) -- TODO: Change to use Vec2 object
 	return EntityApplyTransform(self.ID, x, y, rotation, scaleX, scaleY)
 end
 
 ---Returns the transformation of the entity.
 ---@return number x, number y, number rotation, number scaleX, number scaleY
-function NoitaEntity:GetTransform()
+function NoitaEntity:GetTransform() -- TODO: Change to use Vec2 object
 	return EntityGetTransform(self.ID)
 end
 
@@ -261,7 +261,7 @@ end
 ---@param posY number -- X coordinate in world (virtual) pixels.
 ---@param radius number -- Radius in world (virtual) pixels.
 ---@return NoitaEntity[]
-function EntityAPI.GetInRadius(posX, posY, radius)
+function EntityAPI.GetInRadius(posX, posY, radius) -- TODO: Change to use Vec2 object
 	local entityIDs = EntityGetInRadius(posX, posY, radius) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
@@ -276,7 +276,7 @@ end
 ---@param radius number -- Radius in world (virtual) pixels.
 ---@param tag string
 ---@return NoitaEntity[]
-function EntityAPI.GetInRadiusWithTag(posX, posY, radius, tag)
+function EntityAPI.GetInRadiusWithTag(posX, posY, radius, tag) -- TODO: Change to use Vec2 object
 	local entityIDs = EntityGetInRadiusWithTag(posX, posY, radius, tag) or {}
 	local result = {}
 	for _, entityID in ipairs(entityIDs) do
@@ -289,7 +289,7 @@ end
 ---@param posX number -- X coordinate in world (virtual) pixels.
 ---@param posY number -- X coordinate in world (virtual) pixels.
 ---@return NoitaEntity|nil
-function EntityAPI.GetClosest(posX, posY)
+function EntityAPI.GetClosest(posX, posY) -- TODO: Change to use Vec2 object
 	return EntityAPI.Wrap(EntityGetClosest(posX, posY))
 end
 
@@ -336,6 +336,72 @@ end
 function NoitaEntity:EntityAddComponent(componentTypeName, tableOfComponentValues)
 	local componentID = EntityAddComponent2(self.ID, componentTypeName, tableOfComponentValues)
 	return ComponentAPI.Wrap(componentID)
+end
+
+-- TODO: Add missing Noita API methods and functions.
+
+---
+---@return NoitaEntity|nil
+function EntityAPI.GetUpdatedEntity()
+	return EntityAPI.Wrap(GetUpdatedEntityID())
+end
+
+---
+---@return NoitaEntity|nil
+function EntityAPI.GetWorldStateEntity()
+	return EntityAPI.Wrap(GameGetWorldStateEntity())
+end
+
+---
+---@return NoitaEntity|nil
+function EntityAPI.GetPlayerStatsEntity()
+	return EntityAPI.Wrap(GameGetPlayerStatsEntity())
+end
+
+-- TODO: Add missing Noita API methods and functions.
+
+---
+function NoitaEntity:RegenItemAction()
+	return GameRegenItemAction(self.ID)
+end
+
+---
+function NoitaEntity:RegenItemActionsInContainer()
+	return GameRegenItemActionsInContainer(self.ID)
+end
+
+---
+function NoitaEntity:RegenItemActionsInPlayer()
+	return GameRegenItemActionsInPlayer(self.ID)
+end
+
+---
+---@param itemEntity NoitaEntity
+function NoitaEntity:KillInventoryItem(itemEntity)
+	return GameKillInventoryItem(self.ID, itemEntity.ID)
+end
+
+---
+---@param itemEntity NoitaEntity
+---@param doPickUpEffects boolean
+function NoitaEntity:PickUpInventoryItem(itemEntity, doPickUpEffects)
+	if doPickUpEffects == nil then doPickUpEffects = true end
+	return GamePickUpInventoryItem(self.ID, itemEntity.ID, doPickUpEffects)
+end
+
+---
+function NoitaEntity:DropAllItems()
+	return GameDropAllItems(self.ID)
+end
+
+---
+function NoitaEntity:DropPlayerInventoryItems()
+	return GameDropPlayerInventoryItems(self.ID)
+end
+
+---
+function NoitaEntity:DestroyInventoryItems()
+	return GameDestroyInventoryItems(self.ID)
 end
 
 -- TODO: Add missing Noita API methods and functions.

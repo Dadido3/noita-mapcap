@@ -134,6 +134,16 @@ function NoitaComponent:GetTypeName()
 	return ComponentGetTypeName(self.ID)
 end
 
+-- TODO: Add missing Noita API methods and functions.
+
+---
+---@return NoitaComponent|nil
+function ComponentAPI.GetUpdatedComponent()
+	return ComponentAPI.Wrap(GetUpdatedComponentID())
+end
+
+-- TODO: Add missing Noita API methods and functions.
+
 -------------------------
 -- JSON Implementation --
 -------------------------
