@@ -53,7 +53,15 @@ end
 ---@param val number
 ---@return string
 function lib.MarshalNumber(val)
-	-- TODO: Marshal NaN, +Inf, -Inf, ... correctly
+	-- Edge cases, as there is no real solution to this.
+	-- JSON can't store special IEEE754 values, this is dumb as hell.
+	if val ~= val then
+		return "null" -- Alternatively we could output the string "NaN" (With quotes).
+	elseif val <= -math.huge then
+		return "-1E+600" -- Just output a stupidly large number.
+	elseif val >= math.huge then
+		return "1E+600" -- Just output a stupidly large number.
+	end
 
 	return tostring(val)
 end
