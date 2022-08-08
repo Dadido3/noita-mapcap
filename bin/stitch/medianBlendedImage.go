@@ -8,6 +8,7 @@ package main
 import (
 	"image"
 	"image/color"
+	"log"
 )
 
 // MedianBlendedImageRowHeight defines the height of the cached output image.
@@ -65,6 +66,7 @@ func (mbi *MedianBlendedImage) At(x, y int) color.Color {
 
 		// TODO: Don't use hilbert curve here
 		if err := StitchGrid(mbi.tiles, mbi.cachedRow, 512, nil); err != nil {
+			log.Printf("StitchGrid failed: %v", err)
 			return color.RGBA{}
 		}
 	}

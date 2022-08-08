@@ -29,11 +29,13 @@ example list of files:
 - Either run the program and follow the interactive prompt.
 - Or run the program with parameters:
   - `divide int`
-    A downscaling factor. 2 will produce an image with half the side lengths. (default 1)
+    A downscaling factor. 2 will produce an image with half the side lengths. Defaults to 1.
   - `input string`
-    The source path of the image tiles to be stitched. (default "..\\..\\output")
+    The source path of the image tiles to be stitched. Defaults to "./..//..//output")
+  - `entities`
+    The source path of the `entities.json` file. This contains Noita specific entity data. Defaults to "./../../output/entities.json".
   - `output string`
-    The path and filename of the resulting stitched image. (default "output.png")
+    The path and filename of the resulting stitched image. Defaults to "output.png".
   - `xmax int`
     Right bound of the output rectangle. This coordinate is not included in the output.
   - `xmin int`

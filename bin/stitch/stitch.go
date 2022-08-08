@@ -21,6 +21,7 @@ import (
 )
 
 var flagInputPath = flag.String("input", filepath.Join(".", "..", "..", "output"), "The source path of the image tiles to be stitched.")
+var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..", "output", "entities.json"), "The source path of the entities.json file.")
 var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
@@ -35,7 +36,7 @@ func main() {
 
 	flag.Parse()
 
-	// Query the user, if there were no cmd arguments given
+	// Query the user, if there were no cmd arguments given.
 	if flag.NFlag() == 0 {
 		prompt := promptui.Prompt{
 			Label:     "Enter downscaling factor:",
@@ -62,7 +63,7 @@ func main() {
 		fmt.Sscanf(result, "%d", flagScaleDivider)
 	}
 
-	// Query the user, if there were no cmd arguments given
+	// Query the user, if there were no cmd arguments given.
 	if flag.NFlag() == 0 {
 		prompt := promptui.Prompt{
 			Label:     "Enter input path:",
@@ -77,8 +78,32 @@ func main() {
 		*flagInputPath = result
 	}
 
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 {
+		prompt := promptui.Prompt{
+			Label:     "Enter \"entities.json\" path:",
+			Default:   *flagEntitiesInputPath,
+			AllowEdit: true,
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v", err)
+		}
+		*flagEntitiesInputPath = result
+	}
+
+	// Load entities if requested.
+	entities, err := loadEntities(*flagEntitiesInputPath)
+	if err != nil {
+		log.Printf("Failed to load entities: %v", err)
+	}
+	if len(entities) > 0 {
+		log.Printf("Got %v entities.", len(entities))
+	}
+
 	log.Printf("Starting to read tile information at \"%v\"", *flagInputPath)
-	tiles, err := loadImages(*flagInputPath, *flagScaleDivider)
+	tiles, err := loadImages(*flagInputPath, entities, *flagScaleDivider)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -107,13 +132,13 @@ func main() {
 	}
 	defer pprof.StopCPUProfile()*/
 
-	// If the output rect is empty, use the rectangle that encloses all tiles
+	// If the output rect is empty, use the rectangle that encloses all tiles.
 	outputRect := image.Rect(*flagXMin, *flagYMin, *flagXMax, *flagYMax)
 	if outputRect.Empty() {
 		outputRect = totalBounds
 	}
 
-	// Query the user, if there were no cmd arguments given
+	// Query the user, if there were no cmd arguments given.
 	if flag.NFlag() == 0 {
 		prompt := promptui.Prompt{
 			Label:     "Enter output rectangle (xMin,yMin;xMax,yMax):",
@@ -145,7 +170,7 @@ func main() {
 		outputRect = image.Rect(xMin, yMin, xMax, yMax)
 	}
 
-	// Query the user, if there were no cmd arguments given
+	// Query the user, if there were no cmd arguments given.
 	/*if flag.NFlag() == 0 {
 		fmt.Println("\nYou can now define a cleanup threshold. This mode will DELETE input images based on their similarity with other overlapping input images. The range is from 0, where no images are deleted, to 1 where all images will be deleted. A good value to get rid of most artifacts is 0.999. If you enter a threshold above 0, the program will not stitch, but DELETE some of your input images. If you want to stitch, enter 0.")
 		prompt := promptui.Prompt{
@@ -202,7 +227,7 @@ func main() {
 		return
 	}
 
-	// Query the user, if there were no cmd arguments given
+	// Query the user, if there were no cmd arguments given.
 	if flag.NFlag() == 0 {
 		prompt := promptui.Prompt{
 			Label:     "Enter output filename and path:",

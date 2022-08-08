@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/nfnt/resize"
+	"github.com/tdewolff/canvas"
+	"github.com/tdewolff/canvas/renderers/rasterizer"
 )
 
 type imageTile struct {
@@ -25,9 +27,11 @@ type imageTile struct {
 
 	image         image.Image   // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
 	imageMutex    *sync.RWMutex //
-	imageUsedFlag bool          // Flag signalling, that the image was used recently
+	imageUsedFlag bool          // Flag signalling, that the image was used recently.
 
 	pixelErrorSum uint64 // Sum of the difference between the (sub)pixels of all overlapping images. 0 Means that all overlapping images are identical.
+
+	entities []Entity // List of entities that may lie on or near this image tile.
 }
 
 func (it *imageTile) GetImage() (*image.RGBA, error) {
@@ -35,23 +39,23 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 
 	it.imageUsedFlag = true // Race condition may happen on this flag, but doesn't matter here.
 
-	// Check if the image is already loaded
+	// Check if the image is already loaded.
 	if img, ok := it.image.(*image.RGBA); ok {
 		it.imageMutex.RUnlock()
 		return img, nil
 	}
 
 	it.imageMutex.RUnlock()
-	// It's possible that the image got changed in between here
+	// It's possible that the image got changed in between here.
 	it.imageMutex.Lock()
 	defer it.imageMutex.Unlock()
 
-	// Check again if the image is already loaded
+	// Check again if the image is already loaded.
 	if img, ok := it.image.(*image.RGBA); ok {
 		return img, nil
 	}
 
-	// Store rectangle of the old image
+	// Store rectangle of the old image.
 	oldRect := it.image.Bounds()
 
 	file, err := os.Open(it.fileName)
@@ -74,8 +78,31 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 		return &image.RGBA{}, fmt.Errorf("expected an RGBA image, got %T instead", img)
 	}
 
-	// Restore the position of the image rectangle
-	imgRGBA.Rect = imgRGBA.Rect.Add(oldRect.Min)
+	scaledRect := imgRGBA.Rect.Add(oldRect.Min)
+
+	// Draw entities.
+	// tdewolff/canvas doesn't respect the image boundaries, so we have to draw on the image before we move its rectangle.
+	if len(it.entities) > 0 {
+		c := canvas.New(float64(imgRGBA.Rect.Dx()), float64(imgRGBA.Rect.Dy()))
+		ctx := canvas.NewContext(c)
+		ctx.SetCoordSystem(canvas.CartesianIV)
+		ctx.SetCoordRect(canvas.Rect{X: -float64(oldRect.Min.X), Y: -float64(oldRect.Min.Y), W: float64(imgRGBA.Rect.Dx()), H: float64(imgRGBA.Rect.Dy())}, float64(imgRGBA.Rect.Dx()), float64(imgRGBA.Rect.Dy()))
+		for _, entity := range it.entities {
+			// Check if entity origin is near or around the current image rectangle.
+			entityOrigin := image.Point{int(entity.Transform.X), int(entity.Transform.Y)}
+			if entityOrigin.In(scaledRect.Inset(-512)) {
+				entity.Draw(ctx)
+			}
+		}
+
+		// Theoretically we would need to linearize imgRGBA first, but DefaultColorSpace assumes that the color space is linear already.
+		r := rasterizer.FromImage(imgRGBA, canvas.DPMM(1.0), canvas.DefaultColorSpace)
+		c.Render(r)
+		r.Close() // This just transforms the image's luminance curve back from linear into non linear.
+	}
+
+	// Restore the position of the image rectangle.
+	imgRGBA.Rect = scaledRect
 
 	it.image = imgRGBA
 
@@ -83,7 +110,7 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 	go func() {
 		for it.imageUsedFlag {
 			it.imageUsedFlag = false
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 		}
 
 		it.imageMutex.Lock()

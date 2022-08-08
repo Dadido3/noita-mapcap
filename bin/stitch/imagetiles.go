@@ -22,7 +22,7 @@ import (
 
 var regexFileParse = regexp.MustCompile(`^(-?\d+),(-?\d+).png$`)
 
-func loadImages(path string, scaleDivider int) ([]imageTile, error) {
+func loadImages(path string, entities []Entity, scaleDivider int) ([]imageTile, error) {
 	var imageTiles []imageTile
 
 	if scaleDivider < 1 {
@@ -59,6 +59,7 @@ func loadImages(path string, scaleDivider int) ([]imageTile, error) {
 			scaleDivider: scaleDivider,
 			image:        image.Rect(x/scaleDivider, y/scaleDivider, (x+width)/scaleDivider, (y+height)/scaleDivider),
 			imageMutex:   &sync.RWMutex{},
+			entities:     entities,
 		})
 	}
 
