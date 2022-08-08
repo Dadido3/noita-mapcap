@@ -96,7 +96,7 @@ function Modification.SetMemoryOptions(memory)
 	local lookup = {
 		[true] = {
 			Windows = {
-				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG build.
+				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG dev build.
 					mPostFxDisabled = 0x010E3B6C,
 					mGuiDisabled = 0x010E3B6D,
 					mGuiHalfSize = 0x010E3B6E,
@@ -106,7 +106,7 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = 0x010E3B72,
 					mFreezeAI = 0x010E3B73,
 				},
-				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam build.
+				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam dev build.
 					mPostFxDisabled = 0x010EDEBC,
 					mGuiDisabled = 0x010EDEBD,
 					mGuiHalfSize = 0x010EDEBE,
@@ -115,6 +115,15 @@ function Modification.SetMemoryOptions(memory)
 					mDayTimeRotationPause = 0x010EDEC1,
 					mPlayerNeverDies = 0x010EDEC2,
 					mFreezeAI = 0x010EDEC3,
+				},
+			},
+		},
+		[false] = {
+			Windows = {
+				[0x00E1C550] = { _BuildString = "Build Apr 23 2021 18:44:24", -- Steam build.
+					--enableModDetection = 0x0063D8AD, -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					-- The page this is in is not writable, so this will crash Noita.
+					-- This modification can be applied manually with some other tool that changes the permission prior to writing, like Cheat Engine.
 				},
 			},
 		},
@@ -229,6 +238,12 @@ function Modification.RequiredChanges()
 		memory["mGuiDisabled"] = 1
 		memory["mFreezeAI"] = 1
 		memory["mTrailerMode"] = 1 -- Is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
+	end
+
+	if ModSettingGet("noita-mapcap.disable-mod-detection") then
+		memory["enableModDetection"] = 0
+	else
+		memory["enableModDetection"] = 1
 	end
 
 	-- Disables or hides most of the UI.

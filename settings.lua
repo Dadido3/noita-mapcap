@@ -314,6 +314,14 @@ modSettings = {
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
+			{
+				id = "disable-mod-detection",
+				ui_name = "  Disable mod detection",
+				ui_description = "If enabled, Noita will behave as if no mods are enabled.\nTherefore secrets like the cauldron will be generated.",
+				hidden = true,
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
 		}
 	},
 }
