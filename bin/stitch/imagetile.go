@@ -79,11 +79,11 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 
 	it.image = imgRGBA
 
-	// Free the image after some time
+	// Free the image after some time.
 	go func() {
 		for it.imageUsedFlag {
-			time.Sleep(1 * time.Second)
 			it.imageUsedFlag = false
+			time.Sleep(100 * time.Millisecond)
 		}
 
 		it.imageMutex.Lock()
