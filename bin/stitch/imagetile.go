@@ -31,7 +31,8 @@ type imageTile struct {
 
 	pixelErrorSum uint64 // Sum of the difference between the (sub)pixels of all overlapping images. 0 Means that all overlapping images are identical.
 
-	entities []Entity // List of entities that may lie on or near this image tile.
+	entities   []Entity    // List of entities that may lie on or near this image tile.
+	playerPath *PlayerPath // Contains the player path.
 }
 
 func (it *imageTile) GetImage() (*image.RGBA, error) {
@@ -94,6 +95,21 @@ func (it *imageTile) GetImage() (*image.RGBA, error) {
 				entity.Draw(ctx)
 			}
 		}
+
+		// Theoretically we would need to linearize imgRGBA first, but DefaultColorSpace assumes that the color space is linear already.
+		r := rasterizer.FromImage(imgRGBA, canvas.DPMM(1.0), canvas.DefaultColorSpace)
+		c.Render(r)
+		r.Close() // This just transforms the image's luminance curve back from linear into non linear.
+	}
+
+	// Draw player path.
+	if it.playerPath != nil {
+		c := canvas.New(float64(imgRGBA.Rect.Dx()), float64(imgRGBA.Rect.Dy()))
+		ctx := canvas.NewContext(c)
+		ctx.SetCoordSystem(canvas.CartesianIV)
+		ctx.SetCoordRect(canvas.Rect{X: -float64(oldRect.Min.X), Y: -float64(oldRect.Min.Y), W: float64(imgRGBA.Rect.Dx()), H: float64(imgRGBA.Rect.Dy())}, float64(imgRGBA.Rect.Dx()), float64(imgRGBA.Rect.Dy()))
+
+		it.playerPath.Draw(ctx, scaledRect)
 
 		// Theoretically we would need to linearize imgRGBA first, but DefaultColorSpace assumes that the color space is linear already.
 		r := rasterizer.FromImage(imgRGBA, canvas.DPMM(1.0), canvas.DefaultColorSpace)

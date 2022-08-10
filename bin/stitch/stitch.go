@@ -22,6 +22,7 @@ import (
 
 var flagInputPath = flag.String("input", filepath.Join(".", "..", "..", "output"), "The source path of the image tiles to be stitched.")
 var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..", "output", "entities.json"), "The source path of the entities.json file.")
+var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", "..", "..", "output", "player-path.json"), "The source path of the player-path.json file.")
 var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
@@ -102,8 +103,32 @@ func main() {
 		log.Printf("Got %v entities.", len(entities))
 	}
 
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 {
+		prompt := promptui.Prompt{
+			Label:     "Enter \"player-path.json\" path:",
+			Default:   *flagPlayerPathInputPath,
+			AllowEdit: true,
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v", err)
+		}
+		*flagPlayerPathInputPath = result
+	}
+
+	// Load player path if requested.
+	playerPath, err := loadPlayerPath(*flagPlayerPathInputPath)
+	if err != nil {
+		log.Printf("Failed to load player path: %v", err)
+	}
+	if playerPath != nil && len(playerPath.PathElements) > 0 {
+		log.Printf("Got %v player path entries.", len(playerPath.PathElements))
+	}
+
 	log.Printf("Starting to read tile information at \"%v\"", *flagInputPath)
-	tiles, err := loadImages(*flagInputPath, entities, *flagScaleDivider)
+	tiles, err := loadImages(*flagInputPath, entities, playerPath, *flagScaleDivider)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -28,6 +28,7 @@ local Vec2 = require("noita-api.vec2")
 
 Capture.MapCapturingCtx = Capture.MapCapturingCtx or ProcessRunner.New()
 Capture.EntityCapturingCtx = Capture.EntityCapturingCtx or ProcessRunner.New()
+Capture.PlayerPathCapturingCtx = Capture.PlayerPathCapturingCtx or ProcessRunner.New()
 
 ---Returns a capturing rectangle in window coordinates, and also the world coordinates for the same rectangle.
 ---The rectangle is sized and placed in a way that aligns as pixel perfect as possible with the world coordinates.
@@ -158,7 +159,7 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 	---The position in world coordinates.
 	---Centered to the grid.
 	---@type Vec2
-	local pos = origin + Vec2(captureGridSize/2, captureGridSize/2)
+	local pos = origin + Vec2(captureGridSize / 2, captureGridSize / 2)
 
 	---Process main callback.
 	---@param ctx ProcessRunnerCtx
@@ -238,7 +239,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 	---@param ctx ProcessRunnerCtx
 	local function handleDo(ctx)
 		Modification.SetCameraFree(true)
-		ctx.state = {Current = 0, Max = gridSize.x * gridSize.y}
+		ctx.state = { Current = 0, Max = gridSize.x * gridSize.y }
 
 		while t < tLimit do
 			-- Prematurely stop capturing if that is requested by the context.
@@ -251,7 +252,7 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 				---Position in world coordinates.
 				---@type Vec2
 				local pos = (hilbertPos + gridTopLeft) * captureGridSize
-				pos:Add(Vec2(captureGridSize/2, captureGridSize/2)) -- Move to center of grid cell.
+				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
 				captureScreenshot(pos, true, true, ctx, outputPixelScale)
 				ctx.state.Current = ctx.state.Current + 1
 			end
@@ -450,7 +451,7 @@ local function createOrOpenEntityCaptureFile()
 	local file = io.open("mods/noita-mapcap/output/entities.json", "a")
 	if file ~= nil then file:close() end
 
-	-- Create or reopen entities CSV file.
+	-- Create or reopen entities JSON file.
 	file = io.open("mods/noita-mapcap/output/entities.json", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
 	if file == nil then return nil end
 
@@ -503,6 +504,139 @@ function Capture:StartCapturingEntities(store, modify)
 	self.EntityCapturingCtx:Run(handleInit, handleDo, handleEnd, handleErr)
 end
 
+---Writes the current player position and other stats onto disk.
+---@param file file*|nil
+---@param pos Vec2
+---@param oldPos Vec2
+---@param hp number
+---@param maxHP number
+---@param polymorphed boolean
+local function writePlayerPathEntry(file, pos, oldPos, hp, maxHP, polymorphed)
+	if not file then return end
+
+	local struct = {
+		from = oldPos,
+		to = pos,
+		hp = hp,
+		maxHP = maxHP,
+		polymorphed = polymorphed,
+	}
+
+	-- Some hacky way to generate valid JSON that doesn't break when the game crashes.
+	-- Well, as long as it does not crash between write and flush.
+	if file:seek("end") == 0 then
+		-- First line.
+		file:write("[\n\t", JSON.Marshal(struct), "\n", "]")
+	else
+		-- Following lines.
+		file:seek("end", -2) -- Seek a few bytes back, so we can overwrite some stuff.
+		file:write(",\n\t", JSON.Marshal(struct), "\n", "]")
+	end
+
+	-- Ensure everything is written to disk before noita decides to crash.
+	file:flush()
+end
+
+---
+---@return file*|nil
+local function createOrOpenPlayerPathCaptureFile()
+	-- Make sure the file exists.
+	local file = io.open("mods/noita-mapcap/output/player-path.json", "a")
+	if file ~= nil then file:close() end
+
+	-- Create or reopen JSON file.
+	file = io.open("mods/noita-mapcap/output/player-path.json", "r+b") -- Open for reading (r) and writing (+) in binary mode. r+b will not truncate the file to 0.
+	if file == nil then return nil end
+
+	return file
+end
+
+---Starts capturing the player path.
+---Use `Capture.PlayerPathCapturingCtx` to stop, control or view the progress.
+---@param interval integer|nil -- Wait time between captures in frames.
+function Capture:StartCapturingPlayerPath(interval)
+	interval = interval or 20
+
+	local file
+	local oldPos
+
+	---Process initialization callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleInit(ctx)
+		-- Create output file if requested.
+		file = createOrOpenPlayerPathCaptureFile()
+	end
+
+	---Process main callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleDo(ctx)
+		repeat
+			-- Get player entity, even if it is polymorphed.
+
+			-- For some reason Noita crashes when querying the "is_player" GameStatsComponent value on a freshly polymorphed entity found by its "player_unit" tag.
+			-- It seems that the entity can still be found by the tag, but its components/values can't be accessed anymore.
+			-- Solution: Don't do that.
+
+			---@type NoitaEntity|nil
+			local playerEntity
+
+			-- Try to find the regular player entity.
+			for _, entity in ipairs(EntityAPI.GetWithTag("player_unit")) do
+				playerEntity = entity
+				break
+			end
+
+			-- If no player_unit entity was found, check if the player is any of the polymorphed entities.
+			if not playerEntity then
+				for _, entity in ipairs(EntityAPI.GetWithTag("polymorphed")) do
+					local gameStatsComponent = entity:GetFirstComponent("GameStatsComponent")
+					if gameStatsComponent and gameStatsComponent:GetValue("is_player") then
+						playerEntity = entity
+						break
+					end
+				end
+			end
+
+			-- Found some player entity.
+			if playerEntity then
+				-- Get position.
+				local x, y, rotation, scaleX, scaleY = playerEntity:GetTransform()
+				local pos = Vec2(x, y)
+
+				-- Get some other stats from the player.
+				local damageModel = playerEntity:GetFirstComponent("DamageModelComponent")
+				local hp, maxHP
+				if damageModel then
+					hp, maxHP = damageModel:GetValue("hp"), damageModel:GetValue("max_hp")
+				end
+				local polymorphed = playerEntity:HasTag("polymorphed")
+
+				if oldPos then writePlayerPathEntry(file, pos, oldPos, hp, maxHP, polymorphed) end
+				oldPos = pos
+			end
+
+			wait(interval)
+		until ctx:IsStopping()
+	end
+
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		if file then file:close() end
+	end
+
+	---Error handler callback.
+	---@param err string
+	---@param scope "init"|"do"|"end"
+	local function handleErr(err, scope)
+		print(string.format("Failed to capture player path: %s", err))
+		Message:ShowRuntimeError("PlayerPathCaptureError", "Failed to capture player path:", tostring(err))
+	end
+
+	-- Run process, if there is no other running right now.
+	self.PlayerPathCapturingCtx:Run(handleInit, handleDo, handleEnd, handleErr)
+end
+
 ---Starts the capturing process based on user/mod settings.
 function Capture:StartCapturing()
 	Message:CatchException("Capture:StartCapturing", function()
@@ -513,6 +647,7 @@ function Capture:StartCapturing()
 
 		if mode == "live" then
 			self:StartCapturingLive(outputPixelScale)
+			self:StartCapturingPlayerPath(5) -- Capture player path with an interval of 5 frames.
 		elseif mode == "area" then
 			local area = ModSettingGet("noita-mapcap.area")
 			if area == "custom" then
@@ -558,4 +693,5 @@ end
 function Capture:StopCapturing()
 	self.EntityCapturingCtx:Stop()
 	self.MapCapturingCtx:Stop()
+	self.PlayerPathCapturingCtx:Stop()
 end
