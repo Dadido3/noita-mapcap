@@ -17,7 +17,7 @@ The source images need to contain their coordinates in the filename, as this pro
 
 example list of files:
 
-``` Shell Session
+``` Text
 0,0.png
 512,0.png
 -512,0.png
@@ -33,7 +33,9 @@ example list of files:
   - `input string`
     The source path of the image tiles to be stitched. Defaults to "./..//..//output")
   - `entities`
-    The source path of the `entities.json` file. This contains Noita specific entity data. Defaults to "./../../output/entities.json".
+    The path to the `entities.json` file. This contains Noita specific entity data. Defaults to "./../../output/entities.json".
+  - `player-path`
+    The path to the player-path.json file. This contains the tracked path of the player. Defaults to "./../../output/player-path.json".
   - `output string`
     The path and filename of the resulting stitched image. Defaults to "output.png".
   - `xmax int`
