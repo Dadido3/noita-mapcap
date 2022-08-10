@@ -46,8 +46,6 @@ example list of files:
     Lower bound of the output rectangle. This coordinate is not included in the output.
   - `ymin int`
     Upper bound of the output rectangle. This coordinate is included in the output.
-  - `prerender`
-    Pre renders the image in RAM before saving. Can speed things up if you have enough RAM.
   - `cleanup float`
     Enables cleanup mode with the given float as threshold. This will **DELETE** images from the input folder; no stitching will be done in this mode. A good value to start with is `0.999`, which deletes images where the sum of the min-max difference of each sub-pixel overlapping with other images is less than 99.9%% of the maximum possible sum of pixel differences.
 

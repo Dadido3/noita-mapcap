@@ -8,14 +8,9 @@ package main
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"math"
 	"os"
 	"sort"
-
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/basicfont"
-	"golang.org/x/image/math/fixed"
 
 	"github.com/google/hilbert"
 )
@@ -103,36 +98,6 @@ func hilbertifyRectangle(rect image.Rectangle, gridSize int) ([]image.Rectangle,
 	return grid, nil
 }
 
-func drawLabel(img *image.RGBA, x, y int, label string) {
-	col := color.RGBA{200, 100, 0, 255}
-	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
-
-	d := &font.Drawer{
-		Dst:  img,
-		Src:  image.NewUniform(col),
-		Face: basicfont.Face7x13,
-		Dot:  point,
-	}
-	d.DrawString(label)
-}
-
-func intAbs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
-func pointAbs(p image.Point) image.Point {
-	if p.X < 0 {
-		p.X = -p.X
-	}
-	if p.Y < 0 {
-		p.Y = -p.Y
-	}
-	return p
-}
-
 // Integer division that rounds to the next integer towards negative infinity.
 func divideFloor(a, b int) int {
 	temp := a / b
@@ -153,11 +118,4 @@ func divideCeil(a, b int) int {
 	}
 
 	return temp
-}
-
-func maxInt(x, y int) int {
-	if x > y {
-		return x
-	}
-	return y
 }

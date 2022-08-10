@@ -8,14 +8,13 @@ package main
 import (
 	"encoding/json"
 	"image/color"
-	"log"
 	"os"
 
 	"github.com/tdewolff/canvas"
 )
 
-var entityDisplayFontFamily = canvas.NewFontFamily("times")
-var entityDisplayFontFace *canvas.FontFace
+//var entityDisplayFontFamily = canvas.NewFontFamily("times")
+//var entityDisplayFontFace *canvas.FontFace
 
 var entityDisplayAreaDamageStyle = canvas.Style{
 	FillColor:    color.RGBA{100, 0, 0, 100},
@@ -73,13 +72,13 @@ var entityDisplayCollisionTriggerStyle = canvas.Style{
 }
 
 func init() {
-	fontName := "NimbusRoman-Regular"
+	//fontName := "NimbusRoman-Regular"
 
-	if err := entityDisplayFontFamily.LoadLocalFont(fontName, canvas.FontRegular); err != nil {
-		log.Printf("Couldn't load font %q: %v", fontName, err)
-	}
+	//if err := entityDisplayFontFamily.LoadLocalFont(fontName, canvas.FontRegular); err != nil {
+	//	log.Printf("Couldn't load font %q: %v", fontName, err)
+	//}
 
-	entityDisplayFontFace = entityDisplayFontFamily.Face(48.0, canvas.White, canvas.FontRegular, canvas.FontNormal)
+	//entityDisplayFontFace = entityDisplayFontFamily.Face(48.0, canvas.White, canvas.FontRegular, canvas.FontNormal)
 }
 
 type Entity struct {
@@ -146,6 +145,7 @@ func (e Entity) Draw(c *canvas.Context) {
 			if member, ok := component.Members["circle_radius"]; ok {
 				if radius, ok := member.(float64); ok && radius > 0 {
 					// Theoretically we need to clip the damage area to the intersection of the AABB and the circle, but meh.
+					// TODO: Clip the area to the intersection of the box and the circle
 					cx, cy := (aabbMinX+aabbMaxX)/2, (aabbMinY+aabbMaxY)/2
 					c.Style = entityDisplayAreaDamageStyle
 					c.DrawPath(x+cx, y+cy, canvas.Circle(radius))
@@ -201,7 +201,7 @@ func (e Entity) Draw(c *canvas.Context) {
 				c.DrawPath(x+aabbMinX, y+aabbMinY, canvas.Rectangle(aabbMaxX-aabbMinX, aabbMaxY-aabbMinY))
 			}
 
-		case "CollisionTriggerComponent": // Checks if another entity is inside the box with the given width and height.
+		case "CollisionTriggerComponent": // Checks if another entity is inside the given radius and box with the given width and height.
 			var width, height float64
 			path := &canvas.Path{}
 			if member, ok := component.Members["width"]; ok {
@@ -213,6 +213,8 @@ func (e Entity) Draw(c *canvas.Context) {
 			if width > 0 && height > 0 {
 				path = canvas.Rectangle(width, height).Translate(-width/2, -height/2)
 			}
+			// Theoretically we need to clip the area to the intersection of the box and the circle, but meh.
+			// TODO: Clip the area to the intersection of the box and the circle
 			//if member, ok := component.Members["radius"]; ok {
 			//	if radius, ok := member.(float64); ok && radius > 0 {
 			//		path = path.Append(canvas.Circle(radius))

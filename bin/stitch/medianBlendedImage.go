@@ -76,7 +76,7 @@ func (mbi *MedianBlendedImage) At(x, y int) color.Color {
 
 // Opaque returns whether the image is fully opaque.
 //
-// For more speed and smaller filesizes, MedianBlendedImage will be marked as non-transparent.
+// For more speed and smaller file size, MedianBlendedImage will be marked as non-transparent.
 // This will speed up image saving by 2x, as there is no need to iterate over the whole image to find a single non opaque pixel.
 func (mbi *MedianBlendedImage) Opaque() bool {
 	return true

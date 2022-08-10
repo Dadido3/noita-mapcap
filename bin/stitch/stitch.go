@@ -21,15 +21,14 @@ import (
 )
 
 var flagInputPath = flag.String("input", filepath.Join(".", "..", "..", "output"), "The source path of the image tiles to be stitched.")
-var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..", "output", "entities.json"), "The source path of the entities.json file.")
-var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", "..", "..", "output", "player-path.json"), "The source path of the player-path.json file.")
+var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..", "output", "entities.json"), "The path to the entities.json file.")
+var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", "..", "..", "output", "player-path.json"), "The path to the player-path.json file.")
 var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
 var flagYMax = flag.Int("ymax", 0, "Lower bound of the output rectangle. This coordinate is not included in the output.")
-var flagPrerender = flag.Bool("prerender", false, "Pre renders the image in RAM before saving. Can speed things up if you have enough RAM.")
 var flagCleanupThreshold = flag.Float64("cleanup", 0, "Enable cleanup mode with the given threshold. This will DELETE images from the input folder, no stitching will be done in this mode. A good value to start with is 0.999, which deletes images where the sum of the min-max difference of each sub-pixel overlapping with other images is less than 99.9%% of the maximum possible sum of pixel differences.")
 
 func main() {
@@ -272,43 +271,30 @@ func main() {
 	var wg sync.WaitGroup
 	done := make(chan bool)
 
-	if *flagPrerender {
-		log.Printf("Creating output image with a size of %v", outputRect.Size())
-		tempImage := image.NewRGBA(outputRect)
+	tempImage := NewMedianBlendedImage(tiles, outputRect)
+	_, max := tempImage.Progress()
+	bar.SetTotal(int64(max)).Start().SetRefreshRate(1 * time.Second)
 
-		log.Printf("Stitching %v tiles into an image at %v", len(tiles), tempImage.Bounds())
-		if err := StitchGrid(tiles, tempImage, 512, bar); err != nil {
-			log.Panic(err)
-		}
-		bar.Finish()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-		outputImage = tempImage
-	} else {
-		tempImage := NewMedianBlendedImage(tiles, outputRect)
-		_, max := tempImage.Progress()
-		bar.SetTotal(int64(max)).Start().SetRefreshRate(1 * time.Second)
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			ticker := time.NewTicker(1 * time.Second)
-			for {
-				select {
-				case <-done:
-					value, _ := tempImage.Progress()
-					bar.SetCurrent(int64(value))
-					bar.Finish()
-					return
-				case <-ticker.C:
-					value, _ := tempImage.Progress()
-					bar.SetCurrent(int64(value))
-				}
+		ticker := time.NewTicker(1 * time.Second)
+		for {
+			select {
+			case <-done:
+				value, _ := tempImage.Progress()
+				bar.SetCurrent(int64(value))
+				bar.Finish()
+				return
+			case <-ticker.C:
+				value, _ := tempImage.Progress()
+				bar.SetCurrent(int64(value))
 			}
-		}()
+		}
+	}()
 
-		outputImage = tempImage
-	}
+	outputImage = tempImage
 
 	log.Printf("Creating output file \"%v\"", *flagOutputPath)
 	f, err := os.Create(*flagOutputPath)
@@ -321,10 +307,8 @@ func main() {
 		log.Panic(err)
 	}
 
-	if !*flagPrerender {
-		done <- true
-		wg.Wait()
-	}
+	done <- true
+	wg.Wait()
 
 	if err := f.Close(); err != nil {
 		log.Panic(err)
