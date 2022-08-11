@@ -59,7 +59,9 @@ end
 ---@param ctx ProcessRunnerCtx|nil -- The process runner context this runs in.
 ---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
 local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPixelScale)
-	outputPixelScale = outputPixelScale or 0
+	if outputPixelScale == 0 or outputPixelScale == nil then
+		outputPixelScale = Coords:PixelScale()
+	end
 
 	local rectTopLeft, rectBottomRight = ScreenCapture.GetRect()
 	if Coords.WindowResolution ~= rectBottomRight - rectTopLeft then
@@ -70,12 +72,7 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 
 	---Top left in output coordinates.
 	---@type Vec2
-	local outputTopLeft
-	if outputPixelScale > 0 then
-		outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
-	else
-		outputTopLeft = topLeftWorld
-	end
+	local outputTopLeft = (topLeftWorld * outputPixelScale):Rounded()
 
 	-- Check if the file exists, and if we are allowed to overwrite it.
 	if dontOverwrite and Utils.FileExists(string.format("mods/noita-mapcap/output/%d,%d.png", outputTopLeft.x, outputTopLeft.y)) then
@@ -554,8 +551,13 @@ end
 ---Starts capturing the player path.
 ---Use `Capture.PlayerPathCapturingCtx` to stop, control or view the progress.
 ---@param interval integer|nil -- Wait time between captures in frames.
-function Capture:StartCapturingPlayerPath(interval)
+---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
+function Capture:StartCapturingPlayerPath(interval, outputPixelScale)
 	interval = interval or 20
+
+	if outputPixelScale == 0 or outputPixelScale == nil then
+		outputPixelScale = Coords:PixelScale()
+	end
 
 	local file
 	local oldPos
@@ -601,7 +603,7 @@ function Capture:StartCapturingPlayerPath(interval)
 			if playerEntity then
 				-- Get position.
 				local x, y, rotation, scaleX, scaleY = playerEntity:GetTransform()
-				local pos = Vec2(x, y)
+				local pos = Vec2(x, y) * outputPixelScale
 
 				-- Get some other stats from the player.
 				local damageModel = playerEntity:GetFirstComponent("DamageModelComponent")
@@ -647,7 +649,7 @@ function Capture:StartCapturing()
 
 		if mode == "live" then
 			self:StartCapturingLive(outputPixelScale)
-			self:StartCapturingPlayerPath(5) -- Capture player path with an interval of 5 frames.
+			self:StartCapturingPlayerPath(5, outputPixelScale) -- Capture player path with an interval of 5 frames.
 		elseif mode == "area" then
 			local area = ModSettingGet("noita-mapcap.area")
 			if area == "custom" then
