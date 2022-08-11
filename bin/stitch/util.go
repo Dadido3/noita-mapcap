@@ -64,8 +64,9 @@ func gridifyRectangle(rect image.Rectangle, gridSize int) (result []image.Rectan
 	for y := divideFloor(rect.Min.Y, gridSize); y < divideCeil(rect.Max.Y, gridSize); y++ {
 		for x := divideFloor(rect.Min.X, gridSize); x < divideCeil(rect.Max.X, gridSize); x++ {
 			tempRect := image.Rect(x*gridSize, y*gridSize, (x+1)*gridSize, (y+1)*gridSize)
-			if tempRect.Overlaps(rect) {
-				result = append(result, tempRect)
+			intersection := tempRect.Intersect(rect)
+			if !intersection.Empty() {
+				result = append(result, intersection)
 			}
 		}
 	}

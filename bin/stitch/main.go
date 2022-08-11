@@ -36,6 +36,8 @@ func main() {
 
 	flag.Parse()
 
+	var overlays []StitchedImageOverlay
+
 	// Query the user, if there were no cmd arguments given.
 	if flag.NFlag() == 0 {
 		prompt := promptui.Prompt{
@@ -94,12 +96,13 @@ func main() {
 	}
 
 	// Load entities if requested.
-	entities, err := loadEntities(*flagEntitiesInputPath)
+	entities, err := LoadEntities(*flagEntitiesInputPath)
 	if err != nil {
 		log.Printf("Failed to load entities: %v", err)
 	}
 	if len(entities) > 0 {
 		log.Printf("Got %v entities.", len(entities))
+		overlays = append(overlays, entities) // Add entities to overlay drawing list.
 	}
 
 	// Query the user, if there were no cmd arguments given.
@@ -118,16 +121,17 @@ func main() {
 	}
 
 	// Load player path if requested.
-	playerPath, err := loadPlayerPath(*flagPlayerPathInputPath)
+	playerPath, err := LoadPlayerPath(*flagPlayerPathInputPath)
 	if err != nil {
 		log.Printf("Failed to load player path: %v", err)
 	}
-	if playerPath != nil && len(playerPath.PathElements) > 0 {
-		log.Printf("Got %v player path entries.", len(playerPath.PathElements))
+	if len(playerPath) > 0 {
+		log.Printf("Got %v player path entries.", len(playerPath))
+		overlays = append(overlays, playerPath) // Add player path to overlay drawing list.
 	}
 
 	log.Printf("Starting to read tile information at \"%v\"", *flagInputPath)
-	tiles, err := loadImages(*flagInputPath, entities, playerPath, *flagScaleDivider)
+	tiles, err := LoadImageTiles(*flagInputPath, *flagScaleDivider)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -266,15 +270,18 @@ func main() {
 		*flagOutputPath = result
 	}
 
-	var outputImage image.Image
 	bar := pb.Full.New(0)
 	var wg sync.WaitGroup
-	done := make(chan bool)
+	done := make(chan struct{})
 
-	tempImage := NewMedianBlendedImage(tiles, outputRect)
-	_, max := tempImage.Progress()
+	outputImage, err := NewStitchedImage(tiles, outputRect, BlendNewestPixelsMedian, 512, overlays)
+	if err != nil {
+		log.Panicf("NewStitchedImage() failed: %v", err)
+	}
+	_, max := outputImage.Progress()
 	bar.SetTotal(int64(max)).Start().SetRefreshRate(1 * time.Second)
 
+	// Query progress and draw progress bar.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -283,18 +290,16 @@ func main() {
 		for {
 			select {
 			case <-done:
-				value, _ := tempImage.Progress()
+				value, _ := outputImage.Progress()
 				bar.SetCurrent(int64(value))
 				bar.Finish()
 				return
 			case <-ticker.C:
-				value, _ := tempImage.Progress()
+				value, _ := outputImage.Progress()
 				bar.SetCurrent(int64(value))
 			}
 		}
 	}()
-
-	outputImage = tempImage
 
 	log.Printf("Creating output file \"%v\"", *flagOutputPath)
 	f, err := os.Create(*flagOutputPath)
@@ -307,7 +312,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	done <- true
+	done <- struct{}{}
 	wg.Wait()
 
 	if err := f.Close(); err != nil {
