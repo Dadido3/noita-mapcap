@@ -274,7 +274,11 @@ func main() {
 	var wg sync.WaitGroup
 	done := make(chan struct{})
 
-	outputImage, err := NewStitchedImage(tiles, outputRect, BlendNewestPixelsMedian, 512, overlays)
+	blendMethod := BlendMethodMedian{
+		LimitToNew: 1, // Limit median blending to the n newest tiles by file modification time.
+	}
+
+	outputImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 512, overlays)
 	if err != nil {
 		log.Panicf("NewStitchedImage() failed: %v", err)
 	}

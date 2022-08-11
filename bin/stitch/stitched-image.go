@@ -17,9 +17,10 @@ import (
 // TODO: Find optimal grid size that works good for tiles with lots and few overlap
 var StitchedImageCacheGridSize = 512
 
-// StitchedImageBlendFunc implements how all the tiles are blended together.
-// This is called when a new cache image needs to be generated.
-type StitchedImageBlendFunc func(tiles []*ImageTile, destImage *image.RGBA)
+// StitchedImageBlendMethod defines how tiles are blended together.
+type StitchedImageBlendMethod interface {
+	Draw(tiles []*ImageTile, destImage *image.RGBA) // Draw is called when a new cache image is generated.
+}
 
 type StitchedImageOverlay interface {
 	Draw(*image.RGBA)
@@ -28,10 +29,10 @@ type StitchedImageOverlay interface {
 // StitchedImage combines several ImageTile objects into a single RGBA image.
 // The way the images are combined/blended is defined by the blendFunc.
 type StitchedImage struct {
-	tiles     []ImageTile
-	bounds    image.Rectangle
-	blendFunc StitchedImageBlendFunc
-	overlays  []StitchedImageOverlay
+	tiles       []ImageTile
+	bounds      image.Rectangle
+	blendMethod StitchedImageBlendMethod
+	overlays    []StitchedImageOverlay
 
 	cacheHeight int
 	cacheImage  *image.RGBA
@@ -40,12 +41,12 @@ type StitchedImage struct {
 }
 
 // NewStitchedImage creates a new image from several single image tiles.
-func NewStitchedImage(tiles []ImageTile, bounds image.Rectangle, blendFunc StitchedImageBlendFunc, cacheHeight int, overlays []StitchedImageOverlay) (*StitchedImage, error) {
+func NewStitchedImage(tiles []ImageTile, bounds image.Rectangle, blendMethod StitchedImageBlendMethod, cacheHeight int, overlays []StitchedImageOverlay) (*StitchedImage, error) {
 	if bounds.Empty() {
 		return nil, fmt.Errorf("given boundaries are empty")
 	}
-	if blendFunc == nil {
-		return nil, fmt.Errorf("no blending function given")
+	if blendMethod == nil {
+		return nil, fmt.Errorf("no blending method given")
 	}
 	if cacheHeight <= 0 {
 		return nil, fmt.Errorf("invalid cache height of %d pixels", cacheHeight)
@@ -54,7 +55,7 @@ func NewStitchedImage(tiles []ImageTile, bounds image.Rectangle, blendFunc Stitc
 	return &StitchedImage{
 		tiles:       tiles,
 		bounds:      bounds,
-		blendFunc:   blendFunc,
+		blendMethod: blendMethod,
 		overlays:    overlays,
 		cacheHeight: cacheHeight,
 		cacheImage:  &image.RGBA{},
@@ -148,7 +149,7 @@ func (si *StitchedImage) regenerateCache(rect image.Rectangle) {
 				}
 
 				// Blend tiles into image at the workload rectangle.
-				si.blendFunc(workloadTiles, cacheImage.SubImage(workload).(*image.RGBA))
+				si.blendMethod.Draw(workloadTiles, cacheImage.SubImage(workload).(*image.RGBA))
 			}
 		}()
 	}

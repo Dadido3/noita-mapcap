@@ -11,9 +11,18 @@ import (
 	"sort"
 )
 
-// BlendFuncMedian takes the given tiles and median blends them into destImage.
-func BlendFuncMedian(tiles []*ImageTile, destImage *image.RGBA) {
+// BlendMethodMedian takes the given tiles and median blends them into destImage.
+type BlendMethodMedian struct {
+	LimitToNew int // If larger than 0, limits median blending to the `LimitToNew` newest tiles by file modification time.
+}
+
+func (b BlendMethodMedian) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 	bounds := destImage.Bounds()
+
+	if b.LimitToNew > 0 {
+		// Sort tiles by date.
+		sort.Slice(tiles, func(i, j int) bool { return tiles[i].modTime.After(tiles[j].modTime) })
+	}
 
 	// List of images corresponding with every tile.
 	// Can contain empty/nil entries for images that failed to load.
@@ -29,7 +38,7 @@ func BlendFuncMedian(tiles []*ImageTile, destImage *image.RGBA) {
 		for ix := bounds.Min.X; ix < bounds.Max.X; ix++ {
 			rList, gList, bList := rListEmpty, gListEmpty, bListEmpty
 			point := image.Point{ix, iy}
-			found := false
+			count := 0
 
 			// Iterate through all images and create a list of colors.
 			for _, img := range images {
@@ -37,43 +46,39 @@ func BlendFuncMedian(tiles []*ImageTile, destImage *image.RGBA) {
 					if point.In(img.Bounds()) {
 						col := img.RGBAAt(point.X, point.Y)
 						rList, gList, bList = append(rList, int(col.R)), append(gList, int(col.G)), append(bList, int(col.B))
-						found = true
+						count++
+						// Limit number of tiles to median blend.
+						// Will be ignored if LimitToNew is 0.
+						if count == b.LimitToNew {
+							break
+						}
 					}
 				}
 			}
 
 			// If there were no images to get data from, ignore the pixel.
-			if !found {
+			if count == 0 {
 				continue
 			}
 
-			// Sort colors.
-			sort.Ints(rList)
-			sort.Ints(gList)
-			sort.Ints(bList)
+			// Sort colors. Not needed if there is only one color.
+			if count > 1 {
+				sort.Ints(rList)
+				sort.Ints(gList)
+				sort.Ints(bList)
+			}
 
 			// Take the middle element of each color.
 			var r, g, b uint8
-			if l := len(rList); l%2 == 0 {
-				// Even.
-				r = uint8((rList[l/2-1] + rList[l/2]) / 2)
-			} else {
-				// Odd.
-				r = uint8(rList[(l-1)/2])
-			}
-			if l := len(gList); l%2 == 0 {
-				// Even.
-				g = uint8((gList[l/2-1] + gList[l/2]) / 2)
-			} else {
-				// Odd.
-				g = uint8(gList[(l-1)/2])
-			}
-			if l := len(bList); l%2 == 0 {
-				// Even.
-				b = uint8((bList[l/2-1] + bList[l/2]) / 2)
-			} else {
-				// Odd.
-				b = uint8(bList[(l-1)/2])
+			switch count % 2 {
+			case 0: // Even.
+				r = uint8((rList[count/2-1] + rList[count/2]) / 2)
+				g = uint8((gList[count/2-1] + gList[count/2]) / 2)
+				b = uint8((bList[count/2-1] + bList[count/2]) / 2)
+			default: // Odd.
+				r = uint8(rList[(count-1)/2])
+				g = uint8(gList[(count-1)/2])
+				b = uint8(bList[(count-1)/2])
 			}
 
 			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
@@ -81,7 +86,7 @@ func BlendFuncMedian(tiles []*ImageTile, destImage *image.RGBA) {
 	}
 }
 
-// BlendNewestPixel takes the given tiles and only draws the newest pixel (based on file modification time) of any overlapping tiles.
+/*// BlendNewestPixel takes the given tiles and only draws the newest pixel (based on file modification time) of any overlapping tiles.
 func BlendNewestPixel(tiles []*ImageTile, destImage *image.RGBA) {
 	bounds := destImage.Bounds()
 
@@ -197,4 +202,4 @@ func BlendNewestPixelsMedian(tiles []*ImageTile, destImage *image.RGBA) {
 			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 		}
 	}
-}
+}*/
