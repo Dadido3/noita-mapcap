@@ -6,7 +6,6 @@ require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
 	github.com/cheggaaa/pb/v3 v3.1.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/google/hilbert v0.0.0-20181122061418-320f2e35a565
 	github.com/kbinani/screenshot v0.0.0-20210720154843-7d3a670d8329
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tdewolff/canvas v0.0.0-20220627195642-6566432f4b20
@@ -21,7 +20,7 @@ require (
 	github.com/adrg/xdg v0.4.0 // indirect
 	github.com/benoitkugler/textlayout v0.1.3 // indirect
 	github.com/benoitkugler/textprocessing v0.0.2 // indirect
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
+	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5 // indirect
@@ -36,7 +35,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.11.10 // indirect
 	github.com/tdewolff/parse/v2 v2.6.0 // indirect
 	golang.org/x/image v0.0.0-20220617043117-41969df76e82 // indirect
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

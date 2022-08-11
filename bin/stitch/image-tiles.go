@@ -10,13 +10,15 @@ import (
 	"path/filepath"
 )
 
+type ImageTiles []ImageTile
+
 // LoadImageTiles "loads" all images in the directory at the given path.
-func LoadImageTiles(path string, scaleDivider int) ([]ImageTile, error) {
+func LoadImageTiles(path string, scaleDivider int) (ImageTiles, error) {
 	if scaleDivider < 1 {
 		return nil, fmt.Errorf("invalid scale of %v", scaleDivider)
 	}
 
-	var imageTiles []ImageTile
+	var imageTiles ImageTiles
 
 	files, err := filepath.Glob(filepath.Join(path, "*.png"))
 	if err != nil {
@@ -33,4 +35,13 @@ func LoadImageTiles(path string, scaleDivider int) ([]ImageTile, error) {
 	}
 
 	return imageTiles, nil
+}
+
+// InvalidateAboveY invalidates all cached images that have no pixel at the given y coordinate or below.
+func (it ImageTiles) InvalidateAboveY(y int) {
+	for _, tile := range it {
+		if tile.Bounds().Max.Y <= y {
+			tile.Invalidate()
+		}
+	}
 }

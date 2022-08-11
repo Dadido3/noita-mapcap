@@ -25,13 +25,14 @@ var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..
 var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", "..", "..", "output", "player-path.json"), "The path to the player-path.json file.")
 var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
+var flagBlendTileLimit = flag.Int("tile-limit", 9, "Limits median blending to the n newest tiles by file modification time. If set to 0, all available tiles will be median blended.")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
 var flagYMax = flag.Int("ymax", 0, "Lower bound of the output rectangle. This coordinate is not included in the output.")
 
 func main() {
-	log.Printf("Noita MapCapture stitching tool v%s", version)
+	log.Printf("Noita MapCapture stitching tool v%s.", version)
 
 	flag.Parse()
 
@@ -59,9 +60,36 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		fmt.Sscanf(result, "%d", flagScaleDivider)
+	}
+
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 {
+		prompt := promptui.Prompt{
+			Label:     "Enter blend tile limit:",
+			Default:   fmt.Sprint(*flagBlendTileLimit),
+			AllowEdit: true,
+			Validate: func(s string) error {
+				var num int
+				_, err := fmt.Sscanf(s, "%d", &num)
+				if err != nil {
+					return err
+				}
+				if int(num) < 0 {
+					return fmt.Errorf("number must be at least 0")
+				}
+
+				return nil
+			},
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v.", err)
+		}
+		fmt.Sscanf(result, "%d", flagBlendTileLimit)
 	}
 
 	// Query the user, if there were no cmd arguments given.
@@ -74,7 +102,7 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		*flagInputPath = result
 	}
@@ -89,7 +117,7 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		*flagEntitiesInputPath = result
 	}
@@ -97,7 +125,7 @@ func main() {
 	// Load entities if requested.
 	entities, err := LoadEntities(*flagEntitiesInputPath)
 	if err != nil {
-		log.Printf("Failed to load entities: %v", err)
+		log.Printf("Failed to load entities: %v.", err)
 	}
 	if len(entities) > 0 {
 		log.Printf("Got %v entities.", len(entities))
@@ -114,7 +142,7 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		*flagPlayerPathInputPath = result
 	}
@@ -122,22 +150,22 @@ func main() {
 	// Load player path if requested.
 	playerPath, err := LoadPlayerPath(*flagPlayerPathInputPath)
 	if err != nil {
-		log.Printf("Failed to load player path: %v", err)
+		log.Printf("Failed to load player path: %v.", err)
 	}
 	if len(playerPath) > 0 {
 		log.Printf("Got %v player path entries.", len(playerPath))
 		overlays = append(overlays, playerPath) // Add player path to overlay drawing list.
 	}
 
-	log.Printf("Starting to read tile information at \"%v\"", *flagInputPath)
+	log.Printf("Starting to read tile information at %q.", *flagInputPath)
 	tiles, err := LoadImageTiles(*flagInputPath, *flagScaleDivider)
 	if err != nil {
 		log.Panic(err)
 	}
 	if len(tiles) == 0 {
-		log.Panicf("Got no tiles inside of %v", *flagInputPath)
+		log.Panicf("Got no image tiles from %q.", *flagInputPath)
 	}
-	log.Printf("Got %v tiles", len(tiles))
+	log.Printf("Got %v tiles.", len(tiles))
 
 	totalBounds := image.Rectangle{}
 	for i, tile := range tiles {
@@ -147,17 +175,7 @@ func main() {
 			totalBounds = totalBounds.Union(tile.Bounds())
 		}
 	}
-	log.Printf("Total size of the possible output space is %v", totalBounds)
-
-	/*profFile, err := os.Create("cpu.prof")
-	if err != nil {
-		log.Panicf("could not create CPU profile: %v", err)
-	}
-	defer profFile.Close()
-	if err := pprof.StartCPUProfile(profFile); err != nil {
-		log.Panicf("could not start CPU profile: %v", err)
-	}
-	defer pprof.StopCPUProfile()*/
+	log.Printf("Total size of the possible output space is %v.", totalBounds)
 
 	// If the output rect is empty, use the rectangle that encloses all tiles.
 	outputRect := image.Rect(*flagXMin, *flagYMin, *flagXMax, *flagYMax)
@@ -190,7 +208,7 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		var xMin, yMin, xMax, yMax int
 		fmt.Sscanf(result, "%d,%d;%d,%d", &xMin, &yMin, &xMax, &yMax)
@@ -207,32 +225,34 @@ func main() {
 
 		result, err := prompt.Run()
 		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
+			log.Panicf("Error while getting user input: %v.", err)
 		}
 		*flagOutputPath = result
 	}
+
+	startTime := time.Now()
 
 	bar := pb.Full.New(0)
 	var wg sync.WaitGroup
 	done := make(chan struct{})
 
 	blendMethod := BlendMethodMedian{
-		LimitToNew: 1, // Limit median blending to the n newest tiles by file modification time.
+		BlendTileLimit: *flagBlendTileLimit, // Limit median blending to the n newest tiles by file modification time.
 	}
 
-	outputImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 512, overlays)
+	outputImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 64, overlays)
 	if err != nil {
-		log.Panicf("NewStitchedImage() failed: %v", err)
+		log.Panicf("NewStitchedImage() failed: %v.", err)
 	}
 	_, max := outputImage.Progress()
-	bar.SetTotal(int64(max)).Start().SetRefreshRate(1 * time.Second)
+	bar.SetTotal(int64(max)).Start().SetRefreshRate(250 * time.Millisecond)
 
 	// Query progress and draw progress bar.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		ticker := time.NewTicker(1 * time.Second)
+		ticker := time.NewTicker(250 * time.Millisecond)
 		for {
 			select {
 			case <-done:
@@ -247,13 +267,17 @@ func main() {
 		}
 	}()
 
-	log.Printf("Creating output file \"%v\"", *flagOutputPath)
+	log.Printf("Creating output file %q.", *flagOutputPath)
 	f, err := os.Create(*flagOutputPath)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	if err := png.Encode(f, outputImage); err != nil {
+	encoder := png.Encoder{
+		CompressionLevel: png.DefaultCompression,
+	}
+
+	if err := encoder.Encode(f, outputImage); err != nil {
 		f.Close()
 		log.Panic(err)
 	}
@@ -264,6 +288,8 @@ func main() {
 	if err := f.Close(); err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Created output file \"%v\"", *flagOutputPath)
+	log.Printf("Created output file %q in %v.", *flagOutputPath, time.Since(startTime))
 
+	//fmt.Println("Press the enter key to terminate the console screen!")
+	//fmt.Scanln()
 }

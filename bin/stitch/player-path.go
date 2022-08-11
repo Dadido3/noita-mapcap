@@ -53,6 +53,7 @@ func LoadPlayerPath(path string) (PlayerPath, error) {
 	return result, nil
 }
 
+// Draw implements the StitchedImageOverlay interface.
 func (p PlayerPath) Draw(destImage *image.RGBA) {
 	destRect := destImage.Bounds()
 

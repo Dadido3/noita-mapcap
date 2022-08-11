@@ -1,1 +1,0 @@
-go tool pprof -http=: ./stitch.exe cpu.prof

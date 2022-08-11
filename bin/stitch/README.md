@@ -30,6 +30,10 @@ example list of files:
 - Or run the program with parameters:
   - `divide int`
     A downscaling factor. 2 will produce an image with half the side lengths. Defaults to 1.
+  - `tile-limit int`
+    Limits median blending to the n newest tiles by file modification time.
+    If set to 0, all available tiles will be median blended.
+    If set to 1, only the newest tile will be used for any resulting pixel.
   - `input string`
     The source path of the image tiles to be stitched. Defaults to "./..//..//output")
   - `entities string`
@@ -53,7 +57,7 @@ To output the 100x100 area that is centered at the origin use:
 ./stitch -divide 1 -xmin -50 -xmax 50 -ymin -50 -ymax 50
 ```
 
-To enter the parameters inside of the program:
+To start the program interactively:
 
 ``` Shell Session
 ./stitch

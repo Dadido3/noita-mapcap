@@ -13,13 +13,14 @@ import (
 
 // BlendMethodMedian takes the given tiles and median blends them into destImage.
 type BlendMethodMedian struct {
-	LimitToNew int // If larger than 0, limits median blending to the `LimitToNew` newest tiles by file modification time.
+	BlendTileLimit int // If larger than 0, limits median blending to the n newest tiles by file modification time.
 }
 
+// Draw implements the StitchedImageBlendMethod interface.
 func (b BlendMethodMedian) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 	bounds := destImage.Bounds()
 
-	if b.LimitToNew > 0 {
+	if b.BlendTileLimit > 0 {
 		// Sort tiles by date.
 		sort.Slice(tiles, func(i, j int) bool { return tiles[i].modTime.After(tiles[j].modTime) })
 	}
@@ -32,7 +33,7 @@ func (b BlendMethodMedian) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 	}
 
 	// Create arrays to be reused every pixel.
-	rListEmpty, gListEmpty, bListEmpty := make([]int, 0, len(tiles)), make([]int, 0, len(tiles)), make([]int, 0, len(tiles))
+	rListEmpty, gListEmpty, bListEmpty := make([]uint8, 0, len(tiles)), make([]uint8, 0, len(tiles)), make([]uint8, 0, len(tiles))
 
 	for iy := bounds.Min.Y; iy < bounds.Max.Y; iy++ {
 		for ix := bounds.Min.X; ix < bounds.Max.X; ix++ {
@@ -45,43 +46,39 @@ func (b BlendMethodMedian) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 				if img != nil {
 					if point.In(img.Bounds()) {
 						col := img.RGBAAt(point.X, point.Y)
-						rList, gList, bList = append(rList, int(col.R)), append(gList, int(col.G)), append(bList, int(col.B))
+						rList, gList, bList = append(rList, col.R), append(gList, col.G), append(bList, col.B)
 						count++
 						// Limit number of tiles to median blend.
-						// Will be ignored if LimitToNew is 0.
-						if count == b.LimitToNew {
+						// Will be ignored if the blend tile limit is 0.
+						if count == b.BlendTileLimit {
 							break
 						}
 					}
 				}
 			}
 
-			// If there were no images to get data from, ignore the pixel.
-			if count == 0 {
+			switch count {
+			case 0: // If there were no images to get data from, ignore the pixel.
 				continue
-			}
 
-			// Sort colors. Not needed if there is only one color.
-			if count > 1 {
-				sort.Ints(rList)
-				sort.Ints(gList)
-				sort.Ints(bList)
-			}
+			case 1: // Only a single tile for this pixel.
+				r, g, b := uint8(rList[0]), uint8(gList[0]), uint8(bList[0])
+				destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 
-			// Take the middle element of each color.
-			var r, g, b uint8
-			switch count % 2 {
-			case 0: // Even.
-				r = uint8((rList[count/2-1] + rList[count/2]) / 2)
-				g = uint8((gList[count/2-1] + gList[count/2]) / 2)
-				b = uint8((bList[count/2-1] + bList[count/2]) / 2)
-			default: // Odd.
-				r = uint8(rList[(count-1)/2])
-				g = uint8(gList[(count-1)/2])
-				b = uint8(bList[(count-1)/2])
+			default: // Multiple overlapping tiles, median blend them.
+				var r, g, b uint8
+				switch count % 2 {
+				case 0: // Even.
+					r = uint8((int(QuickSelectUInt8(rList, count/2-1)) + int(QuickSelectUInt8(rList, count/2))) / 2)
+					g = uint8((int(QuickSelectUInt8(gList, count/2-1)) + int(QuickSelectUInt8(gList, count/2))) / 2)
+					b = uint8((int(QuickSelectUInt8(bList, count/2-1)) + int(QuickSelectUInt8(bList, count/2))) / 2)
+				default: // Odd.
+					r = QuickSelectUInt8(rList, count/2)
+					g = QuickSelectUInt8(gList, count/2)
+					b = QuickSelectUInt8(bList, count/2)
+				}
+				destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 			}
-
-			destImage.SetRGBA(ix, iy, color.RGBA{r, g, b, 255})
 		}
 	}
 }

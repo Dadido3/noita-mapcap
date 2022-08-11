@@ -9,19 +9,17 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"runtime"
-	"sync"
 )
 
 // StitchedImageCacheGridSize defines the worker chunk size when the cache image is regenerated.
-// TODO: Find optimal grid size that works good for tiles with lots and few overlap
-var StitchedImageCacheGridSize = 512
+var StitchedImageCacheGridSize = 256
 
 // StitchedImageBlendMethod defines how tiles are blended together.
 type StitchedImageBlendMethod interface {
 	Draw(tiles []*ImageTile, destImage *image.RGBA) // Draw is called when a new cache image is generated.
 }
 
+// StitchedImageOverlay defines an interface for arbitrary overlays that can be drawn over the stitched image.
 type StitchedImageOverlay interface {
 	Draw(*image.RGBA)
 }
@@ -29,37 +27,50 @@ type StitchedImageOverlay interface {
 // StitchedImage combines several ImageTile objects into a single RGBA image.
 // The way the images are combined/blended is defined by the blendFunc.
 type StitchedImage struct {
-	tiles       []ImageTile
+	tiles       ImageTiles
 	bounds      image.Rectangle
 	blendMethod StitchedImageBlendMethod
 	overlays    []StitchedImageOverlay
 
-	cacheHeight int
-	cacheImage  *image.RGBA
+	cacheRowHeight  int
+	cacheRows       []StitchedImageCache
+	cacheRowYOffset int // Defines the pixel offset of the first cache row.
 
-	queryCounter int
+	oldCacheRowIndex int
+	queryCounter     int
 }
 
 // NewStitchedImage creates a new image from several single image tiles.
-func NewStitchedImage(tiles []ImageTile, bounds image.Rectangle, blendMethod StitchedImageBlendMethod, cacheHeight int, overlays []StitchedImageOverlay) (*StitchedImage, error) {
+func NewStitchedImage(tiles ImageTiles, bounds image.Rectangle, blendMethod StitchedImageBlendMethod, cacheRowHeight int, overlays []StitchedImageOverlay) (*StitchedImage, error) {
 	if bounds.Empty() {
 		return nil, fmt.Errorf("given boundaries are empty")
 	}
 	if blendMethod == nil {
 		return nil, fmt.Errorf("no blending method given")
 	}
-	if cacheHeight <= 0 {
-		return nil, fmt.Errorf("invalid cache height of %d pixels", cacheHeight)
+	if cacheRowHeight <= 0 {
+		return nil, fmt.Errorf("invalid cache row height of %d pixels", cacheRowHeight)
 	}
 
-	return &StitchedImage{
+	stitchedImage := &StitchedImage{
 		tiles:       tiles,
 		bounds:      bounds,
 		blendMethod: blendMethod,
 		overlays:    overlays,
-		cacheHeight: cacheHeight,
-		cacheImage:  &image.RGBA{},
-	}, nil
+	}
+
+	// Generate cache image rows.
+	rows := bounds.Dy() / cacheRowHeight
+	var cacheRows []StitchedImageCache
+	for i := 0; i < rows; i++ {
+		rect := image.Rect(bounds.Min.X, bounds.Min.Y+i*cacheRowHeight, bounds.Max.X, bounds.Min.Y+(i+1)*cacheRowHeight)
+		cacheRows = append(cacheRows, NewStitchedImageCache(stitchedImage, rect.Intersect(bounds)))
+	}
+	stitchedImage.cacheRowHeight = cacheRowHeight
+	stitchedImage.cacheRowYOffset = -bounds.Min.Y
+	stitchedImage.cacheRows = cacheRows
+
+	return stitchedImage, nil
 }
 
 // ColorModel returns the Image's color model.
@@ -73,6 +84,10 @@ func (si *StitchedImage) Bounds() image.Rectangle {
 	return si.bounds
 }
 
+func (si *StitchedImage) At(x, y int) color.Color {
+	return si.RGBAAt(x, y)
+}
+
 // At returns the color of the pixel at (x, y).
 //
 // This is optimized to be read line by line (scanning), it will be much slower with random access.
@@ -81,25 +96,38 @@ func (si *StitchedImage) Bounds() image.Rectangle {
 //
 //	At(Bounds().Min.X, Bounds().Min.Y) // returns the top-left pixel of the image.
 //	At(Bounds().Max.X-1, Bounds().Max.Y-1) // returns the bottom-right pixel.
-//
-// This is not thread safe, don't call from several goroutines!
-func (si *StitchedImage) At(x, y int) color.Color {
-	p := image.Point{x, y}
-
+func (si *StitchedImage) RGBAAt(x, y int) color.RGBA {
 	// Assume that every pixel is only queried once.
 	si.queryCounter++
 
-	// Check if cached image needs to be regenerated.
-	if !p.In(si.cacheImage.Bounds()) {
-		rect := si.Bounds()
-		// TODO: Redo how the cache image rect is generated
-		rect.Min.Y = divideFloor(y, si.cacheHeight) * si.cacheHeight
-		rect.Max.Y = rect.Min.Y + si.cacheHeight
-
-		si.regenerateCache(rect)
+	// Determine the cache rowIndex index.
+	rowIndex := (y + si.cacheRowYOffset) / si.cacheRowHeight
+	if rowIndex < 0 || rowIndex >= len(si.cacheRows) {
+		return color.RGBA{}
 	}
 
-	return si.cacheImage.RGBAAt(x, y)
+	// Check if we advanced/changed the row index.
+	// This doesn't happen a lot, so stuff inside this can be a bit more expensive.
+	if si.oldCacheRowIndex != rowIndex {
+		// Pre generate the new row asynchronously.
+		newRowIndex := rowIndex + 1
+		if newRowIndex >= 0 && newRowIndex < len(si.cacheRows) {
+			go si.cacheRows[newRowIndex].Regenerate()
+		}
+
+		// Invalidate old cache row.
+		oldRowIndex := si.oldCacheRowIndex
+		if oldRowIndex >= 0 && oldRowIndex < len(si.cacheRows) {
+			si.cacheRows[oldRowIndex].Invalidate()
+		}
+
+		// Invalidate all tiles that are above the next row.
+		si.tiles.InvalidateAboveY((rowIndex+1)*si.cacheRowHeight - si.cacheRowYOffset)
+
+		si.oldCacheRowIndex = rowIndex
+	}
+
+	return si.cacheRows[rowIndex].RGBAAt(x, y)
 }
 
 // Opaque returns whether the image is fully opaque.
@@ -115,61 +143,4 @@ func (si *StitchedImage) Progress() (value, max int) {
 	size := si.Bounds().Size()
 
 	return si.queryCounter, size.X * size.Y
-}
-
-// regenerateCache will regenerate the cache image at the given rectangle.
-func (si *StitchedImage) regenerateCache(rect image.Rectangle) {
-	cacheImage := image.NewRGBA(rect)
-
-	// List of tiles that intersect with the to be generated cache image.
-	intersectingTiles := []*ImageTile{}
-	for i, tile := range si.tiles {
-		if tile.Bounds().Overlaps(rect) {
-			tilePtr := &si.tiles[i]
-			intersectingTiles = append(intersectingTiles, tilePtr)
-		}
-	}
-
-	// Start worker threads.
-	workerQueue := make(chan image.Rectangle)
-	waitGroup := sync.WaitGroup{}
-	for i := 0; i < runtime.NumCPU(); i++ {
-		waitGroup.Add(1)
-		go func() {
-			defer waitGroup.Done()
-			for workload := range workerQueue {
-				// List of tiles that intersect with the workload chunk.
-				workloadTiles := []*ImageTile{}
-
-				// Get only the tiles that intersect with the destination image bounds.
-				for _, tile := range intersectingTiles {
-					if tile.Bounds().Overlaps(workload) {
-						workloadTiles = append(workloadTiles, tile)
-					}
-				}
-
-				// Blend tiles into image at the workload rectangle.
-				si.blendMethod.Draw(workloadTiles, cacheImage.SubImage(workload).(*image.RGBA))
-			}
-		}()
-	}
-
-	// Divide rect into chunks and push to workers.
-	for _, chunk := range gridifyRectangle(rect, StitchedImageCacheGridSize) {
-		workerQueue <- chunk
-	}
-	close(workerQueue)
-
-	// Wait until all worker threads are done.
-	waitGroup.Wait()
-
-	// Draw overlays.
-	for _, overlay := range si.overlays {
-		if overlay != nil {
-			overlay.Draw(cacheImage)
-		}
-	}
-
-	// Update cached image.
-	si.cacheImage = cacheImage
 }
