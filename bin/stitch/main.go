@@ -29,7 +29,6 @@ var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coo
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
 var flagYMax = flag.Int("ymax", 0, "Lower bound of the output rectangle. This coordinate is not included in the output.")
-var flagCleanupThreshold = flag.Float64("cleanup", 0, "Enable cleanup mode with the given threshold. This will DELETE images from the input folder, no stitching will be done in this mode. A good value to start with is 0.999, which deletes images where the sum of the min-max difference of each sub-pixel overlapping with other images is less than 99.9%% of the maximum possible sum of pixel differences.")
 
 func main() {
 	log.Printf("Noita MapCapture stitching tool v%s", version)
@@ -196,63 +195,6 @@ func main() {
 		var xMin, yMin, xMax, yMax int
 		fmt.Sscanf(result, "%d,%d;%d,%d", &xMin, &yMin, &xMax, &yMax)
 		outputRect = image.Rect(xMin, yMin, xMax, yMax)
-	}
-
-	// Query the user, if there were no cmd arguments given.
-	/*if flag.NFlag() == 0 {
-		fmt.Println("\nYou can now define a cleanup threshold. This mode will DELETE input images based on their similarity with other overlapping input images. The range is from 0, where no images are deleted, to 1 where all images will be deleted. A good value to get rid of most artifacts is 0.999. If you enter a threshold above 0, the program will not stitch, but DELETE some of your input images. If you want to stitch, enter 0.")
-		prompt := promptui.Prompt{
-			Label:     "Enter cleanup threshold:",
-			Default:   strconv.FormatFloat(*flagCleanupThreshold, 'f', -1, 64),
-			AllowEdit: true,
-			Validate: func(s string) error {
-				result, err := strconv.ParseFloat(s, 64)
-				if err != nil {
-					return err
-				}
-
-				if result < 0 || result > 1 {
-					return fmt.Errorf("Number %v outside of valid range [0;1]", result)
-				}
-
-				return nil
-			},
-		}
-
-		result, err := prompt.Run()
-		if err != nil {
-			log.Panicf("Error while getting user input: %v", err)
-		}
-		*flagCleanupThreshold, err = strconv.ParseFloat(result, 64)
-		if err != nil {
-			log.Panicf("Error while parsing user input: %v", err)
-		}
-	}*/
-
-	if *flagCleanupThreshold < 0 || *flagCleanupThreshold > 1 {
-		log.Panicf("Cleanup threshold (%v) outside of valid range [0;1]", *flagCleanupThreshold)
-	}
-	if *flagCleanupThreshold > 0 {
-		bar := pb.Full.New(0)
-
-		log.Printf("Cleaning up %v tiles at %v", len(tiles), outputRect)
-		if err := CompareGrid(tiles, outputRect, 512, bar); err != nil {
-			log.Panic(err)
-		}
-		bar.Finish()
-
-		for _, tile := range tiles {
-			pixelErrorSumNormalized := float64(tile.pixelErrorSum) / float64(tile.Bounds().Size().X*tile.Bounds().Size().Y*3*255)
-			if 1-pixelErrorSumNormalized <= *flagCleanupThreshold {
-				os.Remove(tile.fileName)
-				log.Printf("Tile %v has matching factor of %f. Deleted file!", &tile, 1-pixelErrorSumNormalized)
-			} else {
-				log.Printf("Tile %v has matching factor of %f", &tile, 1-pixelErrorSumNormalized)
-			}
-
-		}
-
-		return
 	}
 
 	// Query the user, if there were no cmd arguments given.

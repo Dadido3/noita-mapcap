@@ -11,7 +11,6 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tdewolff/canvas v0.0.0-20220627195642-6566432f4b20
 	golang.org/x/exp v0.0.0-20220713135740-79cabaa25d75
-	golang.org/x/image v0.0.0-20220617043117-41969df76e82
 )
 
 require (
@@ -36,6 +35,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/tdewolff/minify/v2 v2.11.10 // indirect
 	github.com/tdewolff/parse/v2 v2.6.0 // indirect
+	golang.org/x/image v0.0.0-20220617043117-41969df76e82 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
