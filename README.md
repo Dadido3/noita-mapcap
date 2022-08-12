@@ -1,11 +1,11 @@
 # Noita map capture addon [![Build Status](https://travis-ci.com/Dadido3/noita-mapcap.svg?branch=master)](https://travis-ci.com/Dadido3/noita-mapcap)
 
 A mod for Noita that can capture images of the world and stitch them into one large image.
-It works with the regular Noita and the dev build.
+It works with the regular Noita build and the dev build.
 
-![missing image](images/example2.png)
+![Title image](images/title.png)
 
-A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom.com/image/223556) (Warning: Spoilers).
+A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom.com/image/223556) (May contain spoilers).
 
 ## System requirements
 
@@ -45,7 +45,7 @@ All you need to do is follow the given instructions, like:
 >
 > You can always *right* click ![Record button](files/ui-gfx/record-16x16.png) to reset the above mentioned settings back to Noita's default.
 
-After all issue have been resolved you are free to start capturing.
+After all issues have been resolved you are free to start capturing.
 
 To the top left of the window are 3 buttons:
 
@@ -61,9 +61,9 @@ To stitch the final result, click ![Stitch button](files/ui-gfx/stitch-16x16.png
 Start `stitch.exe` and proceed with the default values.
 After a few minutes the file `output.png` will be created.
 
+> ![Hint](files/ui-gfx/hint-16x16.png) See [stitcher/README.md](bin/stitch/README.md) for more information about all stitcher parameters.
+
 ## Mod settings
-
-
 
 > ![Hint](files/ui-gfx/hint-16x16.png) Use *right* mouse button to reset any mod setting to their default.
 
@@ -116,7 +116,7 @@ After a few minutes the file `output.png` will be created.
   - Glow
   - Gamma correction
 
-- `Disable shaders, GUI and AI`: Also disables all postprocessing, any in game UI and will freeze all mobs.
+- `Disable shaders, GUI and AI`: Also disables all postprocessing, any in-game UI and will freeze all mobs.
   Only works in dev build.
 
 - `Disable entity logic`: Will modify all encountered entities:
@@ -129,12 +129,12 @@ After a few minutes the file `output.png` will be created.
 
 ### Example settings
 
-Use this for capturing while you are playing the game.
+Use these settings if you want to capture your in-game action.
 The sliders are at their default values:
 
 ![Live capture example settings](images/mod-settings-live.png)
 
-Use this to capture the [base layout](AREAS.md#base-layout) with the least amount of glitches and artifacts.
+Use these settings to capture the [base layout](AREAS.md#base-layout) with the least amount of glitches and artifacts.
 The sliders are at their default values:
 
 ![Area capture example settings](images/mod-settings-area.png)
@@ -176,6 +176,14 @@ Alternatively, you can reset **all** game settings by deleting:
 - `"%appdata%\..\LocalLow\Nolla_Games_Noita\save_shared\config.xml"` for the regular Noita.
 - `"...\Noita\save_shared\config.xml"` for the dev build.
 
+### The objects in the stitched image are blurry
+
+The stitcher uses median blending to remove any single frame artifacts and to correct for not rendered chunks.
+This will cause fast moving objects to completely disappear, and slow moving objects to get blurry.
+
+To disable median blending, use the stitcher with `Blend tile limit` set to 1.
+This will cause the stitcher to only use the newest image tile for every resulting pixel.
+
 ## Additional information
 
 The resulting stitched images are quite big.
@@ -185,7 +193,7 @@ You can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#iss
 
 This mod uses the [LuaNXML](https://github.com/zatherz/luanxml) library by [Zatherz](https://github.com/zatherz).
 
-Thanks to [Daniel Niccoli](https://github.com/danielniccoli) for figuring out how to change some in game options by manipulating process memory.
+Thanks to [Daniel Niccoli](https://github.com/danielniccoli) for figuring out how to change some in-game options by manipulating process memory.
 
 ## License
 

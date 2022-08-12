@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "aabb",
+        "appdata",
+        "autosetup",
         "backbuffer",
         "basicfont",
         "cheggaaa",
@@ -25,7 +27,9 @@
         "manifoldco",
         "mapcap",
         "nfnt",
+        "Niccoli",
         "noita",
+        "NXML",
         "polymorphed",
         "promptui",
         "rasterizer",
@@ -38,7 +42,8 @@
         "xmax",
         "xmin",
         "ymax",
-        "ymin"
+        "ymin",
+        "Zatherz"
     ],
     "Lua.runtime.version": "LuaJIT",
     "Lua.format.defaultConfig": {
