@@ -20,7 +20,7 @@ var playerPathDisplayStyle = canvas.Style{
 	FillColor: canvas.Transparent,
 	//StrokeColor:  color.RGBA{0, 0, 0, 127},
 	StrokeWidth:  3.0,
-	StrokeCapper: canvas.RoundCap,
+	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
 	DashOffset:   0.0,
 	Dashes:       []float64{},
