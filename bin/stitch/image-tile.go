@@ -28,8 +28,8 @@ type ImageTile struct {
 
 	scaleDivider int // Downscales the coordinates and images on the fly.
 
-	image      image.Image   // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
-	imageMutex *sync.RWMutex //
+	image      image.Image // Either a rectangle or an RGBA image. The bounds of this image are determined by the filename.
+	imageMutex *sync.RWMutex
 
 	invalidationChan chan struct{} // Used to send invalidation requests to the tile's goroutine.
 	timeoutChan      chan struct{} // Used to determine whether the tile is still being accessed or not.

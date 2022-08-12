@@ -39,7 +39,8 @@ func LoadImageTiles(path string, scaleDivider int) (ImageTiles, error) {
 
 // InvalidateAboveY invalidates all cached images that have no pixel at the given y coordinate or below.
 func (it ImageTiles) InvalidateAboveY(y int) {
-	for _, tile := range it {
+	for i := range it {
+		tile := &it[i] // Need to copy a reference.
 		if tile.Bounds().Max.Y <= y {
 			tile.Invalidate()
 		}

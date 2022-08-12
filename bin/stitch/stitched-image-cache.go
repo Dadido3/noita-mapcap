@@ -54,10 +54,10 @@ func (sic *StitchedImageCache) Regenerate() *image.RGBA {
 
 	// List of tiles that intersect with the to be generated cache image.
 	intersectingTiles := []*ImageTile{}
-	for i, tile := range si.tiles {
+	for i := range si.tiles {
+		tile := &si.tiles[i]
 		if tile.Bounds().Overlaps(sic.rect) {
-			tilePtr := &si.tiles[i]
-			intersectingTiles = append(intersectingTiles, tilePtr)
+			intersectingTiles = append(intersectingTiles, tile)
 		}
 	}
 

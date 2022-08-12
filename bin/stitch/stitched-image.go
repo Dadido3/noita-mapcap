@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"sync/atomic"
 )
 
 // StitchedImageCacheGridSize defines the worker chunk size when the cache image is regenerated.
@@ -37,7 +38,7 @@ type StitchedImage struct {
 	cacheRowYOffset int // Defines the pixel offset of the first cache row.
 
 	oldCacheRowIndex int
-	queryCounter     int
+	queryCounter     atomic.Int64
 }
 
 // NewStitchedImage creates a new image from several single image tiles.
@@ -98,7 +99,7 @@ func (si *StitchedImage) At(x, y int) color.Color {
 //	At(Bounds().Max.X-1, Bounds().Max.Y-1) // returns the bottom-right pixel.
 func (si *StitchedImage) RGBAAt(x, y int) color.RGBA {
 	// Assume that every pixel is only queried once.
-	si.queryCounter++
+	si.queryCounter.Add(1)
 
 	// Determine the cache rowIndex index.
 	rowIndex := (y + si.cacheRowYOffset) / si.cacheRowHeight
@@ -142,5 +143,5 @@ func (si *StitchedImage) Opaque() bool {
 func (si *StitchedImage) Progress() (value, max int) {
 	size := si.Bounds().Size()
 
-	return si.queryCounter, size.X * size.Y
+	return int(si.queryCounter.Load()), size.X * size.Y
 }
