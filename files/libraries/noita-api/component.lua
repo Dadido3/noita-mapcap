@@ -64,7 +64,7 @@ function NoitaComponent:SetValue(fieldName, ...)
 	return ComponentSetValue2(self.ID, fieldName, ...) -- TODO: Rework Noita API to handle vectors, and use a vector instead of shitty multi value arguments
 end
 
----Returns one or many values matching the type or subtypes of the requested field in a component subobject.
+---Returns one or many values matching the type or subtypes of the requested field in a component sub-object.
 ---Reports error and returns nil if the field type is not supported or 'object_name' is not a metaobject.
 ---
 ---Reporting errors means that it spams the stdout with messages, instead of using the lua error handling. Thanks Nolla.
@@ -75,7 +75,7 @@ function NoitaComponent:ObjectGetValue(objectName, fieldName)
 	return ComponentObjectGetValue2(self.ID, objectName, fieldName) -- TODO: Rework Noita API to handle vectors, and return a vector instead of some shitty multi value result
 end
 
----Sets the value of a field in a component subobject. Value(s) should have a type matching the field type.
+---Sets the value of a field in a component sub-object. Value(s) should have a type matching the field type.
 ---Reports error if the values weren't given in correct type, the field type is not supported or 'object_name' is not a metaobject.
 ---@param objectName string
 ---@param fieldName string

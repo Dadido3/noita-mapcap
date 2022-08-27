@@ -126,7 +126,7 @@ function Coords:PixelScale()
 end
 
 ---Converts the given virtual/world coordinates into window/screen coordinates.
----@param world Vec2 -- World coordiante, origin is near the cave entrance.
+---@param world Vec2 -- World coordinate, origin is near the cave entrance.
 ---@param viewportCenter Vec2|nil -- Result of `GameGetCameraPos()`. Will be queried automatically if set to nil.
 ---@return Vec2 window
 function Coords:ToWindow(world, viewportCenter)

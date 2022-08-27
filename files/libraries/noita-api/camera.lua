@@ -18,7 +18,7 @@ local CameraAPI = {}
 ---
 ---@param strength number
 ---@param position Vec2|nil -- Defaults to camera position if not set.
-function CameraAPI.Screenshake(strength, position)
+function CameraAPI.ScreenShake(strength, position)
 	if position == nil then
 		return GameScreenshake(strength)
 	end

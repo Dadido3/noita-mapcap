@@ -75,7 +75,7 @@ modSettings = {
 	{
 		id = "capture-mode-spiral-origin",
 		ui_name = "  Origin",
-		ui_description = "The starting point or center of the spiral.\n- Current position: Your ingame position.\n- World origin: Near the cave entrance.\n- Custom position: Enter your own coordinates.",
+		ui_description = "The starting point or center of the spiral.\n- Current position: Your in-game position.\n- World origin: Near the cave entrance.\n- Custom position: Enter your own coordinates.",
 		value_default = "current",
 		values = { { "current", "Current position" }, { "0", "World origin" }, { "custom", "Custom position" } },
 		scope = MOD_SETTING_SCOPE_RUNTIME,

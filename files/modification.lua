@@ -213,7 +213,7 @@ function Modification.RequiredChanges()
 	-- Capturing will not work in fullscreen.
 	config["fullscreen"] = "0"
 
-	-- Also disable screenshake.
+	-- Also disable screen shake.
 	config["screenshake_intensity"] = "0"
 
 	magic["DRAW_PARALLAX_BACKGROUND"] = ModSettingGet("noita-mapcap.disable-background") and "0" or "1"

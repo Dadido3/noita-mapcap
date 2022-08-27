@@ -8,7 +8,7 @@
 -----------------------
 
 -- TODO: Wrap Noita utilities and wrap them into a table: https://stackoverflow.com/questions/9540732/loadfile-without-polluting-global-environment
-require("utilities") -- Loads Noita's utilities from `data/scripts/lib/utilitites.lua`.
+require("utilities") -- Loads Noita's utilities from `data/scripts/lib/utilities.lua`.
 
 --------------------------
 -- Load library modules --
@@ -146,7 +146,7 @@ function UI:_DrawMessages(messages)
 		end
 		GuiLayoutEnd(gui)
 
-		if not message.Autoclose then
+		if not message.AutoClose then
 			local clicked = GuiImageButton(gui, self:_GenID(), 5, 0, "", "mods/noita-mapcap/files/ui-gfx/dismiss-8x8.png")
 			--GuiTooltip(gui, "Dismiss message", "")
 			if clicked then messages[key] = nil end
@@ -196,7 +196,7 @@ function UI:Draw()
 	local gui = self.gui
 
 	-- Skip drawing if we are asked to do so.
-	-- TODO: Find a way to susped UI drawing, but still being able to receive events
+	-- TODO: Find a way to suspend UI drawing, but still being able to receive events
 	if self.suspendFrames and self.suspendFrames > 0 then self.suspendFrames = self.suspendFrames - 1 return end
 	self.suspendFrames = nil
 

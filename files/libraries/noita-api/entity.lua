@@ -327,7 +327,7 @@ end
 
 ---Creates a component of type 'component_type_name' and adds it to 'entity_id'.
 ---'table_of_component_values' should be a string-indexed table, where keys are field names and values are field values of correct type.
----The value setting works like ComponentObjectSetValue2(), with the exception that multivalue types are not supported.
+---The value setting works like ComponentObjectSetValue2(), with the exception that multi value types are not supported.
 ---Additional supported values are _tags:comma_separated_string and _enabled:bool, which basically work like the those fields work in entity XML files.
 ---Returns the created component, if creation succeeded, or nil.
 ---@param componentTypeName string

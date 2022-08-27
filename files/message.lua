@@ -17,13 +17,13 @@ local Coords = require("coordinates")
 -- Code --
 ----------
 
----Removes all messages with the autoclose flag.
+---Removes all messages with the AutoClose flag.
 ---Use this before you recreate all auto closing messages.
-function Message:CloseAutoclose()
+function Message:CloseAutoClose()
 	self.List = self.List or {}
 
 	for k, message in pairs(self.List) do
-		if message.Autoclose then
+		if message.AutoClose then
 			self.List[k] = nil
 		end
 	end
@@ -64,7 +64,7 @@ function Message:ShowResetNoitaSettings()
 		Lines = {
 			"You requested to reset some game settings like:",
 			"- Custom resolutions",
-			"- Screenshake intensity",
+			"- Screen-shake intensity",
 			" ",
 			"Press the following button to reset the settings and close Noita automatically:",
 		},
@@ -94,7 +94,7 @@ function Message:ShowSetNoitaSettings(callback, desc)
 		Actions = {
 			{ Name = "Setup and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = callback },
 		},
-		Autoclose = true, -- This message will automatically close.
+		AutoClose = true, -- This message will automatically close.
 	}
 end
 
@@ -111,7 +111,7 @@ function Message:ShowRequestRestart(desc)
 			" ",
 			"To resolve this issue, restart the game.",
 		},
-		Autoclose = true, -- This message will automatically close.
+		AutoClose = true, -- This message will automatically close.
 	}
 end
 
@@ -132,7 +132,7 @@ function Message:ShowWrongResolution(callback, desc)
 		Actions = {
 			{ Name = "Query settings again", Hint = nil, HintDesc = nil, Callback = function() Coords:ReadResolutions() end },
 		},
-		Autoclose = true, -- This message will automatically close.
+		AutoClose = true, -- This message will automatically close.
 	}
 end
 
@@ -162,7 +162,7 @@ function Message:ShowGeneralSettingsProblem(...)
 	self.List["GeneralSettingsProblem"] = {
 		Type = "hint",
 		Lines = { ... },
-		Autoclose = true, -- This message will automatically close.
+		AutoClose = true, -- This message will automatically close.
 	}
 end
 
@@ -177,7 +177,7 @@ function Message:ShowGeneralInstallationProblem(...)
 	}
 end
 
----Tell the user that some modifications couldn't be applied because it is unsupported.
+---Tell the user that some modification couldn't be applied because it is unsupported.
 ---@param realm "config"|"magicNumbers"|"processMemory"|"filePatches"
 ---@param name string
 ---@param value any

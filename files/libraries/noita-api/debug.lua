@@ -48,7 +48,7 @@ end
 
 ---Enables the trailer mode and some other things:
 ---
---- - Disables ingame GUI.
+--- - Disables in-game GUI.
 --- - Opens fog of war everywhere (Not the same as disabling it completely).
 --- - Enables `mTrailerMode`, whatever that does.
 ---

@@ -47,12 +47,12 @@ Memory.PAGE_WRITECOMBINE      = 0x400
 ---@param newProtect integer
 ---@return ffi.cdata* oldProtect
 function Memory.VirtualProtect(addr, size, newProtect)
-	local oldprotect = ffi.new('DWORD[1]')
-	if not ffi.C.VirtualProtect(addr, size, newProtect, oldprotect) then
+	local oldProtect = ffi.new('DWORD[1]')
+	if not ffi.C.VirtualProtect(addr, size, newProtect, oldProtect) then
 		error(string.format("failed to call VirtualProtect(%s, %s, %s)", addr, size, newProtect))
 	end
 
-	return oldprotect
+	return oldProtect
 end
 
 return Memory

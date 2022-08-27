@@ -64,7 +64,7 @@ local oldRequire = require
 local recursionSet = {}
 
 ---Emulated require function in case the Lua API is restricted.
----It's probably good enough for most usecases.
+---It's probably good enough for most use cases.
 ---
 ---We need to override the default require in any case, as only dofile and loadfile can access stuff in the virtual filesystem.
 ---@param modName string

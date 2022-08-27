@@ -47,7 +47,7 @@ function Check:Regular(interval)
 	self.Counter = interval
 
 	-- Remove some messages, so they will automatically disappear when the problem is solved.
-	Message:CloseAutoclose()
+	Message:CloseAutoClose()
 
 	-- Compare Noita config and actual window resolution.
 	local topLeft, bottomRight = ScreenCap.GetRect() -- Actual window client area.
@@ -83,7 +83,7 @@ function Check:Regular(interval)
 	if config["screenshake_intensity"] then
 		local expected = config.screenshake_intensity
 		if expected ~= self.StartupConfig.screenshake_intensity then
-			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Screenshake intensity is %s, expected %s.", self.StartupConfig.screenshake_intensity, expected))
+			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Screen shake intensity is %s, expected %s.", self.StartupConfig.screenshake_intensity, expected))
 		end
 	end
 

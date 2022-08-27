@@ -3,7 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- This contains just some utilitites that may be useful to have.
+-- This contains just some utilities that may be useful to have.
 
 local DebugAPI = require("noita-api.debug")
 
