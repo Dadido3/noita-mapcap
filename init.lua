@@ -150,10 +150,13 @@ end
 ---@param isPaused boolean
 ---@param isInventoryPause boolean
 function OnPausedChanged(isPaused, isInventoryPause)
-	-- Set some stuff based on mod settings.
-	-- Normally this would be in `OnModSettingsChanged`, but that doesn't seem to be called.
-	local config, magic, memory, patches = Modification.RequiredChanges()
-	Modification.SetMemoryOptions(memory)
+	Message:CatchException("OnPausedChanged", function()
+		-- Set some stuff based on mod settings.
+		-- Normally this would be in `OnModSettingsChanged`, but that doesn't seem to be called.
+		local config, magic, memory, patches = Modification.RequiredChanges()
+		Modification.SetMemoryOptions(memory)
+
+	end)
 end
 
 ---Will be called when the game is unpaused, if player changed any mod settings while the game was paused.

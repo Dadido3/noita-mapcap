@@ -19,6 +19,7 @@
 local CameraAPI = require("noita-api.camera")
 local Coords = require("coordinates")
 local ffi = require("ffi")
+local Memory = require("memory")
 local NXML = require("luanxml.nxml")
 local Utils = require("noita-api.utils")
 local Vec2 = require("noita-api.vec2")
@@ -92,38 +93,40 @@ end
 ---@param memory table
 function Modification.SetMemoryOptions(memory)
 	-- Lookup table with the following hierarchy:
-	-- DevBuild -> OS -> BuildDate -> Option -> Address.
+	-- DevBuild -> OS -> BuildDate -> Option -> ModFunc.
 	local lookup = {
 		[true] = {
 			Windows = {
 				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG dev build.
-					mPostFxDisabled = 0x010E3B6C,
-					mGuiDisabled = 0x010E3B6D,
-					mGuiHalfSize = 0x010E3B6E,
-					mFogOfWarOpenEverywhere = 0x010E3B6F,
-					mTrailerMode = 0x010E3B70,
-					mDayTimeRotationPause = 0x010E3B71,
-					mPlayerNeverDies = 0x010E3B72,
-					mFreezeAI = 0x010E3B73,
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x010E3B6C)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010E3B6D)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010E3B6E)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010E3B6F)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x010E3B70)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010E3B71)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010E3B72)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x010E3B73)[0] = value end,
 				},
 				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam dev build.
-					mPostFxDisabled = 0x010EDEBC,
-					mGuiDisabled = 0x010EDEBD,
-					mGuiHalfSize = 0x010EDEBE,
-					mFogOfWarOpenEverywhere = 0x010EDEBF,
-					mTrailerMode = 0x010EDEC0,
-					mDayTimeRotationPause = 0x010EDEC1,
-					mPlayerNeverDies = 0x010EDEC2,
-					mFreezeAI = 0x010EDEC3,
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x010EDEBC)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010EDEBD)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010EDEBE)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010EDEBF)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x010EDEC0)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010EDEC1)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010EDEC2)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x010EDEC3)[0] = value end,
 				},
 			},
 		},
 		[false] = {
 			Windows = {
 				[0x00E1C550] = { _BuildString = "Build Apr 23 2021 18:44:24", -- Steam build.
-					--enableModDetection = 0x0063D8AD, -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
-					-- The page this is in is not writable, so this will crash Noita.
-					-- This modification can be applied manually with some other tool that changes the permission prior to writing, like Cheat Engine.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x0063D8AD)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
 				},
 			},
 		},
@@ -132,10 +135,10 @@ function Modification.SetMemoryOptions(memory)
 	-- Look up the tree and set options accordingly.
 
 	local level1 = lookup[DebugGetIsDevBuild()]
-	if level1 == nil then return end
+	level1 = level1 or {}
 
 	local level2 = level1[ffi.os]
-	if level2 == nil then return end
+	level2 = level2 or {}
 
 	local level3
 	for k, v in pairs(level2) do
@@ -146,9 +149,11 @@ function Modification.SetMemoryOptions(memory)
 	end
 
 	for k, v in pairs(memory) do
-		local address = level3[k]
-		if address ~= nil then
-			ffi.cast("char*", address)[0] = v
+		local modFunc = level3[k]
+		if modFunc ~= nil then
+			modFunc(v)
+		else
+			Message:ShowModificationUnsupported("processMemory", k, v)
 		end
 	end
 end
@@ -243,7 +248,8 @@ function Modification.RequiredChanges()
 	if ModSettingGet("noita-mapcap.disable-mod-detection") then
 		memory["enableModDetection"] = 0
 	else
-		memory["enableModDetection"] = 1
+		-- Don't actively (re)enable mod detection.
+		--memory["enableModDetection"] = 1
 	end
 
 	-- Disables or hides most of the UI.

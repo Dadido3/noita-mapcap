@@ -176,3 +176,21 @@ function Message:ShowGeneralInstallationProblem(...)
 		Lines = { ... },
 	}
 end
+
+---Tell the user that some modifications couldn't be applied because it is unsupported.
+---@param realm "config"|"magicNumbers"|"processMemory"|"filePatches"
+---@param name string
+---@param value any
+function Message:ShowModificationUnsupported(realm, name, value)
+	self.List = self.List or {}
+
+	self.List["ModificationFailed"] = {
+		Type = "warning",
+		Lines = {
+			string.format("Couldn't modify %q in %q realm.", name, realm),
+			" ",
+			"This simply means that this modification is not supported for the Noita version you are using.",
+			"Feel free to open an issue at https://github.com/Dadido3/noita-mapcap.",
+		},
+	}
+end
