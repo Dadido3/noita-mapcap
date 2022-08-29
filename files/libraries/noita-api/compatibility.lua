@@ -28,7 +28,7 @@ end
 -- Package doesn't exist when the Lua API is restricted.
 -- Therefore we create it here and apply some default values.
 package = package or {}
-package.path = package.path or "./?.lua;" -- Allow paths relative to the working directory.
+package.path = package.path or "./?.lua" -- Allow paths relative to the working directory.
 package.preload = package.preload or {}
 package.loaded = package.loaded or {
 	_G = _G,
@@ -141,12 +141,15 @@ end
 ---Set up some stuff so `require` works as expected.
 ---@param libPath any -- Path to the libraries directory of this mod.
 local function setup(libPath)
-	-- Add the files folder of the given mod as base for any `require` lookups.
-	package.path = package.path .. "./" .. libPath .. "?.lua;"
-	package.path = package.path .. "./" .. libPath .. "?/init.lua;"
+	-- Add the library directory of the mod as base for any `require` lookups.
+	package.path = package.path:gsub(";$", "") -- Get rid of any trailing semicolon.
+	package.path = package.path .. ";./" .. libPath .. "?.lua"
+	package.path = package.path .. ";./" .. libPath .. "?/init.lua"
 
 	-- Add the library directory of Noita itself.
-	package.path = package.path .. "./data/scripts/lib/?.lua;" -- TODO: Get rid of Noita's lib path, create replacement libs for stuff in there
+	package.path = package.path .. ";./data/scripts/lib/?.lua" -- TODO: Get rid of Noita's lib path, create replacement libs for stuff in there
+
+	print("bla", package.path)
 end
 
 return setup
