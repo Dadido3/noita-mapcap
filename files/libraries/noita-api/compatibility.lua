@@ -148,8 +148,6 @@ local function setup(libPath)
 
 	-- Add the library directory of Noita itself.
 	package.path = package.path .. ";./data/scripts/lib/?.lua" -- TODO: Get rid of Noita's lib path, create replacement libs for stuff in there
-
-	print("bla", package.path)
 end
 
 return setup
