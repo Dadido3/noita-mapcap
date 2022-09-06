@@ -53,9 +53,10 @@ To the top left of the window are 3 buttons:
   You can always restart a capture, and it will resume where it was stopped.
 
 - ![Output directory button](files/ui-gfx/open-output-16x16.png) Reveals the output directory in your file browser.
-  This will contain raw screenshots that later can be stitched.
+  This will contain raw screenshots and other recorded data that later can be stitched.
 
-- ![Stitch button](files/ui-gfx/stitch-16x16.png) Reveals the directory of the stitch tool in your file browser.
+- ![Stitch button](files/ui-gfx/stitch-16x16.png) Reveals the stitching tool 
+directory in your file browser.
 
 To stitch the final result, click ![Stitch button](files/ui-gfx/stitch-16x16.png) to open the directory of the stitching tool.
 Start `stitch.exe` and proceed with the default values.
@@ -158,7 +159,7 @@ These can't really be prevented.
 All you can do is to click `Ignore always`.
 
 Alternatively you can run the same capture in the regular Noita (non dev build), which has these messages disabled.
-With the exception that you can't disable the pixel and rigid body simulations it works as good as in the dev build.
+With the exception that you can't disable the pixel and rigid body simulations, the mod works just as well as in the dev build.
 
 ### The mod messed up my game
 
@@ -170,6 +171,10 @@ To reset any permanent settings that may have been set by the mod:
 1. Enable the mod.
 2. Start a new game.
 3. *Right* click ![Record button](files/ui-gfx/record-16x16.png) and follow instructions.
+
+> ![Hint](files/ui-gfx/hint-16x16.png) If you have changed any resolutions in your game's `config.xml`, you may have to re-apply these changes.
+> This also applies if you use any mods that makes Noita work on ultra-wide screens.
+> For these mods to work again after a reset, you need to go through their installation steps again.
 
 Alternatively, you can reset **all** game settings by deleting:
 
