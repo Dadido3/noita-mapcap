@@ -432,6 +432,11 @@ local function captureModifyEntities(file, modify, x, y, radius)
 
 			-- Prevent it from being modified again.
 			rootEntity:AddTag("MapModified")
+
+			-- Just a test on how to remove/kill creatures and enemies.
+			--if (rootEntity:HasTag("enemy") or rootEntity:HasTag("helpless_animal")) and not rootEntity:HasTag("boss") then
+			--	rootEntity:Kill()
+			--end
 		end
 	end
 
