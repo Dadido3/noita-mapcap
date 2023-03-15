@@ -140,7 +140,7 @@ function Modification.SetMemoryOptions(memory)
 	local level2 = level1[ffi.os]
 	level2 = level2 or {}
 
-	local level3
+	local level3 = {}
 	for k, v in pairs(level2) do
 		if ffi.string(ffi.cast("char*", k)) == v._BuildString then
 			level3 = v
