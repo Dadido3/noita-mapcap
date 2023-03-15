@@ -127,7 +127,9 @@ function Message:ShowWrongResolution(callback, desc)
 			"The resolution changed:",
 			desc or "",
 			" ",
-			"To fix: Restart Noita or revert the change."
+			"To fix:",
+			"- Deselect and select the Noita window, or",
+			"- restart Noita or revert the resolution change."
 		},
 		Actions = {
 			{ Name = "Query settings again", Hint = nil, HintDesc = nil, Callback = function() Coords:ReadResolutions() end },
