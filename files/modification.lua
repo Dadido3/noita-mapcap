@@ -117,6 +117,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010EDEC2)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x010EDEC3)[0] = value end,
 				},
+				[0x00F8A7B4] = { _BuildString = "Build Mar 11 2023 14:05:19", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x010F80EC)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010F80ED)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010F80EE)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010F80EF)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x010F80F0)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010F80F1)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010F80F2)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x010F80F3)[0] = value end,
+				},
 			},
 		},
 		[false] = {
@@ -124,6 +134,13 @@ function Modification.SetMemoryOptions(memory)
 				[0x00E1C550] = { _BuildString = "Build Apr 23 2021 18:44:24", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x0063D8AD)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				[0x00E22E18] = { _BuildString = "Build Mar 11 2023 14:09:24", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006429ED) -- Can be found by searching for the pattern C6 80 20 01 00 00 >01< 8B CF E8 FB 1D. The pointer has to point to the highlighted byte.
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
