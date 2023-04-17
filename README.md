@@ -1,4 +1,4 @@
-# Noita map capture addon [![Build Status](https://travis-ci.com/Dadido3/noita-mapcap.svg?branch=master)](https://travis-ci.com/Dadido3/noita-mapcap)
+# Noita map capture addon
 
 A mod for Noita that can capture images of the world and stitch them into one large image.
 It works with the regular Noita build and the dev build.
