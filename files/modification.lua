@@ -1,4 +1,4 @@
--- Copyright (c) 2022 David Vogel
+-- Copyright (c) 2022-2023 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -23,6 +23,7 @@ local Memory = require("memory")
 local NXML = require("luanxml.nxml")
 local Utils = require("noita-api.utils")
 local Vec2 = require("noita-api.vec2")
+local DebugAPI = require("noita-api.debug")
 
 ----------
 -- Code --
@@ -255,14 +256,14 @@ function Modification.RequiredChanges()
 		}
 	end
 
-	if ModSettingGet("noita-mapcap.disable-shaders-gui-ai") then
+	if ModSettingGet("noita-mapcap.disable-shaders-gui-ai") and DebugAPI.IsDevBuild() then
 		memory["mPostFxDisabled"] = 1
 		memory["mGuiDisabled"] = 1
 		memory["mFreezeAI"] = 1
 		memory["mTrailerMode"] = 1 -- Is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
 	end
 
-	if ModSettingGet("noita-mapcap.disable-mod-detection") then
+	if ModSettingGet("noita-mapcap.disable-mod-detection") and not DebugAPI.IsDevBuild() then
 		memory["enableModDetection"] = 0
 	else
 		-- Don't actively (re)enable mod detection.
