@@ -98,7 +98,7 @@ function Modification.SetMemoryOptions(memory)
 	local lookup = {
 		[true] = {
 			Windows = {
-				[0x00F77B0C] = { _BuildString = "Build Apr 23 2021 18:36:55", -- GOG dev build.
+				{_Offset = 0x00F77B0C, _BuildString = "Build Apr 23 2021 18:36:55", -- GOG dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x010E3B6C)[0] = value end,
 					mGuiDisabled = function(value) ffi.cast("char*", 0x010E3B6D)[0] = value end,
 					mGuiHalfSize = function(value) ffi.cast("char*", 0x010E3B6E)[0] = value end,
@@ -108,7 +108,7 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010E3B72)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x010E3B73)[0] = value end,
 				},
-				[0x00F80384] = { _BuildString = "Build Apr 23 2021 18:40:40", -- Steam dev build.
+				{_Offset = 0x00F80384, _BuildString = "Build Apr 23 2021 18:40:40", -- Steam dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x010EDEBC)[0] = value end,
 					mGuiDisabled = function(value) ffi.cast("char*", 0x010EDEBD)[0] = value end,
 					mGuiHalfSize = function(value) ffi.cast("char*", 0x010EDEBE)[0] = value end,
@@ -118,7 +118,7 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010EDEC2)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x010EDEC3)[0] = value end,
 				},
-				[0x00F8A7B4] = { _BuildString = "Build Mar 11 2023 14:05:19", -- Steam dev build.
+				{_Offset = 0x00F8A7B4, _BuildString = "Build Mar 11 2023 14:05:19", -- Steam dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x010F80EC)[0] = value end,
 					mGuiDisabled = function(value) ffi.cast("char*", 0x010F80ED)[0] = value end,
 					mGuiHalfSize = function(value) ffi.cast("char*", 0x010F80EE)[0] = value end,
@@ -128,18 +128,35 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010F80F2)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x010F80F3)[0] = value end,
 				},
+				{_Offset = 0x00F8A8A4, _BuildString = "Build Jun 19 2023 14:14:52", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x010F810C)[0] = value end, -- Can be found by using Cheat Engine while toggling options in the F7 menu.
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010F810D)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010F810E)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010F810F)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x010F8110)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010F8111)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010F8112)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x010F8113)[0] = value end,
+				},
 			},
 		},
 		[false] = {
 			Windows = {
-				[0x00E1C550] = { _BuildString = "Build Apr 23 2021 18:44:24", -- Steam build.
+				{_Offset = 0x00E1C550, _BuildString = "Build Apr 23 2021 18:44:24", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x0063D8AD)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
 				},
-				[0x00E22E18] = { _BuildString = "Build Mar 11 2023 14:09:24", -- Steam build.
+				{_Offset = 0x00E22E18, _BuildString = "Build Mar 11 2023 14:09:24", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006429ED) -- Can be found by searching for the pattern C6 80 20 01 00 00 >01< 8B CF E8 FB 1D. The pointer has to point to the highlighted byte.
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x00E22E18, _BuildString = "Build Jun 19 2023 14:18:46", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x006429ED) -- Can be found by searching for the pattern C6 80 20 01 00 00 >01< 8B CF E8 FB 1D. The pointer has to point to the highlighted byte.
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
@@ -159,8 +176,8 @@ function Modification.SetMemoryOptions(memory)
 	level2 = level2 or {}
 
 	local level3 = {}
-	for k, v in pairs(level2) do
-		if ffi.string(ffi.cast("char*", k)) == v._BuildString then
+	for _, v in ipairs(level2) do
+		if ffi.string(ffi.cast("char*", v._Offset)) == v._BuildString then
 			level3 = v
 			break
 		end
