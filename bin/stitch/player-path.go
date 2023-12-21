@@ -17,8 +17,8 @@ import (
 )
 
 var playerPathDisplayStyle = canvas.Style{
-	FillColor: canvas.Transparent,
-	//StrokeColor:  color.RGBA{0, 0, 0, 127},
+	Fill: canvas.Paint{},
+	//Stroke:       canvas.Paint{Color: color.RGBA{0, 0, 0, 127}},
 	StrokeWidth:  3.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
@@ -81,13 +81,13 @@ func (p PlayerPath) Draw(destImage *image.RGBA) {
 
 			if pathElement.Polymorphed {
 				// Set stroke color to typically polymorph color.
-				ctx.Style.StrokeColor = color.RGBA{127, 50, 83, 127}
+				ctx.Style.Stroke.Color = color.RGBA{127, 50, 83, 127}
 			} else {
 				// Set stroke color depending on HP level.
 				hpFactor := math.Max(math.Min(pathElement.HP/pathElement.MaxHP, 1), 0)
 				hpFactorInv := 1 - hpFactor
 				r, g, b, a := uint8((0*hpFactor+1*hpFactorInv)*127), uint8((1*hpFactor+0*hpFactorInv)*127), uint8(0), uint8(127)
-				ctx.Style.StrokeColor = color.RGBA{r, g, b, a}
+				ctx.Style.Stroke.Color = color.RGBA{r, g, b, a}
 			}
 
 			ctx.DrawPath(0, 0, path)
@@ -96,6 +96,6 @@ func (p PlayerPath) Draw(destImage *image.RGBA) {
 
 	// Theoretically we would need to linearize imgRGBA first, but DefaultColorSpace assumes that the color space is linear already.
 	r := rasterizer.FromImage(originImage, canvas.DPMM(1.0), canvas.DefaultColorSpace)
-	c.Render(r)
+	c.RenderTo(r)
 	r.Close() // This just transforms the image's luminance curve back from linear into non linear.
 }

@@ -15,8 +15,8 @@ import (
 //var entityDisplayFontFace *canvas.FontFace
 
 var entityDisplayAreaDamageStyle = canvas.Style{
-	FillColor:    color.RGBA{100, 0, 0, 100},
-	StrokeColor:  canvas.Transparent,
+	Fill:         canvas.Paint{Color: color.RGBA{100, 0, 0, 100}},
+	Stroke:       canvas.Paint{},
 	StrokeWidth:  1.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
@@ -26,8 +26,8 @@ var entityDisplayAreaDamageStyle = canvas.Style{
 }
 
 var entityDisplayMaterialAreaCheckerStyle = canvas.Style{
-	FillColor:    color.RGBA{0, 0, 127, 127},
-	StrokeColor:  canvas.Transparent,
+	Fill:         canvas.Paint{Color: color.RGBA{0, 0, 127, 127}},
+	Stroke:       canvas.Paint{},
 	StrokeWidth:  1.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
@@ -37,8 +37,8 @@ var entityDisplayMaterialAreaCheckerStyle = canvas.Style{
 }
 
 var entityDisplayTeleportStyle = canvas.Style{
-	FillColor:    color.RGBA{0, 127, 0, 127},
-	StrokeColor:  canvas.Transparent,
+	Fill:         canvas.Paint{Color: color.RGBA{0, 127, 0, 127}},
+	Stroke:       canvas.Paint{},
 	StrokeWidth:  1.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
@@ -48,8 +48,8 @@ var entityDisplayTeleportStyle = canvas.Style{
 }
 
 var entityDisplayHitBoxStyle = canvas.Style{
-	FillColor:    color.RGBA{64, 64, 0, 64},
-	StrokeColor:  color.RGBA{0, 0, 0, 64},
+	Fill:         canvas.Paint{Color: color.RGBA{64, 64, 0, 64}},
+	Stroke:       canvas.Paint{Color: color.RGBA{0, 0, 0, 64}},
 	StrokeWidth:  1.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,
@@ -59,8 +59,8 @@ var entityDisplayHitBoxStyle = canvas.Style{
 }
 
 var entityDisplayCollisionTriggerStyle = canvas.Style{
-	FillColor:    color.RGBA{0, 64, 64, 64},
-	StrokeColor:  color.RGBA{0, 0, 0, 64},
+	Fill:         canvas.Paint{Color: color.RGBA{0, 64, 64, 64}},
+	Stroke:       canvas.Paint{Color: color.RGBA{0, 0, 0, 64}},
 	StrokeWidth:  1.0,
 	StrokeCapper: canvas.ButtCap,
 	StrokeJoiner: canvas.MiterJoin,

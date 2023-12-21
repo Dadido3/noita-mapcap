@@ -58,6 +58,6 @@ func (e Entities) Draw(destImage *image.RGBA) {
 
 	// Theoretically we would need to linearize imgRGBA first, but DefaultColorSpace assumes that the color space is linear already.
 	r := rasterizer.FromImage(originImage, canvas.DPMM(1.0), canvas.DefaultColorSpace)
-	c.Render(r)
+	c.RenderTo(r)
 	r.Close() // This just transforms the image's luminance curve back from linear into non linear.
 }
