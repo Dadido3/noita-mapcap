@@ -270,6 +270,8 @@ func main() {
 	switch fileExtension {
 	case ".png":
 		exportPNG(stitchedImage)
+	case ".jpg", ".jpeg":
+		exportJPEG(stitchedImage)
 	default:
 		log.Panicf("Unknown output format %q.", fileExtension)
 	}
