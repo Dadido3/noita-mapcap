@@ -269,9 +269,13 @@ func main() {
 	fileExtension := strings.ToLower(filepath.Ext(*flagOutputPath))
 	switch fileExtension {
 	case ".png":
-		exportPNG(stitchedImage)
+		if err := exportPNG(stitchedImage, *flagOutputPath); err != nil {
+			log.Panicf("Export of PNG file failed: %v", err)
+		}
 	case ".jpg", ".jpeg":
-		exportJPEG(stitchedImage)
+		if err := exportJPEG(stitchedImage, *flagOutputPath); err != nil {
+			log.Panicf("Export of JPEG file failed: %v", err)
+		}
 	default:
 		log.Panicf("Unknown output format %q.", fileExtension)
 	}

@@ -1,16 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"image/png"
 	"log"
 	"os"
 )
 
-func exportPNG(stitchedImage *StitchedImage) error {
-	log.Printf("Creating output file %q.", *flagOutputPath)
-	f, err := os.Create(*flagOutputPath)
+func exportPNG(stitchedImage *StitchedImage, outputPath string) error {
+	log.Printf("Creating output file %q.", outputPath)
+	f, err := os.Create(outputPath)
 	if err != nil {
-		log.Panic(err)
+		return fmt.Errorf("failed to create file: %w", err)
 	}
 	defer f.Close()
 
@@ -19,7 +20,7 @@ func exportPNG(stitchedImage *StitchedImage) error {
 	}
 
 	if err := encoder.Encode(f, stitchedImage); err != nil {
-		log.Panic(err)
+		return fmt.Errorf("failed to encode image %q: %w", outputPath, err)
 	}
 
 	return nil
