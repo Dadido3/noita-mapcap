@@ -9,10 +9,9 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	"image/png"
 	"log"
-	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -240,11 +239,11 @@ func main() {
 		BlendTileLimit: *flagBlendTileLimit, // Limit median blending to the n newest tiles by file modification time.
 	}
 
-	outputImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 64, overlays)
+	stitchedImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 64, overlays)
 	if err != nil {
 		log.Panicf("NewStitchedImage() failed: %v.", err)
 	}
-	_, max := outputImage.Progress()
+	_, max := stitchedImage.Progress()
 	bar.SetTotal(int64(max)).Start().SetRefreshRate(250 * time.Millisecond)
 
 	// Query progress and draw progress bar.
@@ -256,39 +255,28 @@ func main() {
 		for {
 			select {
 			case <-done:
-				value, _ := outputImage.Progress()
+				value, _ := stitchedImage.Progress()
 				bar.SetCurrent(int64(value))
 				bar.Finish()
 				return
 			case <-ticker.C:
-				value, _ := outputImage.Progress()
+				value, _ := stitchedImage.Progress()
 				bar.SetCurrent(int64(value))
 			}
 		}
 	}()
 
-	log.Printf("Creating output file %q.", *flagOutputPath)
-	f, err := os.Create(*flagOutputPath)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	encoder := png.Encoder{
-		CompressionLevel: png.DefaultCompression,
-	}
-
-	if err := encoder.Encode(f, outputImage); err != nil {
-		f.Close()
-		log.Panic(err)
+	fileExtension := strings.ToLower(filepath.Ext(*flagOutputPath))
+	switch fileExtension {
+	case ".png":
+		exportPNG(stitchedImage)
+	default:
+		log.Panicf("Unknown output format %q.", fileExtension)
 	}
 
 	done <- struct{}{}
 	wg.Wait()
-
-	if err := f.Close(); err != nil {
-		log.Panic(err)
-	}
-	log.Printf("Created output file %q in %v.", *flagOutputPath, time.Since(startTime))
+	log.Printf("Created output in %v.", time.Since(startTime))
 
 	//fmt.Println("Press the enter key to terminate the console screen!")
 	//fmt.Scanln()
