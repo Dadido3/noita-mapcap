@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022 David Vogel
+// Copyright (c) 2019-2023 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"path/filepath"
 )
 
@@ -35,6 +36,20 @@ func LoadImageTiles(path string, scaleDivider int) (ImageTiles, error) {
 	}
 
 	return imageTiles, nil
+}
+
+// InvalidateAboveY invalidates all cached images that have no pixel at the given y coordinate or below.
+func (it ImageTiles) Bounds() image.Rectangle {
+	totalBounds := image.Rectangle{}
+	for i, tile := range it {
+		if i == 0 {
+			totalBounds = tile.Bounds()
+		} else {
+			totalBounds = totalBounds.Union(tile.Bounds())
+		}
+	}
+
+	return totalBounds
 }
 
 // InvalidateAboveY invalidates all cached images that have no pixel at the given y coordinate or below.
