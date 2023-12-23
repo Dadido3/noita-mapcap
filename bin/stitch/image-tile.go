@@ -36,6 +36,7 @@ type ImageTile struct {
 }
 
 // NewImageTile returns an image tile object that represents the image at the given path.
+// The filename will be used to determine the top left x and y coordinate of the tile.
 // This will not load the image into RAM.
 func NewImageTile(path string, scaleDivider int) (ImageTile, error) {
 	if scaleDivider < 1 {
@@ -71,7 +72,7 @@ func NewImageTile(path string, scaleDivider int) (ImageTile, error) {
 		fileName:         path,
 		modTime:          modTime,
 		scaleDivider:     scaleDivider,
-		image:            image.Rect(x/scaleDivider, y/scaleDivider, (x+width)/scaleDivider, (y+height)/scaleDivider),
+		image:            image.Rect(DivideFloor(x, scaleDivider), DivideFloor(y, scaleDivider), DivideCeil(x+width, scaleDivider), DivideCeil(y+height, scaleDivider)),
 		imageMutex:       &sync.RWMutex{},
 		invalidationChan: make(chan struct{}, 1),
 		timeoutChan:      make(chan struct{}, 1),
