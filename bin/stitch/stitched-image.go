@@ -62,9 +62,9 @@ func NewStitchedImage(tiles ImageTiles, bounds image.Rectangle, blendMethod Stit
 	}
 
 	// Generate cache image rows.
-	rows := bounds.Dy() / cacheRowHeight
+	maxRow := (bounds.Dy() - 1) / cacheRowHeight
 	var cacheRows []StitchedImageCache
-	for i := 0; i < rows; i++ {
+	for i := 0; i <= maxRow; i++ {
 		rect := image.Rect(bounds.Min.X, bounds.Min.Y+i*cacheRowHeight, bounds.Max.X, bounds.Min.Y+(i+1)*cacheRowHeight)
 		cacheRows = append(cacheRows, NewStitchedImageCache(stitchedImage, rect.Intersect(bounds)))
 	}
