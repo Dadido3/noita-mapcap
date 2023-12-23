@@ -1,13 +1,19 @@
+// Copyright (c) 2023 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package main
 
 import (
 	"fmt"
+	"image"
 	"image/jpeg"
 	"log"
 	"os"
 )
 
-func exportJPEG(stitchedImage *StitchedImage, outputPath string) error {
+func exportJPEG(stitchedImage image.Image, outputPath string) error {
 	log.Printf("Creating output file %q.", outputPath)
 	f, err := os.Create(outputPath)
 	if err != nil {
