@@ -128,12 +128,6 @@ func (si *StitchedImage) RGBAAt(x, y int) color.RGBA {
 			go si.cacheRows[newRowIndex].Regenerate()
 		}
 
-		// Invalidate old cache row.
-		oldRowIndex := si.oldCacheRowIndex
-		if oldRowIndex >= 0 && oldRowIndex < len(si.cacheRows) {
-			si.cacheRows[oldRowIndex].Invalidate()
-		}
-
 		// Invalidate all tiles that are above the next row.
 		si.tiles.InvalidateAboveY((rowIndex+1)*si.cacheRowHeight - si.cacheRowYOffset)
 
@@ -146,7 +140,7 @@ func (si *StitchedImage) RGBAAt(x, y int) color.RGBA {
 // Opaque returns whether the image is fully opaque.
 //
 // For more speed and smaller file size, StitchedImage will be marked as non-transparent.
-// This will speed up image saving by 2x, as there is no need to iterate over the whole image to find a single non opaque pixel.
+// This will speed up image saving by 2x, as there is no need to iterate over the whole image just to find a single non opaque pixel.
 func (si *StitchedImage) Opaque() bool {
 	return true
 }
@@ -156,4 +150,13 @@ func (si *StitchedImage) Progress() (value, max int) {
 	size := si.Bounds().Size()
 
 	return int(si.queryCounter.Load()), size.X * size.Y
+}
+
+// SubStitchedImage returns an image representing the portion of the image p visible through r.
+// The returned image references to the original stitched image, and therefore reuses its cache.
+func (si *StitchedImage) SubStitchedImage(r image.Rectangle) SubStitchedImage {
+	return SubStitchedImage{
+		StitchedImage: si,
+		bounds:        si.Bounds().Intersect(r),
+	}
 }
