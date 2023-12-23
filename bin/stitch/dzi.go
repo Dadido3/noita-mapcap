@@ -19,7 +19,7 @@ import (
 
 const (
 	dziTileSize = 512 // The (maximum) width and height of a tile in pixels, not including the overlap.
-	dziOverlap  = 1   // The amount of additional pixels on every side of every tile. The real (max) width/height of an image is `2*overlap + tileSize`.
+	dziOverlap  = 0   // The amount of additional pixels on every side of every tile. The real (max) width/height of an image is `2*overlap + tileSize`.
 )
 
 type DZI struct {
