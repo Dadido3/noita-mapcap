@@ -43,6 +43,7 @@ example list of files:
     The path to the player-path.json file. This contains the tracked path of the player. Defaults to "./../../output/player-path.json".
   - `output string`
     The path and filename of the resulting stitched image. Defaults to "output.png".
+    Supported formats/file extensions: `.png`, `.jpg`, `.dzi`.
   - `xmax int`
     Right bound of the output rectangle. This coordinate is not included in the output.
   - `xmin int`
@@ -56,6 +57,12 @@ To output the 100x100 area that is centered at the origin use:
 
 ``` Shell Session
 ./stitch -divide 1 -xmin -50 -xmax 50 -ymin -50 -ymax 50
+```
+
+To output a [Deep Zoom Image (DZI)](https://en.wikipedia.org/wiki/Deep_Zoom), which can be used with [OpenSeadragon](https://openseadragon.github.io/examples/tilesource-dzi/), use:
+
+``` Shell Session
+./stitch -output capture.dzi
 ```
 
 To start the program interactively:
