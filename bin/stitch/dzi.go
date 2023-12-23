@@ -108,7 +108,7 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 	for zoomLevel := d.maxZoomLevel; zoomLevel >= 0; zoomLevel-- {
 
 		levelBasePath := filepath.Join(outputDir, fmt.Sprintf("%d", zoomLevel))
-		if err := os.Mkdir(levelBasePath, 0755); err != nil {
+		if err := os.MkdirAll(levelBasePath, 0755); err != nil {
 			return fmt.Errorf("failed to create zoom level base directory %q: %w", levelBasePath, err)
 		}
 
