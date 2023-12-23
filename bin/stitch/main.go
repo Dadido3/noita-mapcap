@@ -239,7 +239,7 @@ func main() {
 		BlendTileLimit: *flagBlendTileLimit, // Limit median blending to the n newest tiles by file modification time.
 	}
 
-	stitchedImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 64, overlays)
+	stitchedImage, err := NewStitchedImage(tiles, outputRect, blendMethod, 128, overlays)
 	if err != nil {
 		log.Panicf("NewStitchedImage() failed: %v.", err)
 	}
