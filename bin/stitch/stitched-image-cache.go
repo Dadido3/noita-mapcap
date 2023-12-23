@@ -1,4 +1,4 @@
-// Copyright (c) 2022 David Vogel
+// Copyright (c) 2022-2023 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -21,12 +21,29 @@ type StitchedImageCache struct {
 
 	rect  image.Rectangle // Position and size of the cached area.
 	image *image.RGBA     // Cached RGBA image. The bounds of this image are determined by the filename.
+
+	idleCounter byte // Is incremented when this cache object idles, and reset every time the cache is used.
 }
 
 func NewStitchedImageCache(stitchedImage *StitchedImage, rect image.Rectangle) StitchedImageCache {
 	return StitchedImageCache{
 		stitchedImage: stitchedImage,
 		rect:          rect,
+	}
+}
+
+// InvalidateAuto invalidates this cache object when it had idled for too long.
+// The cache will be invalidated after `threshold + 1` calls to InvalidateAuto.
+func (sic *StitchedImageCache) InvalidateAuto(threshold byte) {
+	sic.Lock()
+	defer sic.Unlock()
+
+	if sic.image != nil {
+		if sic.idleCounter >= threshold {
+			sic.image = nil
+			return
+		}
+		sic.idleCounter++
 	}
 }
 
@@ -42,6 +59,8 @@ func (sic *StitchedImageCache) Invalidate() {
 func (sic *StitchedImageCache) Regenerate() *image.RGBA {
 	sic.Lock()
 	defer sic.Unlock()
+
+	sic.idleCounter = 0
 
 	// Check if there is already a cache image.
 	if sic.image != nil {
@@ -114,6 +133,7 @@ func (sic *StitchedImageCache) RGBAAt(x, y int) color.RGBA {
 	sic.Lock()
 	if sic.image != nil {
 		defer sic.Unlock()
+		sic.idleCounter = 0
 		return sic.image.RGBAAt(x, y)
 	}
 	sic.Unlock()

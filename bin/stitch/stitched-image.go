@@ -1,4 +1,4 @@
-// Copyright (c) 2022 David Vogel
+// Copyright (c) 2022-2023 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -10,6 +10,7 @@ import (
 	"image"
 	"image/color"
 	"sync/atomic"
+	"time"
 )
 
 // StitchedImageCacheGridSize defines the worker chunk size when the cache image is regenerated.
@@ -70,6 +71,17 @@ func NewStitchedImage(tiles ImageTiles, bounds image.Rectangle, blendMethod Stit
 	stitchedImage.cacheRowHeight = cacheRowHeight
 	stitchedImage.cacheRowYOffset = -bounds.Min.Y
 	stitchedImage.cacheRows = cacheRows
+
+	// Start ticker to automatically invalidate caches.
+	// Due to this, the stitchedImage object is not composable, as this goroutine will always have a reference.
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		for range ticker.C {
+			for rowIndex := range stitchedImage.cacheRows {
+				stitchedImage.cacheRows[rowIndex].InvalidateAuto(3) // Invalidate cache row after 3 seconds of being idle.
+			}
+		}
+	}()
 
 	return stitchedImage, nil
 }
