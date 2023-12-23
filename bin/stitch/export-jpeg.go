@@ -15,6 +15,11 @@ import (
 
 func exportJPEG(stitchedImage image.Image, outputPath string) error {
 	log.Printf("Creating output file %q.", outputPath)
+
+	return exportJPEGSilent(stitchedImage, outputPath)
+}
+
+func exportJPEGSilent(stitchedImage image.Image, outputPath string) error {
 	f, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)

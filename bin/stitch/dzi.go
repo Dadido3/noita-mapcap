@@ -123,7 +123,7 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 				rect = rect.Inset(-d.overlap)
 				img := stitchedImage.SubStitchedImage(rect)
 				filePath := filepath.Join(levelBasePath, fmt.Sprintf("%d_%d%s", iX, iY, d.fileExtension))
-				if err := exportPNG(img, filePath); err != nil {
+				if err := exportPNGSilent(img, filePath); err != nil {
 					return fmt.Errorf("failed to export PNG: %w", err)
 				}
 
