@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2022 David Vogel
+-- Copyright (c) 2019-2023 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -200,13 +200,13 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
 end
 
----Starts the capturing process of the given area.
+---Starts the capturing process of the given area using a hilbert curve.
 ---Use `Capture.MapCapturingCtx` to stop, control or view the process.
 ---@param topLeft Vec2 -- Top left of the to be captured rectangle.
 ---@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
 ---@param captureGridSize number -- The grid size in world pixels.
 ---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outputPixelScale)
+function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize, outputPixelScale)
 
 	-- Create file that signals that there are files in the output directory.
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
@@ -255,6 +255,61 @@ function Capture:StartCapturingArea(topLeft, bottomRight, captureGridSize, outpu
 			end
 
 			t = t + 1
+		end
+	end
+
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		Modification.SetCameraFree()
+	end
+
+	-- Run process, if there is no other running right now.
+	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
+end
+
+---Starts the capturing process of the given area by scanning from left to right, and top to bottom.
+---Use `Capture.MapCapturingCtx` to stop, control or view the process.
+---@param topLeft Vec2 -- Top left of the to be captured rectangle.
+---@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
+---@param captureGridSize number -- The grid size in world pixels.
+---@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
+function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale)
+
+	-- Create file that signals that there are files in the output directory.
+	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
+	if file ~= nil then file:close() end
+
+	---The rectangle in grid coordinates.
+	---@type Vec2, Vec2
+	local gridTopLeft, gridBottomRight = (topLeft / captureGridSize):Rounded("floor"), (bottomRight / captureGridSize):Rounded("floor")
+
+	---Size of the rectangle in grid coordinates.
+	---@type Vec2
+	local gridSize = gridBottomRight - gridTopLeft
+
+	---Process main callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleDo(ctx)
+		Modification.SetCameraFree(true)
+		ctx.state = { Current = 0, Max = gridSize.x * gridSize.y }
+
+		for gridY = gridTopLeft.y, gridBottomRight.y-1, 1 do
+			for gridX = gridTopLeft.x, gridBottomRight.x-1, 1 do
+				-- Prematurely stop capturing if that is requested by the context.
+				if ctx:IsStopping() then return end
+
+				---Position in grid coordinates.
+				---@type Vec2
+				local gridPos = Vec2(gridX, gridY)
+
+				---Position in world coordinates.
+				---@type Vec2
+				local pos = gridPos * captureGridSize
+				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
+				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				ctx.state.Current = ctx.state.Current + 1
+			end
 		end
 	end
 
@@ -661,11 +716,11 @@ function Capture:StartCapturing()
 				local topLeft = Vec2(ModSettingGet("noita-mapcap.area-top-left"))
 				local bottomRight = Vec2(ModSettingGet("noita-mapcap.area-bottom-right"))
 
-				self:StartCapturingArea(topLeft, bottomRight, captureGridSize, outputPixelScale)
+				self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale)
 			else
 				local predefinedArea = Config.CaptureArea[area]
 				if predefinedArea then
-					self:StartCapturingArea(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale)
+					self:StartCapturingAreaScan(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale)
 				else
 					Message:ShowRuntimeError("PredefinedArea", string.format("Unknown predefined capturing area %q", tostring(area)))
 				end
