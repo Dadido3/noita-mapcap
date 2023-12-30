@@ -160,13 +160,23 @@ function Modification.SetMemoryOptions(memory)
 				},
 				{_Offset = 0x00F8A9DC, _BuildString = "Build Dec 21 2023 00:07:29", -- Steam dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x010F814C)[0] = value end,
-					mGuiDisabled = function(value) ffi.cast("char*", 0x0010F814D)[0] = value end,
-					mGuiHalfSize = function(value) ffi.cast("char*", 0x0010F814E)[0] = value end,
-					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x0010F814F)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010F814D)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010F814E)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010F814F)[0] = value end,
 					mTrailerMode = function(value) ffi.cast("char*", 0x010F8150)[0] = value end,
 					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010F8151)[0] = value end,
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010F8152)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x010F8153)[0] = value end,
+				},
+				{_Offset = 0x00F71DE4, _BuildString = "Build Dec 29 2023 23:36:18", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x0111758C)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x0111758D)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x0111758E)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x0111758F)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x01117590)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x01117591)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x01117592)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x01117593)[0] = value end,
 				},
 			},
 		},
@@ -210,6 +220,13 @@ function Modification.SetMemoryOptions(memory)
 				{_Offset = 0x00E23EC4, _BuildString = "Build Dec 21 2023 00:11:06", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x0064246D)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x00E14FA0, _BuildString = "Build Dec 29 2023 23:40:18", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x00625FFD)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
