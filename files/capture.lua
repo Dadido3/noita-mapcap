@@ -378,7 +378,7 @@ function Capture:StartCapturingLive(outputPixelScale)
 	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
 end
 
----Gathers all entities on the screen (around x, y within radius), serializes them, appends them into entityFile and modifies those entities.
+---Gathers all entities on the screen (around x, y within radius), serializes them, appends them into entityFile and/or modifies those entities.
 ---@param file file*|nil
 ---@param modify boolean
 ---@param x number
