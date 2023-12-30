@@ -311,8 +311,8 @@ function Modification.RequiredChanges()
 
 	-- These magic numbers stop any grid updates (pixel physics), even in the release build.
 	-- But any Box2D objects glitch, therefore the mod option (disable-physics) is disabled and hidden in the non dev build.
-	magic["GRID_MAX_UPDATES_PER_FRAME"] = ModSettingGet("noita-mapcap.disable-physics") and "0" or "128"
-	magic["GRID_MIN_UPDATES_PER_FRAME"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "40"
+	--magic["GRID_MAX_UPDATES_PER_FRAME"] = ModSettingGet("noita-mapcap.disable-physics") and "0" or "128"
+	--magic["GRID_MIN_UPDATES_PER_FRAME"] = ModSettingGet("noita-mapcap.disable-physics") and "1" or "40"
 
 	if ModSettingGet("noita-mapcap.disable-postfx") then
 		patches.PostFinalConst = {
