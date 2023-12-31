@@ -12,12 +12,12 @@ import (
 	"strings"
 )
 
-func exportDZI(stitchedImage *StitchedImage, outputPath string) error {
+func exportDZI(stitchedImage *StitchedImage, outputPath string, dziTileSize, dziOverlap int) error {
 	descriptorPath := outputPath
 	extension := filepath.Ext(outputPath)
 	outputTilesPath := strings.TrimSuffix(outputPath, extension) + "_files"
 
-	dzi := NewDZI(stitchedImage)
+	dzi := NewDZI(stitchedImage, dziTileSize, dziOverlap)
 
 	// Create base directory of all DZI files.
 	if err := os.MkdirAll(outputTilesPath, 0755); err != nil {

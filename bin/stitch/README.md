@@ -44,6 +44,10 @@ example list of files:
   - `output string`
     The path and filename of the resulting stitched image. Defaults to "output.png".
     Supported formats/file extensions: `.png`, `.jpg`, `.dzi`.
+  - `dzi-tile-size`
+    The size of the resulting deep zoom image (DZI) tiles in pixels. Defaults to 512.
+  - `dzi-tile-overlap`
+    TThe number of additional pixels around every deep zoom image (DZI) tile in pixels. Defaults to 2.
   - `xmax int`
     Right bound of the output rectangle. This coordinate is not included in the output.
   - `xmin int`

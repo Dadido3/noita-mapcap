@@ -17,11 +17,6 @@ import (
 	"time"
 )
 
-const (
-	dziTileSize = 512 // The (maximum) width and height of a tile in pixels, not including the overlap.
-	dziOverlap  = 2   // The amount of additional pixels on every side of every tile. The real (max) width/height of an image is `2*overlap + tileSize`.
-)
-
 type DZI struct {
 	stitchedImage *StitchedImage
 
@@ -33,7 +28,10 @@ type DZI struct {
 	maxZoomLevel int // The maximum zoom level that is needed.
 }
 
-func NewDZI(stitchedImage *StitchedImage) DZI {
+// NewDZI creates a new DZI from the given StitchedImages.
+//
+// dziTileSize and dziOverlap define the size and overlap of the resulting DZI tiles.
+func NewDZI(stitchedImage *StitchedImage, dziTileSize, dziOverlap int) DZI {
 	dzi := DZI{
 		stitchedImage: stitchedImage,
 

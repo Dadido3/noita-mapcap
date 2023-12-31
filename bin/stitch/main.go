@@ -25,6 +25,8 @@ var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", ".."
 var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image. Supported formats/file extensions: `.png`, `.jpg`, `.dzi`.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
 var flagBlendTileLimit = flag.Int("blend-tile-limit", 9, "Limits median blending to the n newest tiles by file modification time. If set to 0, all available tiles will be median blended.")
+var flagDZITileSize = flag.Int("dzi-tile-size", 512, "The size of the resulting deep zoom image (DZI) tiles in pixels.")
+var flagDZIOverlap = flag.Int("dzi-tile-overlap", 2, "The number of additional pixels around every deep zoom image (DZI) tile in pixels.")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
@@ -229,6 +231,62 @@ func main() {
 		*flagOutputPath = result
 	}
 
+	fileExtension := strings.ToLower(filepath.Ext(*flagOutputPath))
+
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 && fileExtension == ".dzi" {
+		prompt := promptui.Prompt{
+			Label:     "Enter DZI tile size:",
+			Default:   fmt.Sprint(*flagDZITileSize),
+			AllowEdit: true,
+			Validate: func(s string) error {
+				var num int
+				_, err := fmt.Sscanf(s, "%d", &num)
+				if err != nil {
+					return err
+				}
+				if int(num) < 1 {
+					return fmt.Errorf("number must be at least 1")
+				}
+
+				return nil
+			},
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v.", err)
+		}
+		fmt.Sscanf(result, "%d", flagDZITileSize)
+	}
+
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 && fileExtension == ".dzi" {
+		prompt := promptui.Prompt{
+			Label:     "Enter DZI tile overlap:",
+			Default:   fmt.Sprint(*flagDZIOverlap),
+			AllowEdit: true,
+			Validate: func(s string) error {
+				var num int
+				_, err := fmt.Sscanf(s, "%d", &num)
+				if err != nil {
+					return err
+				}
+				if int(num) < 0 {
+					return fmt.Errorf("number must be at least 0")
+				}
+
+				return nil
+			},
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v.", err)
+		}
+		fmt.Sscanf(result, "%d", flagDZIOverlap)
+	}
+
 	startTime := time.Now()
 
 	bar := pb.Full.New(0)
@@ -266,7 +324,6 @@ func main() {
 		}
 	}()
 
-	fileExtension := strings.ToLower(filepath.Ext(*flagOutputPath))
 	switch fileExtension {
 	case ".png":
 		if err := exportPNG(stitchedImage, *flagOutputPath); err != nil {
@@ -277,7 +334,7 @@ func main() {
 			log.Panicf("Export of JPEG file failed: %v", err)
 		}
 	case ".dzi":
-		if err := exportDZI(stitchedImage, *flagOutputPath); err != nil {
+		if err := exportDZI(stitchedImage, *flagOutputPath, *flagDZITileSize, *flagDZIOverlap); err != nil {
 			log.Panicf("Export of DZI file failed: %v", err)
 		}
 	default:
