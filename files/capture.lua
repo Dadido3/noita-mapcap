@@ -64,8 +64,8 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	end
 
 	local rectTopLeft, rectBottomRight = ScreenCapture.GetRect()
-	if Coords.WindowResolution ~= rectBottomRight - rectTopLeft then
-		error(string.format("window size seems to have changed from %s to %s", Coords.WindowResolution, rectBottomRight - rectTopLeft))
+	if Coords:InternalRectSize() ~= rectBottomRight - rectTopLeft then
+		error(string.format("internal rectangle size seems to have changed from %s to %s", Coords:InternalRectSize(), rectBottomRight - rectTopLeft))
 	end
 
 	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
@@ -108,9 +108,9 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	-- Suspend UI drawing for 1 frame.
 	UI:SuspendDrawing(1)
 
-	wait(0)
+	--wait(0)
 
-	-- Fetch coordinates again, as they may have changed.
+	-- Recalculate capture position and rectangle if we are not forcing any capture position.
 	if not pos then
 		topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
 		if outputPixelScale > 0 then
@@ -119,6 +119,9 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 			outputTopLeft = topLeftWorld
 		end
 	end
+
+	-- Wait for two frames.
+	wait(1)
 
 	-- The top left world position needs to be upscaled by the pixel scale.
 	-- Otherwise it's not possible to stitch the images correctly.

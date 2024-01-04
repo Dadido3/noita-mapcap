@@ -108,15 +108,20 @@ end
 ---Called *every* time the game is about to start updating the world.
 function OnWorldPreUpdate()
 	Message:CatchException("OnWorldPreUpdate", function()
-
 		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
-		wake_up_waiting_threads(1)
+		--wake_up_waiting_threads(1)
 
 	end)
 end
 
 ---Called *every* time the game has finished updating the world.
 function OnWorldPostUpdate()
+	Message:CatchException("OnWorldPreUpdate", function()
+		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
+		wake_up_waiting_threads(1)
+
+	end)
+
 	Message:CatchException("OnWorldPostUpdate", function()
 		-- Reload mod every 60 frames.
 		-- This allows live updates to the mod while Noita is running.

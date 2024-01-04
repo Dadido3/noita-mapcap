@@ -1,4 +1,4 @@
-﻿; Copyright (c) 2019-2022 David Vogel
+﻿; Copyright (c) 2019-2023 David Vogel
 ;
 ; This software is released under the MIT License.
 ; https://opensource.org/licenses/MIT
@@ -15,44 +15,37 @@ Structure QueueElement
 	sy.i
 EndStructure
 
-; Source: https://www.purebasic.fr/english/viewtopic.php?f=13&t=29981&start=15
-Procedure EnumWindowsProc(hWnd.l, *lParam.Long)
-	Protected lpProc.l
-	GetWindowThreadProcessId_(hWnd, @lpProc)
-	If *lParam\l = lpProc ; Check if current window's processID matches
-		*lParam\l = hWnd ; Replace processID in the param With the hwnd As result
-		ProcedureReturn #False ; Return false to stop iterating
+Structure GLViewportDims
+  x.i
+  y.i
+  width.i
+  height.i
+EndStructure
+
+; Returns the size of the main OpenGL rendering output.
+ProcedureDLL GetGLViewportSize(*dims.GLViewportDims)
+	If Not *dims
+		ProcedureReturn #False
 	EndIf
+
+	glGetIntegerv_(#GL_VIEWPORT, *dims)
+
 	ProcedureReturn #True
 EndProcedure
 
-; Source: https://www.purebasic.fr/english/viewtopic.php?f=13&t=29981&start=15
-; Returns the first window associated with the given process handle
-Procedure GetProcHwnd()
-	Protected pID.l = GetCurrentProcessId_()
-	Protected tempParam.l = pID
-	EnumWindows_(@EnumWindowsProc(), @tempParam)
-	If tempParam = pID ; Check if anything was found
-		ProcedureReturn #Null
-	EndIf
-	ProcedureReturn tempParam ; This is a valid hWnd at this point
-EndProcedure
-
-; Get the client rectangle of the "Main" window of this process in screen coordinates
+; Returns the size of the main OpenGL rendering output as a windows RECT.
 ProcedureDLL GetRect(*rect.RECT)
-	Protected hWnd.l = GetProcHwnd()
-	If Not hWnd
-		ProcedureReturn #False
-	EndIf
 	If Not *rect
 		ProcedureReturn #False
 	EndIf
-
-	GetClientRect_(hWnd, *rect)
-
-	; A RECT consists basically of two POINT structures
-	ClientToScreen_(hWnd, @*rect\left)
-	ClientToScreen_(hWnd, @*rect\Right)
+	
+	Protected dims.GLViewportDims
+	glGetIntegerv_(#GL_VIEWPORT, dims)
+	
+	*rect\left = dims\x
+	*rect\top = dims\y
+	*rect\right = dims\x + dims\width
+	*rect\bottom = dims\y + dims\height
 
 	ProcedureReturn #True
 EndProcedure
@@ -84,7 +77,7 @@ Procedure Worker(*Dummy)
 		sy = Queue()\sy
 		DeleteElement(Queue())
 		UnlockMutex(Mutex)
-		
+
 		If sx > 0 And sy > 0
 		  ResizeImage(img, sx, sy)
 		EndIf
@@ -97,53 +90,56 @@ Procedure Worker(*Dummy)
 EndProcedure
 
 ; Takes a screenshot of the client area of this process' active window.
-; The portion of the client area that is captured is described by capRect, which is in window coordinates and relative to the client area.
+; The portion of the client area that is captured is described by capRect, which is in viewport coordinates.
 ; x and y defines the top left position of the captured rectangle in scaled world coordinates. The scale depends on the window to world pixel ratio.
 ; sx and sy defines the final dimensions that the screenshot will be resized to. No resize will happen if set to 0.
 ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
-	Protected hWnd.l = GetProcHwnd()
-	If Not hWnd
+	Protected viewportRect.RECT
+	If Not GetRect(@viewportRect)
 		ProcedureReturn #False
 	EndIf
 
-	Protected rect.RECT
-	If Not GetRect(@rect)
-		ProcedureReturn #False
-	EndIf
-	
-	; Limit the desired capture area to the actual client area of the window.
+	; Limit the desired capture area to the actual client area of the viewport.
 	If *capRect\left < 0 : *capRect\left = 0 : EndIf
-	If *capRect\right > rect\right-rect\left : *capRect\right = rect\right-rect\left : EndIf
 	If *capRect\top < 0 : *capRect\top = 0 : EndIf
-	If *capRect\bottom > rect\bottom-rect\top : *capRect\bottom = rect\bottom-rect\top : EndIf
-
-	imageID = CreateImage(#PB_Any, *capRect\right-*capRect\left, *capRect\bottom-*capRect\top)
+	If *capRect\right < *capRect\left : *capRect\right = *capRect\left : EndIf
+	If *capRect\bottom < *capRect\top : *capRect\bottom = *capRect\top : EndIf
+	If *capRect\right > viewportRect\right : *capRect\right = viewportRect\right : EndIf
+	If *capRect\bottom > viewportRect\bottom : *capRect\bottom = viewportRect\bottom : EndIf
+	
+	Protected capWidth = *capRect\right - *capRect\left
+	Protected capHeight = *capRect\bottom - *capRect\top
+	
+	imageID = CreateImage(#PB_Any, capWidth, capHeight)
 	If Not imageID
 		ProcedureReturn #False
 	EndIf
-
-	; Get DC of window.
-	windowDC = GetDC_(hWnd)
-	If Not windowDC
-		FreeImage(imageID)
-		ProcedureReturn #False
-	EndIf
+	
+	;Protected *pixelBuf = AllocateMemory(3 * width * height)
 
 	hDC = StartDrawing(ImageOutput(imageID))
 	If Not hDC
-		ReleaseDC_(hWnd, windowDC)
 		FreeImage(imageID)
 		ProcedureReturn #False
 	EndIf
-	If Not BitBlt_(hDC, 0, 0, *capRect\right-*capRect\left, *capRect\bottom-*capRect\top, windowDC, *capRect\left, *capRect\top, #SRCCOPY) ; After some time BitBlt will fail, no idea why. Also, that's moments before noita crashes.
-		StopDrawing()
-		ReleaseDC_(hWnd, windowDC)
-		FreeImage(imageID)
-		ProcedureReturn #False
-	EndIf
-	StopDrawing()
+	
+	*pixelBuffer = DrawingBuffer()
+  glReadPixels_(*capRect\left, *capRect\top, capWidth, capHeight, #GL_BGR_EXT, #GL_UNSIGNED_BYTE, *pixelBuffer)
 
-	ReleaseDC_(hWnd, windowDC)
+	;For y = 0 To *capRect\height - 1
+  ;  *Line.Pixel = Buffer + Pitch * y
+  ;  
+  ;  For x = 0 To *capRect\width - 1
+;
+;      *Line\Pixel = ColorTable(pos2) ; Write the pixel directly to the memory !
+;      *Line+Offset
+;      
+;      ; You can try with regular plot to see the speed difference
+;      ; Plot(x, y, ColorTable(pos2))
+;    Next
+;  Next
+
+	StopDrawing()
 
 	LockMutex(Mutex)
 	; Check if the queue has too many elements, if so, wait. (Emulate go's channels)
@@ -173,13 +169,13 @@ EndProcedure
 ;Capture(123, 123)
 ;Delay(1000)
 
-; IDE Options = PureBasic 6.00 LTS (Windows - x64)
+; IDE Options = PureBasic 6.04 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 94
-; FirstLine = 39
-; Folding = --
+; CursorPosition = 126
+; FirstLine = 98
+; Folding = -
 ; Optimizer
 ; EnableThread
 ; EnableXP
 ; Executable = capture.dll
-; Compiler = PureBasic 6.00 LTS (Windows - x86)
+; Compiler = PureBasic 6.04 LTS (Windows - x86)

@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2022 David Vogel
+-- Copyright (c) 2019-2023 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -53,8 +53,8 @@ function Check:Regular(interval)
 	local topLeft, bottomRight = ScreenCap.GetRect() -- Actual window client area.
 	if topLeft and bottomRight then
 		local actual = bottomRight - topLeft
-		if actual ~= Coords.WindowResolution then
-			Message:ShowWrongResolution(Modification.AutoSet, string.format("Old window resolution is %s. Current resolution is %s.", Coords.WindowResolution, actual))
+		if actual ~= Coords:InternalRectSize() then
+			Message:ShowWrongResolution(Modification.AutoSet, string.format("Internal rectangle size is %s. Current resolution is %s.", Coords:InternalRectSize(), actual))
 		end
 	else
 		Message:ShowRuntimeError("GetRect", "Couldn't determine window resolution.")
@@ -62,12 +62,12 @@ function Check:Regular(interval)
 
 	-- Check if we have the required settings.
 	local config, magic, patches = Modification.RequiredChanges()
-	if config["fullscreen"] then
-		local expected = tonumber(config["fullscreen"])
-		if expected ~= Coords.FullscreenMode then
-			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Fullscreen mode %s. Expected %s.", Coords.FullscreenMode, expected))
-		end
-	end
+	--if config["fullscreen"] then
+	--	local expected = tonumber(config["fullscreen"])
+	--	if expected ~= Coords.FullscreenMode then
+	--		Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Fullscreen mode %s. Expected %s.", Coords.FullscreenMode, expected))
+	--	end
+	--end
 	if config["window_w"] and config["window_h"] then
 		local expected = Vec2(tonumber(config["window_w"]), tonumber(config["window_h"]))
 		if expected ~= Coords.WindowResolution then

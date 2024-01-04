@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2022 David Vogel
+-- Copyright (c) 2019-2023 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -23,6 +23,13 @@ ffi.cdef([[
 		LONG right;
 		LONG bottom;
 	} RECT;
+
+	typedef struct {
+		LONG x;
+		LONG y;
+		LONG width;
+		LONG height;
+	} GLViewportDims;
 
 	bool GetRect(RECT* rect);
 	bool Capture(RECT* rect, int x, int y, int sx, int sy);
