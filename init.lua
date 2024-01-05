@@ -1,4 +1,4 @@
--- Copyright (c) 2022 David Vogel
+-- Copyright (c) 2022-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -109,19 +109,13 @@ end
 function OnWorldPreUpdate()
 	Message:CatchException("OnWorldPreUpdate", function()
 		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
-		--wake_up_waiting_threads(1)
+		wake_up_waiting_threads(1)
 
 	end)
 end
 
 ---Called *every* time the game has finished updating the world.
 function OnWorldPostUpdate()
-	Message:CatchException("OnWorldPreUpdate", function()
-		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
-		wake_up_waiting_threads(1)
-
-	end)
-
 	Message:CatchException("OnWorldPostUpdate", function()
 		-- Reload mod every 60 frames.
 		-- This allows live updates to the mod while Noita is running.

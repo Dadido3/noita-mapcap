@@ -13,6 +13,8 @@
         "downscaling",
         "DPMM",
         "executables",
+        "framebuffer",
+        "framebuffers",
         "Fullscreen",
         "goarch",
         "gridify",
