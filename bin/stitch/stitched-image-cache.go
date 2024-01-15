@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 David Vogel
+// Copyright (c) 2022-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,6 +8,7 @@ package main
 import (
 	"image"
 	"image/color"
+	"image/draw"
 	"runtime"
 	"sync"
 )
@@ -69,7 +70,9 @@ func (sic *StitchedImageCache) Regenerate() *image.RGBA {
 
 	si := sic.stitchedImage
 
+	// Create new image with default background color.
 	cacheImage := image.NewRGBA(sic.rect)
+	draw.Draw(cacheImage, cacheImage.Bounds(), &image.Uniform{colorBackground}, cacheImage.Bounds().Min, draw.Src)
 
 	// List of tiles that intersect with the to be generated cache image.
 	intersectingTiles := []*ImageTile{}

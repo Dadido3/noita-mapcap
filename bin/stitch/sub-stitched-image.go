@@ -1,4 +1,4 @@
-// Copyright (c) 2023 David Vogel
+// Copyright (c) 2023-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -29,7 +29,7 @@ func (s SubStitchedImage) At(x, y int) color.Color {
 func (s SubStitchedImage) RGBAAt(x, y int) color.RGBA {
 	point := image.Point{X: x, Y: y}
 	if !point.In(s.bounds) {
-		return color.RGBA{}
+		return colorBackground
 	}
 
 	return s.StitchedImage.RGBAAt(x, y)

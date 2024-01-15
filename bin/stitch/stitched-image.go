@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 David Vogel
+// Copyright (c) 2022-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -12,6 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 )
+
+// The default background color.
+// We use a non transparent black.
+var colorBackground = color.RGBA{0, 0, 0, 255}
 
 // StitchedImageCacheGridSize defines the worker chunk size when the cache image is regenerated.
 var StitchedImageCacheGridSize = 256
@@ -116,7 +120,7 @@ func (si *StitchedImage) RGBAAt(x, y int) color.RGBA {
 	// Determine the cache rowIndex index.
 	rowIndex := (y + si.cacheRowYOffset) / si.cacheRowHeight
 	if rowIndex < 0 || rowIndex >= len(si.cacheRows) {
-		return color.RGBA{}
+		return colorBackground
 	}
 
 	// Check if we advanced/changed the row index.
