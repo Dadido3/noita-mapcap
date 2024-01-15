@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2023 David Vogel
+// Copyright (c) 2019-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -22,7 +22,7 @@ import (
 var flagInputPath = flag.String("input", filepath.Join(".", "..", "..", "output"), "The source path of the image tiles to be stitched.")
 var flagEntitiesInputPath = flag.String("entities", filepath.Join(".", "..", "..", "output", "entities.json"), "The path to the entities.json file.")
 var flagPlayerPathInputPath = flag.String("player-path", filepath.Join(".", "..", "..", "output", "player-path.json"), "The path to the player-path.json file.")
-var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image. Supported formats/file extensions: `.png`, `.jpg`, `.dzi`.")
+var flagOutputPath = flag.String("output", filepath.Join(".", "output.png"), "The path and filename of the resulting stitched image. Supported formats/file extensions: `.png`, `.webp`, `.jpg`, `.dzi`.")
 var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produce an image with half the side lengths.")
 var flagBlendTileLimit = flag.Int("blend-tile-limit", 9, "Limits median blending to the n newest tiles by file modification time. If set to 0, all available tiles will be median blended.")
 var flagDZITileSize = flag.Int("dzi-tile-size", 512, "The size of the resulting deep zoom image (DZI) tiles in pixels.")
@@ -332,6 +332,10 @@ func main() {
 	case ".jpg", ".jpeg":
 		if err := exportJPEG(stitchedImage, *flagOutputPath); err != nil {
 			log.Panicf("Export of JPEG file failed: %v", err)
+		}
+	case ".webp":
+		if err := exportWebP(stitchedImage, *flagOutputPath); err != nil {
+			log.Panicf("Export of WebP file failed: %v", err)
 		}
 	case ".dzi":
 		if err := exportDZI(stitchedImage, *flagOutputPath, *flagDZITileSize, *flagDZIOverlap); err != nil {

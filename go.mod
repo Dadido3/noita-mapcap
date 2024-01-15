@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
+	github.com/chai2010/webp v1.1.1
 	github.com/cheggaaa/pb/v3 v3.1.4
 	github.com/coreos/go-semver v0.3.1
 	github.com/kbinani/screenshot v0.0.0-20230812210009-b87d31814237
