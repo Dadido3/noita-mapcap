@@ -8,17 +8,13 @@ jobs:
 
   build:
     name: Build and release
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       matrix:
         goos: [windows]
         goarch: ["amd64"]
 
     steps:
-
-      - name: Install build essentials, needed for cross compilation.
-        run: sudo apt-get install -y build-essential
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
