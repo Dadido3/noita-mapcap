@@ -43,7 +43,7 @@ example list of files:
     The path to the player-path.json file. This contains the tracked path of the player. Defaults to "./../../output/player-path.json".
   - `output string`
     The path and filename of the resulting stitched image. Defaults to "output.png".
-    Supported formats/file extensions: `.png`, `.jpg`, `.dzi`.
+    Supported formats/file extensions: `.png`, `.webp`, `.jpg`, `.dzi`.
   - `dzi-tile-size`
     The size of the resulting deep zoom image (DZI) tiles in pixels. Defaults to 512.
   - `dzi-tile-overlap`
