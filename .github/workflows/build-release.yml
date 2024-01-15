@@ -32,6 +32,7 @@ jobs:
         env:
           GOARCH: ${{ matrix.goarch }}
           GOOS: ${{ matrix.goos }}
+          CGO_ENABLED: 1
 
       - name: Create distribution archive
         run: go run -v ./scripts/dist
