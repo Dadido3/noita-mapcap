@@ -1,4 +1,4 @@
--- Copyright (c) 2022 David Vogel
+-- Copyright (c) 2022-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -108,7 +108,6 @@ end
 ---Called *every* time the game is about to start updating the world.
 function OnWorldPreUpdate()
 	Message:CatchException("OnWorldPreUpdate", function()
-
 		-- Coroutines aren't run every frame in this lua sandbox, do it manually here.
 		wake_up_waiting_threads(1)
 

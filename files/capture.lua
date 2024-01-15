@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2023 David Vogel
+-- Copyright (c) 2019-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -64,8 +64,8 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	end
 
 	local rectTopLeft, rectBottomRight = ScreenCapture.GetRect()
-	if Coords.WindowResolution ~= rectBottomRight - rectTopLeft then
-		error(string.format("window size seems to have changed from %s to %s", Coords.WindowResolution, rectBottomRight - rectTopLeft))
+	if Coords:InternalRectSize() ~= rectBottomRight - rectTopLeft then
+		error(string.format("internal rectangle size seems to have changed from %s to %s", Coords:InternalRectSize(), rectBottomRight - rectTopLeft))
 	end
 
 	local topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
@@ -108,9 +108,13 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	-- Suspend UI drawing for 1 frame.
 	UI:SuspendDrawing(1)
 
+	-- First we wait one frame for the current state to be drawn.
 	wait(0)
 
-	-- Fetch coordinates again, as they may have changed.
+	-- At this point the needed frame is fully drawn, but the framebuffers are swapped.
+
+	-- Recalculate capture position and rectangle if we are not forcing any capture position.
+	-- We are in the `OnWorldPreUpdate` hook, this means that `CameraAPI.GetPos` return the position of the last frame.
 	if not pos then
 		topLeftCapture, bottomRightCapture, topLeftWorld, bottomRightWorld = calculateCaptureRectangle(pos)
 		if outputPixelScale > 0 then
@@ -119,6 +123,10 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 			outputTopLeft = topLeftWorld
 		end
 	end
+
+	-- Wait another frame.
+	-- After this `wait` the framebuffer will be swapped again, and we can grab the correct frame.
+	wait(0)
 
 	-- The top left world position needs to be upscaled by the pixel scale.
 	-- Otherwise it's not possible to stitch the images correctly.
