@@ -1,4 +1,4 @@
-// Copyright (c) 2023 David Vogel
+// Copyright (c) 2023-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -35,7 +35,7 @@ func NewDZI(stitchedImage *StitchedImage, dziTileSize, dziOverlap int) DZI {
 	dzi := DZI{
 		stitchedImage: stitchedImage,
 
-		fileExtension: ".png",
+		fileExtension: ".webp",
 
 		overlap:  dziOverlap,
 		tileSize: dziTileSize,
@@ -82,7 +82,7 @@ func (d DZI) ExportDZIDescriptor(outputPath string) error {
 	}
 
 	dziDescriptor.Image.XMLNS = "http://schemas.microsoft.com/deepzoom/2008"
-	dziDescriptor.Image.Format = "png"
+	dziDescriptor.Image.Format = "webp"
 	dziDescriptor.Image.Overlap = strconv.Itoa(d.overlap)
 	dziDescriptor.Image.TileSize = strconv.Itoa(d.tileSize)
 	dziDescriptor.Image.Size.Width = strconv.Itoa(d.stitchedImage.bounds.Dx())
@@ -121,8 +121,8 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 				rect = rect.Inset(-d.overlap)
 				img := stitchedImage.SubStitchedImage(rect)
 				filePath := filepath.Join(levelBasePath, fmt.Sprintf("%d_%d%s", iX, iY, d.fileExtension))
-				if err := exportPNGSilent(img, filePath); err != nil {
-					return fmt.Errorf("failed to export PNG: %w", err)
+				if err := exportWebPSilent(img, filePath); err != nil {
+					return fmt.Errorf("failed to export WebP: %w", err)
 				}
 
 				scaleDivider := 2
