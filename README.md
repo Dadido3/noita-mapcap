@@ -189,14 +189,6 @@ This will cause fast moving objects to completely disappear, and slow moving obj
 To disable median blending, use the stitcher with `Blend tile limit` set to 1.
 This will cause the stitcher to only use the newest image tile for every resulting pixel.
 
-### I always get the warning "The resolution changed"
-
-The message is to be expected when you change the resolution in the Noita settings without restarting the game.
-
-But it can also happen when you accidentally select the console window (using `noita_dev.exe`).
-The mod uses the active/selected window of the Noita process for capturing, which in this case would make it take screenshots of the console.
-This can be fixed by selecting the Noita window again, or by switching back and forth between console and the main Noita window.
-
 ## Additional information
 
 The resulting stitched images are quite big.

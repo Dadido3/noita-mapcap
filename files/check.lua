@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2023 David Vogel
+-- Copyright (c) 2019-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -62,12 +62,12 @@ function Check:Regular(interval)
 
 	-- Check if we have the required settings.
 	local config, magic, patches = Modification.RequiredChanges()
-	--if config["fullscreen"] then
-	--	local expected = tonumber(config["fullscreen"])
-	--	if expected ~= Coords.FullscreenMode then
-	--		Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Fullscreen mode %s. Expected %s.", Coords.FullscreenMode, expected))
-	--	end
-	--end
+	if config["fullscreen"] then
+		local expected = tonumber(config["fullscreen"])
+		if expected ~= Coords.FullscreenMode then
+			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Fullscreen mode %s. Expected %s.", Coords.FullscreenMode, expected))
+		end
+	end
 	if config["window_w"] and config["window_h"] then
 		local expected = Vec2(tonumber(config["window_w"]), tonumber(config["window_h"]))
 		if expected ~= Coords.WindowResolution then
@@ -84,6 +84,12 @@ function Check:Regular(interval)
 		local expected = config.screenshake_intensity
 		if expected ~= self.StartupConfig.screenshake_intensity then
 			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Screen shake intensity is %s, expected %s.", self.StartupConfig.screenshake_intensity, expected))
+		end
+	end
+	if config["application_rendered_cursor"] then
+		local expected = config.application_rendered_cursor
+		if expected ~= self.StartupConfig.application_rendered_cursor then
+			Message:ShowSetNoitaSettings(Modification.AutoSet, string.format("Application rendered cursor is %s, expected %s.", self.StartupConfig.application_rendered_cursor, expected))
 		end
 	end
 

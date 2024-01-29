@@ -1,4 +1,4 @@
--- Copyright (c) 2019-2022 David Vogel
+-- Copyright (c) 2019-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -128,7 +128,6 @@ function Message:ShowWrongResolution(callback, desc)
 			desc or "",
 			" ",
 			"To fix:",
-			"- Deselect and select the Noita window, or",
 			"- restart Noita or revert the resolution change."
 		},
 		Actions = {

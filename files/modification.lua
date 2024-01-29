@@ -1,4 +1,4 @@
--- Copyright (c) 2022-2023 David Vogel
+-- Copyright (c) 2022-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -312,6 +312,7 @@ function Modification.RequiredChanges()
 		config["internal_size_h"] = tostring(Vec2(ModSettingGet("noita-mapcap.internal-resolution")).y)
 		config["backbuffer_width"] = config["window_w"]
 		config["backbuffer_height"] = config["window_h"]
+		config["fullscreen"] = "0"
 		magic["VIRTUAL_RESOLUTION_X"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).x)
 		magic["VIRTUAL_RESOLUTION_Y"] = tostring(Vec2(ModSettingGet("noita-mapcap.virtual-resolution")).y)
 		-- Set virtual offset to prevent/reduce not correctly drawn pixels at the window border.
@@ -329,12 +330,11 @@ function Modification.RequiredChanges()
 		magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "-1"
 	end
 
-	-- Always expect a fullscreen mode of 0 (windowed).
-	-- Capturing will not work in fullscreen.
-	config["fullscreen"] = "0"
-
 	-- Also disable screen shake.
 	config["screenshake_intensity"] = "0"
+
+	-- And disable the cursor being rendered by Noita itself, which would make it appear in screen captures.
+	config["application_rendered_cursor"] = "0"
 
 	magic["DRAW_PARALLAX_BACKGROUND"] = ModSettingGet("noita-mapcap.disable-background") and "0" or "1"
 
