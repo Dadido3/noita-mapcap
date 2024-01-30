@@ -254,7 +254,7 @@ function Modification.SetMemoryOptions(memory)
 
 	-- Look up the tree and set options accordingly.
 
-	local level1 = lookup[DebugGetIsDevBuild()]
+	local level1 = lookup[DebugAPI.IsDevBuild()]
 	level1 = level1 or {}
 
 	local level2 = level1[ffi.os]
@@ -367,7 +367,10 @@ function Modification.RequiredChanges()
 		memory["mPostFxDisabled"] = 1
 		memory["mGuiDisabled"] = 1
 		memory["mFreezeAI"] = 1
-		memory["mTrailerMode"] = 1 -- Is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
+	end
+
+	if DebugAPI.IsDevBuild() and magic["DEBUG_PAUSE_GRID_UPDATE"] == "1" then
+		memory["mTrailerMode"] = 1 -- This is necessary for chunks to correctly load when DEBUG_PAUSE_GRID_UPDATE is enabled.
 	end
 
 	if ModSettingGet("noita-mapcap.disable-mod-detection") and not DebugAPI.IsDevBuild() then

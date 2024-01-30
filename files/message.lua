@@ -12,6 +12,7 @@
 --------------------------
 
 local Coords = require("coordinates")
+local DebugAPI = require("noita-api.debug")
 
 ----------
 -- Code --
@@ -127,11 +128,13 @@ function Message:ShowWrongResolution(callback, desc)
 			"The resolution changed:",
 			desc or "",
 			" ",
-			"To fix:",
-			"- restart Noita or revert the resolution change."
+			"Press the button at the bottom to set up and close Noita automatically.",
+			" ",
+			"You can always reset any custom settings by right clicking the `start capture`",
+			"button at the top left.",
 		},
 		Actions = {
-			{ Name = "Query settings again", Hint = nil, HintDesc = nil, Callback = function() Coords:ReadResolutions() end },
+			{ Name = "Setup and close (May corrupt current save!)", Hint = nil, HintDesc = nil, Callback = callback },
 		},
 		AutoClose = true, -- This message will automatically close.
 	}
@@ -185,13 +188,42 @@ end
 function Message:ShowModificationUnsupported(realm, name, value)
 	self.List = self.List or {}
 
-	self.List["ModificationFailed"] = {
+	self.List["ModificationFailed"] = self.List["ModificationFailed"] or {
 		Type = "warning",
-		Lines = {
-			string.format("Couldn't modify %q in %q realm.", name, realm),
-			" ",
-			"This simply means that this modification is not supported for the Noita version you are using.",
-			"Feel free to open an issue at https://github.com/Dadido3/noita-mapcap.",
-		},
 	}
+
+	self.List["ModificationFailed"].ModificationEntries = self.List["ModificationFailed"].ModificationEntries or {}
+	table.insert(self.List["ModificationFailed"].ModificationEntries, {realm = realm, name = name, value = value})
+
+	-- Build message lines.
+	self.List["ModificationFailed"].Lines = {"The mod couldn't apply the following changes:"}
+	table.insert(self.List["ModificationFailed"].Lines, " ")
+	for _, modEntry in ipairs(self.List["ModificationFailed"].ModificationEntries) do
+		table.insert(self.List["ModificationFailed"].Lines, string.format("- %q in %q realm", modEntry.name, modEntry.realm))
+	end
+
+	table.insert(self.List["ModificationFailed"].Lines, " ")
+	table.insert(self.List["ModificationFailed"].Lines, "This simply means that the mod can't automatically apply this change in the Noita version you are using.")
+	table.insert(self.List["ModificationFailed"].Lines, "If you are running a non-beta version of Noita, feel free to open an issue at https://github.com/Dadido3/noita-mapcap.")
+
+	-- Tell the user to change some settings manually, if possible.
+	local manuallyWithF7 = {}
+	local possibleManualWithF7 = {mPostFxDisabled = true, mGuiDisabled = true, mGuiHalfSize = true, mFogOfWarOpenEverywhere = true, mTrailerMode = true, mDayTimeRotationPause = true, mPlayerNeverDies = true, mFreezeAI = true}
+	for _, modEntry in ipairs(self.List["ModificationFailed"].ModificationEntries) do
+		if modEntry.realm == "processMemory" and possibleManualWithF7[modEntry.name] then
+			table.insert(manuallyWithF7, modEntry)
+		end
+	end
+
+	if #manuallyWithF7 > 0 then
+		table.insert(self.List["ModificationFailed"].Lines, " ")
+		table.insert(self.List["ModificationFailed"].Lines, "You can apply the setting manually:")
+		table.insert(self.List["ModificationFailed"].Lines, " ")
+		table.insert(self.List["ModificationFailed"].Lines, "- Press F7 to open the debug menu.")
+		for _, modEntry in ipairs(manuallyWithF7) do
+			table.insert(self.List["ModificationFailed"].Lines, string.format("- Change %q to %q.", modEntry.name, modEntry.value))
+		end
+		table.insert(self.List["ModificationFailed"].Lines, "- Press F7 again to close the menu.")
+		table.insert(self.List["ModificationFailed"].Lines, "- Close this warning when you are done.")
+	end
 end
