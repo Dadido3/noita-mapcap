@@ -78,6 +78,10 @@ func (d DZI) ExportDZIDescriptor(outputPath string) error {
 				Width  string
 				Height string
 			}
+			TopLeft struct {
+				X string
+				Y string
+			}
 		}
 	}
 
@@ -87,6 +91,8 @@ func (d DZI) ExportDZIDescriptor(outputPath string) error {
 	dziDescriptor.Image.TileSize = strconv.Itoa(d.tileSize)
 	dziDescriptor.Image.Size.Width = strconv.Itoa(d.stitchedImage.bounds.Dx())
 	dziDescriptor.Image.Size.Height = strconv.Itoa(d.stitchedImage.bounds.Dy())
+	dziDescriptor.Image.TopLeft.X = strconv.Itoa(d.stitchedImage.bounds.Min.X)
+	dziDescriptor.Image.TopLeft.Y = strconv.Itoa(d.stitchedImage.bounds.Min.Y)
 
 	jsonEnc := json.NewEncoder(f)
 	return jsonEnc.Encode(dziDescriptor)
