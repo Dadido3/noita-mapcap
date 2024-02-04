@@ -291,6 +291,13 @@ function Modification.PatchFiles(patches)
 		end
 		ModTextFileSetContent("data/shaders/post_final.frag", postFinal)
 	end
+	if patches.PostFinalReplace then
+		local postFinal = ModTextFileGetContent("data/shaders/post_final.frag")
+		for k, v in pairs(patches.PostFinalReplace) do
+			postFinal = postFinal:gsub(k, v)
+		end
+		ModTextFileSetContent("data/shaders/post_final.frag", postFinal)
+	end
 end
 
 ---Returns tables with user requested game configuration changes.
@@ -360,6 +367,14 @@ function Modification.RequiredChanges()
 			FOG_BACKGROUND          = "vec3(0.0,0.0,0.0)",
 			FOG_FOREGROUND_NIGHT    = "vec4(0.0,0.0,0.0,1.0)",
 			FOG_BACKGROUND_NIGHT    = "vec3(0.0,0.0,0.0)",
+		}
+
+		-- Disable color grading, which may make the world look a tad more blue when there is freezing/snowing weather.
+		-- This is dependent on the seed and the PC's wall clock, and it only snows in December, January or February.
+		patches.PostFinalReplace = {
+			["color%.rgb = mix%( color, additive_overlay_color%.rgb, additive_overlay_color%.a %);"] = "",
+			["color = mix%(color, vec3%(%(color%.r %+ color%.g %+ color%.b%) %* 0%.3333%), color_grading%.a%);"] = "",
+			["color = color %* color_grading%.rgb;"] = "// Here lies the remains of the tone-mapping/color grading code. 2019-2024. RIP",
 		}
 	end
 
