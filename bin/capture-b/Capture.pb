@@ -1,4 +1,4 @@
-﻿; Copyright (c) 2019-2023 David Vogel
+﻿; Copyright (c) 2019-2024 David Vogel
 ;
 ; This software is released under the MIT License.
 ; https://opensource.org/licenses/MIT
@@ -16,14 +16,14 @@ Structure QueueElement
 EndStructure
 
 Structure GLViewportDims
-  x.i
-  y.i
-  width.i
-  height.i
+	x.i
+	y.i
+	width.i
+	height.i
 EndStructure
 
 Structure WorkerInfo
-  workerNumber.i
+	workerNumber.i
 EndStructure
 
 ; Returns the size of the main OpenGL rendering output.
@@ -42,10 +42,10 @@ ProcedureDLL GetRect(*rect.RECT)
 	If Not *rect
 		ProcedureReturn #False
 	EndIf
-	
+
 	Protected dims.GLViewportDims
 	glGetIntegerv_(#GL_VIEWPORT, dims)
-	
+
 	*rect\left = dims\x
 	*rect\top = dims\y
 	*rect\right = dims\x + dims\width
@@ -61,10 +61,10 @@ ProcedureDLL AttachProcess(Instance)
 
 	CreateDirectory("mods/noita-mapcap/output/")
 
-  Static Workers = 8
-  Dim WorkerInfos.WorkerInfo(Workers-1)
+	Static Workers = 8
+	Dim WorkerInfos.WorkerInfo(Workers-1)
 	For i = 0 To Workers-1
-	  WorkerInfos(i)\workerNumber = i
+		WorkerInfos(i)\workerNumber = i
 		CreateThread(@Worker(), @WorkerInfos(i))
 	Next
 EndProcedure
@@ -89,11 +89,11 @@ Procedure Worker(*workerInfo.WorkerInfo)
 		  ResizeImage(img, sx, sy)
 		EndIf
 
-    ; Save image temporary, and only move it once it's fully exported.
-    ; This prevents images getting corrupted when the main process crashes.
+		; Save image temporary, and only move it once it's fully exported.
+		; This prevents images getting corrupted when the main process crashes.
 		If SaveImage(img, "mods/noita-mapcap/output/worker_" + *workerInfo\workerNumber + ".tmp", #PB_ImagePlugin_PNG)
-		  RenameFile("mods/noita-mapcap/output/worker_" + *workerInfo\workerNumber + ".tmp", "mods/noita-mapcap/output/" + x + "," + y + ".png")
-		  ; We can't really do anything when either SaveImage or RenameFile fails, so just silently fail.
+			RenameFile("mods/noita-mapcap/output/worker_" + *workerInfo\workerNumber + ".tmp", "mods/noita-mapcap/output/" + x + "," + y + ".png")
+			; We can't really do anything when either SaveImage or RenameFile fails, so just silently fail.
 		EndIf
 
 		FreeImage(img)
@@ -117,15 +117,15 @@ ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 	If *capRect\bottom < *capRect\top : *capRect\bottom = *capRect\top : EndIf
 	If *capRect\right > viewportRect\right : *capRect\right = viewportRect\right : EndIf
 	If *capRect\bottom > viewportRect\bottom : *capRect\bottom = viewportRect\bottom : EndIf
-	
+
 	Protected capWidth = *capRect\right - *capRect\left
 	Protected capHeight = *capRect\bottom - *capRect\top
-	
+
 	imageID = CreateImage(#PB_Any, capWidth, capHeight)
 	If Not imageID
 		ProcedureReturn #False
 	EndIf
-	
+
 	;Protected *pixelBuf = AllocateMemory(3 * width * height)
 
 	hDC = StartDrawing(ImageOutput(imageID))
@@ -133,22 +133,22 @@ ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 		FreeImage(imageID)
 		ProcedureReturn #False
 	EndIf
-	
-	*pixelBuffer = DrawingBuffer()
-  glReadPixels_(*capRect\left, *capRect\top, capWidth, capHeight, #GL_BGR_EXT, #GL_UNSIGNED_BYTE, *pixelBuffer)
 
-	;For y = 0 To *capRect\height - 1
-  ;  *Line.Pixel = Buffer + Pitch * y
-  ;  
-  ;  For x = 0 To *capRect\width - 1
+	*pixelBuffer = DrawingBuffer()
+	glReadPixels_(*capRect\left, *capRect\top, capWidth, capHeight, #GL_BGR_EXT, #GL_UNSIGNED_BYTE, *pixelBuffer)
+
+;	For y = 0 To *capRect\height - 1
+;		*Line.Pixel = Buffer + Pitch * y
 ;
-;      *Line\Pixel = ColorTable(pos2) ; Write the pixel directly to the memory !
-;      *Line+Offset
-;      
-;      ; You can try with regular plot to see the speed difference
-;      ; Plot(x, y, ColorTable(pos2))
-;    Next
-;  Next
+;		For x = 0 To *capRect\width - 1
+;
+;			*Line\Pixel = ColorTable(pos2) ; Write the pixel directly to the memory !
+;			*Line+Offset
+;
+;			; You can try with regular plot to see the speed difference
+;			; Plot(x, y, ColorTable(pos2))
+;		Next
+;	Next
 
 	StopDrawing()
 
