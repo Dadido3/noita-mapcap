@@ -80,18 +80,19 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 		return
 	end
 
-	if pos then CameraAPI.SetPos(pos) end
-
 	-- Reset the count for the "Waiting for x frames." message in the UI.
 	if ctx then ctx.state.WaitFrames = 0 end
 
 	-- Wait some additional frames.
 	if captureDelay and captureDelay > 0 then
 		for _ = 1, captureDelay do
+			if pos then CameraAPI.SetPos(pos + Vec2(math.random(-10, 10), math.random(-10, 10))) end
 			wait(0)
 			if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
 		end
 	end
+
+	if pos then CameraAPI.SetPos(pos) end
 
 	if ensureLoaded then
 		local delayFrames = 0
