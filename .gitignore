@@ -105,5 +105,7 @@ $RECYCLE.BIN/
 
 /output/
 /dist/
-/bin/stitch/output.png
+/bin/stitch/*.png
+/bin/stitch/*.dzi
+/bin/stitch/*_files/
 /files/magic-numbers/generated.xml
