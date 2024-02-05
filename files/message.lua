@@ -192,8 +192,19 @@ function Message:ShowModificationUnsupported(realm, name, value)
 		Type = "warning",
 	}
 
+	-- Create or append to list of modifications.
+	-- We have to prevent duplicate entries.
 	self.List["ModificationFailed"].ModificationEntries = self.List["ModificationFailed"].ModificationEntries or {}
-	table.insert(self.List["ModificationFailed"].ModificationEntries, {realm = realm, name = name, value = value})
+	local found
+	for _, modEntry in ipairs(self.List["ModificationFailed"].ModificationEntries) do
+		if modEntry.realm == realm and modEntry.name == name then
+			found = true
+			break
+		end
+	end
+	if not found then
+		table.insert(self.List["ModificationFailed"].ModificationEntries, {realm = realm, name = name, value = value})
+	end
 
 	-- Build message lines.
 	self.List["ModificationFailed"].Lines = {"The mod couldn't apply the following changes:"}
