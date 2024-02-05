@@ -158,6 +158,18 @@ modSettings = {
 				change_fn = roundChange,
 			},
 			{
+				id = "capture-delay",
+				ui_name = "Capture delay",
+				ui_description = "Additional delay before a screen capture is taken.\nThis can help the world to be populated, and the physics simulation to settle down.\nA setting of 0 means that the screenshot is taken as soon as possible.\n \nUse a value of 10 for a good result without slowing the capture process down too much.",
+				value_default = 0,
+				value_min = 0,
+				value_max = 60,
+				value_display_multiplier = 1,
+				value_display_formatting = " $0 frames",
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
+			},
+			{
 				id = "custom-resolution-live",
 				ui_name = "Use custom resolution",
 				ui_description = "If enabled, the mod will change the game resolutions to custom values.",

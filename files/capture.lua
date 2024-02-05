@@ -32,7 +32,7 @@ Capture.PlayerPathCapturingCtx = Capture.PlayerPathCapturingCtx or ProcessRunner
 
 ---Returns a capturing rectangle in window coordinates, and also the world coordinates for the same rectangle.
 ---The rectangle is sized and placed in a way that aligns as pixel perfect as possible with the world coordinates.
----@param pos Vec2|nil -- Position of the viewport center in world coordinates. If set to nil, the viewport center will be queried automatically.
+---@param pos Vec2? -- Position of the viewport center in world coordinates. If set to nil, the viewport center will be queried automatically.
 ---@return Vec2 topLeftCapture
 ---@return Vec2 bottomRightCapture
 ---@return Vec2 topLeftWorld
@@ -53,12 +53,13 @@ end
 ---This will block until all chunks in the virtual rectangle are loaded.
 ---
 ---Don't set `ensureLoaded` to true when `pos` is nil!
----@param pos Vec2|nil -- Position of the viewport center in world coordinates. If set to nil, the viewport will not be modified.
----@param ensureLoaded boolean|nil -- If true, the function will wait until all chunks in the virtual rectangle are loaded.
----@param dontOverwrite boolean|nil -- If true, the function will abort if there is already a file with the same coordinates.
----@param ctx ProcessRunnerCtx|nil -- The process runner context this runs in.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPixelScale)
+---@param pos Vec2? -- Position of the viewport center in world coordinates. If set to nil, the viewport will not be modified.
+---@param ensureLoaded boolean? -- If true, the function will wait until all chunks in the virtual rectangle are loaded.
+---@param dontOverwrite boolean? -- If true, the function will abort if there is already a file with the same coordinates.
+---@param ctx ProcessRunnerCtx? -- The process runner context this runs in.
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
+---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
+local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPixelScale, captureDelay)
 	if outputPixelScale == 0 or outputPixelScale == nil then
 		outputPixelScale = Coords:PixelScale()
 	end
@@ -80,9 +81,20 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	end
 
 	if pos then CameraAPI.SetPos(pos) end
+
+	-- Reset the count for the "Waiting for x frames." message in the UI.
+	if ctx then ctx.state.WaitFrames = 0 end
+
+	-- Wait some additional frames.
+	if captureDelay and captureDelay > 0 then
+		for _ = 1, captureDelay do
+			wait(0)
+			if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
+		end
+	end
+
 	if ensureLoaded then
 		local delayFrames = 0
-		if ctx then ctx.state.WaitFrames = delayFrames end
 		repeat
 			-- Prematurely stop capturing if that is requested by the context.
 			if ctx and ctx:IsStopping() then return end
@@ -92,18 +104,20 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-10, 10), math.random(-10, 10))) end
 				wait(0)
 				delayFrames = delayFrames + 1
-				if ctx then ctx.state.WaitFrames = delayFrames end
+				if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
 				if pos then CameraAPI.SetPos(pos) end
 			end
 
 			wait(0)
 			delayFrames = delayFrames + 1
-			if ctx then ctx.state.WaitFrames = delayFrames end
+			if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
 
 			local topLeftBounds, bottomRightBounds = CameraAPI:Bounds()
 		until DoesWorldExistAt(topLeftBounds.x, topLeftBounds.y, bottomRightBounds.x, bottomRightBounds.y)
 		-- Chunks are loaded and will be drawn on the *next* frame.
 	end
+
+	if ctx then ctx.state.WaitFrames = 0 end
 
 	-- Suspend UI drawing for 1 frame.
 	UI:SuspendDrawing(1)
@@ -150,8 +164,9 @@ end
 ---Use `Capture.MapCapturingCtx` to stop, control or view the progress.
 ---@param origin Vec2 -- Center of the spiral in world pixels.
 ---@param captureGridSize number -- The grid size in world pixels.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
+---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
+function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale, captureDelay)
 
 	-- Create file that signals that there are files in the output directory.
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
@@ -175,23 +190,23 @@ function Capture:StartCapturingSpiral(origin, captureGridSize, outputPixelScale)
 		repeat
 			-- +x
 			for _ = 1, i, 1 do
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				pos:Add(Vec2(captureGridSize, 0))
 			end
 			-- +y
 			for _ = 1, i, 1 do
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				pos:Add(Vec2(0, captureGridSize))
 			end
 			i = i + 1
 			-- -x
 			for _ = 1, i, 1 do
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				pos:Add(Vec2(-captureGridSize, 0))
 			end
 			-- -y
 			for _ = 1, i, 1 do
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				pos:Add(Vec2(0, -captureGridSize))
 			end
 			i = i + 1
@@ -213,8 +228,9 @@ end
 ---@param topLeft Vec2 -- Top left of the to be captured rectangle.
 ---@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
 ---@param captureGridSize number -- The grid size in world pixels.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize, outputPixelScale)
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
+---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
+function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 
 	-- Create file that signals that there are files in the output directory.
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
@@ -258,7 +274,7 @@ function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize
 				---@type Vec2
 				local pos = (hilbertPos + gridTopLeft) * captureGridSize
 				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				ctx.state.Current = ctx.state.Current + 1
 			end
 
@@ -281,8 +297,9 @@ end
 ---@param topLeft Vec2 -- Top left of the to be captured rectangle.
 ---@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
 ---@param captureGridSize number -- The grid size in world pixels.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
-function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale)
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
+---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
+function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 
 	-- Create file that signals that there are files in the output directory.
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
@@ -315,7 +332,7 @@ function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, o
 				---@type Vec2
 				local pos = gridPos * captureGridSize
 				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
-				captureScreenshot(pos, true, true, ctx, outputPixelScale)
+				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				ctx.state.Current = ctx.state.Current + 1
 			end
 		end
@@ -333,7 +350,7 @@ end
 
 ---Starts the live capturing process.
 ---Use `Capture.MapCapturingCtx` to stop, control or view the process.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
 function Capture:StartCapturingLive(outputPixelScale)
 
 	---Queries the mod settings for the live capture parameters.
@@ -371,7 +388,7 @@ function Capture:StartCapturingLive(outputPixelScale)
 				if oldPos then distanceSqr = CameraAPI.GetPos():DistanceSqr(oldPos) else distanceSqr = math.huge end
 			until ctx:IsStopping() or ((delayFrames >= interval or distanceSqr >= maxDistanceSqr) and distanceSqr >= minDistanceSqr)
 
-			captureScreenshot(nil, false, false, ctx, outputPixelScale)
+			captureScreenshot(nil, false, false, ctx, outputPixelScale, nil)
 			oldPos = CameraAPI.GetPos()
 		until ctx:IsStopping()
 	end
@@ -387,7 +404,7 @@ function Capture:StartCapturingLive(outputPixelScale)
 end
 
 ---Gathers all entities on the screen (around x, y within radius), serializes them, appends them into entityFile and/or modifies those entities.
----@param file file*|nil
+---@param file file*?
 ---@param modify boolean
 ---@param x number
 ---@param y number
@@ -510,7 +527,7 @@ local function captureModifyEntities(file, modify, x, y, radius)
 end
 
 ---
----@return file*|nil
+---@return file*?
 local function createOrOpenEntityCaptureFile()
 	-- Make sure the file exists.
 	local file = io.open("mods/noita-mapcap/output/entities.json", "a")
@@ -570,7 +587,7 @@ function Capture:StartCapturingEntities(store, modify)
 end
 
 ---Writes the current player position and other stats onto disk.
----@param file file*|nil
+---@param file file*?
 ---@param pos Vec2
 ---@param oldPos Vec2
 ---@param hp number
@@ -603,7 +620,7 @@ local function writePlayerPathEntry(file, pos, oldPos, hp, maxHP, polymorphed)
 end
 
 ---
----@return file*|nil
+---@return file*?
 local function createOrOpenPlayerPathCaptureFile()
 	-- Make sure the file exists.
 	local file = io.open("mods/noita-mapcap/output/player-path.json", "a")
@@ -618,8 +635,8 @@ end
 
 ---Starts capturing the player path.
 ---Use `Capture.PlayerPathCapturingCtx` to stop, control or view the progress.
----@param interval integer|nil -- Wait time between captures in frames.
----@param outputPixelScale number|nil -- The resulting image pixel to world pixel ratio.
+---@param interval integer? -- Wait time between captures in frames.
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
 function Capture:StartCapturingPlayerPath(interval, outputPixelScale)
 	interval = interval or 20
 
@@ -647,7 +664,7 @@ function Capture:StartCapturingPlayerPath(interval, outputPixelScale)
 			-- It seems that the entity can still be found by the tag, but its components/values can't be accessed anymore.
 			-- Solution: Don't do that.
 
-			---@type NoitaEntity|nil
+			---@type NoitaEntity?
 			local playerEntity
 
 			-- Try to find the regular player entity.
@@ -714,6 +731,7 @@ function Capture:StartCapturing()
 		local mode = ModSettingGet("noita-mapcap.capture-mode")
 		local outputPixelScale = ModSettingGet("noita-mapcap.pixel-scale")
 		local captureGridSize = tonumber(ModSettingGet("noita-mapcap.grid-size"))
+		local captureDelay = tonumber(ModSettingGet("noita-mapcap.capture-delay"))
 
 		if mode == "live" then
 			self:StartCapturingLive(outputPixelScale)
@@ -724,11 +742,11 @@ function Capture:StartCapturing()
 				local topLeft = Vec2(ModSettingGet("noita-mapcap.area-top-left"))
 				local bottomRight = Vec2(ModSettingGet("noita-mapcap.area-bottom-right"))
 
-				self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale)
+				self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 			else
 				local predefinedArea = Config.CaptureArea[area]
 				if predefinedArea then
-					self:StartCapturingAreaScan(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale)
+					self:StartCapturingAreaScan(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale, captureDelay)
 				else
 					Message:ShowRuntimeError("PredefinedArea", string.format("Unknown predefined capturing area %q", tostring(area)))
 				end
@@ -737,13 +755,13 @@ function Capture:StartCapturing()
 			local origin = ModSettingGet("noita-mapcap.capture-mode-spiral-origin")
 			if origin == "custom" then
 				local originVec = Vec2(ModSettingGet("noita-mapcap.capture-mode-spiral-origin-vector"))
-				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale, captureDelay)
 			elseif origin == "0" then
 				local originVec = Vec2(0, 0)
-				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale, captureDelay)
 			elseif origin == "current" then
 				local originVec = CameraAPI:GetPos()
-				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale)
+				self:StartCapturingSpiral(originVec, captureGridSize, outputPixelScale, captureDelay)
 			else
 				Message:ShowRuntimeError("SpiralOrigin", string.format("Unknown spiral origin %q", tostring(origin)))
 			end
