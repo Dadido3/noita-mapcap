@@ -22,6 +22,10 @@ Structure GLViewportDims
   height.i
 EndStructure
 
+Structure WorkerInfo
+  workerNumber.i
+EndStructure
+
 ; Returns the size of the main OpenGL rendering output.
 ProcedureDLL GetGLViewportSize(*dims.GLViewportDims)
 	If Not *dims
@@ -57,12 +61,15 @@ ProcedureDLL AttachProcess(Instance)
 
 	CreateDirectory("mods/noita-mapcap/output/")
 
-	For i = 1 To 6
-		CreateThread(@Worker(), #Null)
+  Static Workers = 8
+  Dim WorkerInfos.WorkerInfo(Workers-1)
+	For i = 0 To Workers-1
+	  WorkerInfos(i)\workerNumber = i
+		CreateThread(@Worker(), @WorkerInfos(i))
 	Next
 EndProcedure
 
-Procedure Worker(*Dummy)
+Procedure Worker(*workerInfo.WorkerInfo)
 	Protected img, x, y
 
 	Repeat
@@ -82,8 +89,12 @@ Procedure Worker(*Dummy)
 		  ResizeImage(img, sx, sy)
 		EndIf
 
-		SaveImage(img, "mods/noita-mapcap/output/" + x + "," + y + ".png", #PB_ImagePlugin_PNG)
-		;SaveImage(img, "" + x + "," + y + ".png", #PB_ImagePlugin_PNG) ; Test
+    ; Save image temporary, and only move it once it's fully exported.
+    ; This prevents images getting corrupted when the main process crashes.
+		If SaveImage(img, "mods/noita-mapcap/output/worker_" + *workerInfo\workerNumber + ".tmp", #PB_ImagePlugin_PNG)
+		  RenameFile("mods/noita-mapcap/output/worker_" + *workerInfo\workerNumber + ".tmp", "mods/noita-mapcap/output/" + x + "," + y + ".png")
+		  ; We can't really do anything when either SaveImage or RenameFile fails, so just silently fail.
+		EndIf
 
 		FreeImage(img)
 	ForEver
@@ -171,11 +182,12 @@ EndProcedure
 
 ; IDE Options = PureBasic 6.04 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 126
-; FirstLine = 98
+; CursorPosition = 94
+; FirstLine = 51
 ; Folding = -
 ; Optimizer
 ; EnableThread
 ; EnableXP
 ; Executable = capture.dll
-; Compiler = PureBasic 6.04 LTS (Windows - x86)
+; DisableDebugger
+; Compiler = PureBasic 6.04 LTS - C Backend (Windows - x86)
