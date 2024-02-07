@@ -4,6 +4,12 @@ github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1 h1:LejjvYg4tCW5HO
 github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1/go.mod h1:cnC/60IoLiDM0GhdKYJ6oO7AwpZe1IQfPnSKlAURgHw=
 github.com/ByteArena/poly2tri-go v0.0.0-20170716161910-d102ad91854f h1:l7moT9o/v/9acCWA64Yz/HDLqjcRTvc0noQACi4MsJw=
 github.com/ByteArena/poly2tri-go v0.0.0-20170716161910-d102ad91854f/go.mod h1:vIOkSdX3NDCPwgu8FIuTat2zDF0FPXXQ0RYFRy+oQic=
+github.com/Dadido3/go-libwebp v0.1.0 h1:aMM8wwOSyq8mk/xL9ze3vQHPygDU8TMXKH0TViwkBLE=
+github.com/Dadido3/go-libwebp v0.1.0/go.mod h1:rYiWwlI58XRSMUFMw23nMezErbjX3Z5Xv0Kk3w6Mwwo=
+github.com/Dadido3/go-libwebp v0.2.0 h1:SmssjSkrDkwSOGEpdultvneADGYaEqPbv6FcgausaK0=
+github.com/Dadido3/go-libwebp v0.2.0/go.mod h1:rYiWwlI58XRSMUFMw23nMezErbjX3Z5Xv0Kk3w6Mwwo=
+github.com/Dadido3/go-libwebp v0.3.0 h1:Qr3Gt8Kn4qgemezDVnjAJffMB9C0QJhxP+9u0U5mC94=
+github.com/Dadido3/go-libwebp v0.3.0/go.mod h1:rYiWwlI58XRSMUFMw23nMezErbjX3Z5Xv0Kk3w6Mwwo=
 github.com/VividCortex/ewma v1.2.0 h1:f58SaIzcDXrSy3kWaHNvuJgJ3Nmz59Zji6XoJR/q1ow=
 github.com/VividCortex/ewma v1.2.0/go.mod h1:nz4BbCtbLyFDeC9SUHbtcT5644juEuWfUAUnGx7j5l4=
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b h1:slYM766cy2nI3BwyRiyQj/Ud48djTMtMebDqepE95rw=
@@ -16,8 +22,6 @@ github.com/benoitkugler/textprocessing v0.0.3 h1:Q2X+Z6vxuW5Bxn1R9RaNt0qcprBfpc2
 github.com/benoitkugler/textprocessing v0.0.3/go.mod h1:/4bLyCf1QYywunMK3Gf89Nhb50YI/9POewqrLxWhxd4=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
-github.com/chai2010/webp v1.1.1 h1:jTRmEccAJ4MGrhFOrPMpNGIJ/eybIgwKpcACsrTEapk=
-github.com/chai2010/webp v1.1.1/go.mod h1:0XVwvZWdjjdxpUEIf7b9g9VkHFnInUSYujwqTLEuldU=
 github.com/cheggaaa/pb/v3 v3.1.4 h1:DN8j4TVVdKu3WxVwcRKu0sG00IIU6FewoABZzXbRQeo=
 github.com/cheggaaa/pb/v3 v3.1.4/go.mod h1:6wVjILNBaXMs8c21qRiaUM8BR82erfgau1DQ4iUXmSA=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

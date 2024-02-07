@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022 David Vogel
+// Copyright (c) 2019-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"image"
 	"os"
+	"sync"
 )
 
 // QuickSelect returns the kth smallest element of the given unsorted list.
@@ -96,3 +97,44 @@ func DivideCeil(a, b int) int {
 
 	return temp
 }
+
+// https://gist.github.com/cstockton/d611ced26bb6b4d3f7d4237abb8613c4
+type LimitGroup struct {
+	wg   sync.WaitGroup
+	mu   *sync.Mutex
+	c    *sync.Cond
+	l, n int
+}
+
+func NewLimitGroup(n int) *LimitGroup {
+	mu := new(sync.Mutex)
+	return &LimitGroup{
+		mu: mu,
+		c:  sync.NewCond(mu),
+		l:  n,
+		n:  n,
+	}
+}
+
+func (lg *LimitGroup) Add(delta int) {
+	lg.mu.Lock()
+	defer lg.mu.Unlock()
+	if delta > lg.l {
+		panic(`LimitGroup: delta must not exceed limit`)
+	}
+	for lg.n < 1 {
+		lg.c.Wait()
+	}
+	lg.n -= delta
+	lg.wg.Add(delta)
+}
+
+func (lg *LimitGroup) Done() {
+	lg.mu.Lock()
+	defer lg.mu.Unlock()
+	lg.n++
+	lg.c.Signal()
+	lg.wg.Done()
+}
+
+func (lg *LimitGroup) Wait() { lg.wg.Wait() }

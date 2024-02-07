@@ -36,7 +36,7 @@ example list of files:
     If set to 1, only the newest tile will be used for any resulting pixel.
     Use 1 to prevent ghosting and blurry objects.
   - `input string`
-    The source path of the image tiles to be stitched. Defaults to "./..//..//output")
+    The source path of the image tiles to be stitched. Defaults to "./..//..//output"
   - `entities string`
     The path to the `entities.json` file. This contains Noita specific entity data. Defaults to "./../../output/entities.json".
   - `player-path string`
@@ -48,6 +48,8 @@ example list of files:
     The size of the resulting deep zoom image (DZI) tiles in pixels. Defaults to 512.
   - `dzi-tile-overlap`
     The number of additional pixels around every deep zoom image (DZI) tile. Defaults to 2.
+  - `wepb-level`
+    Compression level of WebP files, from 0 (fast) to 9 (slow, best compression). Defaults to 8.
   - `xmax int`
     Right bound of the output rectangle. This coordinate is not included in the output.
   - `xmin int`

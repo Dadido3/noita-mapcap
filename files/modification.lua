@@ -198,6 +198,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x01305862)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x01305863)[0] = value end,
 				},
+				{_Offset = 0x01173F34, _BuildString = "Build Feb  6 2024 15:54:02", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x0130982C+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x0130982C+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x0130982C+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x0130982C+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x0130982C+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x0130982C+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0130982C+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x0130982C+7)[0] = value end,
+				},
 			},
 		},
 		[false] = {
@@ -261,6 +271,13 @@ function Modification.SetMemoryOptions(memory)
 				{_Offset = 0x00FECE94, _BuildString = "Build Feb  2 2024 14:33:26", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x006AD407)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x00FEEFC0, _BuildString = "Build Feb  6 2024 15:58:22", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006AD611+6)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
@@ -343,6 +360,9 @@ function Modification.RequiredChanges()
 		magic["GRID_RENDER_BORDER"] = "3" -- This will widen the right side of the virtual rectangle. It also shifts the world coordinates to the right.
 		magic["VIRTUAL_RESOLUTION_OFFSET_X"] = "-3"
 		magic["VIRTUAL_RESOLUTION_OFFSET_Y"] = "0"
+		magic["STREAMING_CHUNK_TARGET"] = "16" -- Keep more chunks alive.
+		magic["GRID_MAX_UPDATES_PER_FRAME"] = "1024" -- Allow more pixel physics simulation steps (in 32x32 regions) per frame. With too few, objects can glitch through the terrain/explode.
+		magic["GRID_MIN_UPDATES_PER_FRAME"] = "0" -- Also allow no updates.
 	else
 		-- Reset some values if there is no custom resolution requested.
 		config["internal_size_w"] = "1280"

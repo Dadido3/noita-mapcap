@@ -12,9 +12,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 type DZI struct {
@@ -99,8 +103,48 @@ func (d DZI) ExportDZIDescriptor(outputPath string) error {
 }
 
 // ExportDZITiles exports the single image tiles for every zoom level.
-func (d DZI) ExportDZITiles(outputDir string) error {
+func (d DZI) ExportDZITiles(outputDir string, bar *pb.ProgressBar, webPLevel int) error {
 	log.Printf("Creating DZI tiles in %q.", outputDir)
+
+	const scaleDivider = 2
+
+	var exportedTiles atomic.Int64
+
+	// If there is a progress bar, start a goroutine that regularly updates it.
+	// We will base that on the number of exported tiles.
+	if bar != nil {
+
+		// Count final number of tiles.
+		bounds := d.stitchedImage.bounds
+		var finalTiles int64
+		for zoomLevel := d.maxZoomLevel; zoomLevel >= 0; zoomLevel-- {
+			for iY := 0; iY <= (bounds.Dy()-1)/d.tileSize; iY++ {
+				for iX := 0; iX <= (bounds.Dx()-1)/d.tileSize; iX++ {
+					finalTiles++
+				}
+			}
+			bounds = image.Rect(DivideFloor(bounds.Min.X, scaleDivider), DivideFloor(bounds.Min.Y, scaleDivider), DivideCeil(bounds.Max.X, scaleDivider), DivideCeil(bounds.Max.Y, scaleDivider))
+		}
+		bar.SetRefreshRate(250 * time.Millisecond).SetTotal(finalTiles).Start()
+
+		done := make(chan struct{})
+		defer func() {
+			done <- struct{}{}
+			bar.SetCurrent(bar.Total()).Finish()
+		}()
+
+		go func() {
+			ticker := time.NewTicker(250 * time.Millisecond)
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					bar.SetCurrent(exportedTiles.Load())
+				}
+			}
+		}()
+	}
 
 	// Start with the highest zoom level (Where every world pixel is exactly mapped into one image pixel).
 	// Generate all tiles for this level, and then stitch another image (scaled down by a factor of 2) based on the previously generated tiles.
@@ -120,6 +164,7 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 		imageTiles := ImageTiles{}
 
 		// Export tiles.
+		lg := NewLimitGroup(runtime.NumCPU())
 		for iY := 0; iY <= (stitchedImage.bounds.Dy()-1)/d.tileSize; iY++ {
 			for iX := 0; iX <= (stitchedImage.bounds.Dx()-1)/d.tileSize; iX++ {
 				rect := image.Rect(iX*d.tileSize, iY*d.tileSize, iX*d.tileSize+d.tileSize, iY*d.tileSize+d.tileSize)
@@ -127,11 +172,16 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 				rect = rect.Inset(-d.overlap)
 				img := stitchedImage.SubStitchedImage(rect)
 				filePath := filepath.Join(levelBasePath, fmt.Sprintf("%d_%d%s", iX, iY, d.fileExtension))
-				if err := exportWebPSilent(img, filePath); err != nil {
-					return fmt.Errorf("failed to export WebP: %w", err)
-				}
 
-				scaleDivider := 2
+				lg.Add(1)
+				go func() {
+					defer lg.Done()
+					if err := exportWebP(img, filePath, webPLevel); err != nil {
+						log.Printf("Failed to export WebP: %v", err)
+					}
+					exportedTiles.Add(1)
+				}()
+
 				imageTiles = append(imageTiles, ImageTile{
 					fileName:         filePath,
 					modTime:          time.Now(),
@@ -143,11 +193,12 @@ func (d DZI) ExportDZITiles(outputDir string) error {
 				})
 			}
 		}
+		lg.Wait()
 
 		// Create new stitched image from the previously exported tiles.
 		// The tiles are already created in a way, that they are scaled down by a factor of 2.
 		var err error
-		stitchedImage, err = NewStitchedImage(imageTiles, imageTiles.Bounds(), BlendMethodMedian{BlendTileLimit: 0}, 128, nil)
+		stitchedImage, err = NewStitchedImage(imageTiles, imageTiles.Bounds(), BlendMethodFast{}, 128, nil)
 		if err != nil {
 			return fmt.Errorf("failed to run NewStitchedImage(): %w", err)
 		}

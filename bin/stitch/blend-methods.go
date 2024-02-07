@@ -1,4 +1,4 @@
-// Copyright (c) 2022 David Vogel
+// Copyright (c) 2022-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,6 +8,7 @@ package main
 import (
 	"image"
 	"image/color"
+	"image/draw"
 	"math"
 	"sort"
 )
@@ -106,7 +107,7 @@ func (b BlendMethodVoronoi) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 		images = append(images, tile.GetImage())
 	}
 
-	// Create arrays to be reused every pixel.
+	// Create color variables reused every pixel.
 	var col color.RGBA
 	var centerDistSqrMin int
 
@@ -144,6 +145,20 @@ func (b BlendMethodVoronoi) Draw(tiles []*ImageTile, destImage *image.RGBA) {
 
 			col.A = 255
 			destImage.SetRGBA(ix, iy, col)
+		}
+	}
+}
+
+// BlendMethodFast just draws all tiles into the destination image.
+// No mixing is done, and this is very fast when there is no or minimal tile overlap.
+type BlendMethodFast struct{}
+
+// Draw implements the StitchedImageBlendMethod interface.
+func (b BlendMethodFast) Draw(tiles []*ImageTile, destImage *image.RGBA) {
+	for _, tile := range tiles {
+		if image := tile.GetImage(); image != nil {
+			bounds := image.Bounds()
+			draw.Draw(destImage, bounds, image, bounds.Min, draw.Src)
 		}
 	}
 }

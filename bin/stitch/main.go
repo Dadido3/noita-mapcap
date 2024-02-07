@@ -12,7 +12,6 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/1lann/promptui"
@@ -27,6 +26,7 @@ var flagScaleDivider = flag.Int("divide", 1, "A downscaling factor. 2 will produ
 var flagBlendTileLimit = flag.Int("blend-tile-limit", 9, "Limits median blending to the n newest tiles by file modification time. If set to 0, all available tiles will be median blended.")
 var flagDZITileSize = flag.Int("dzi-tile-size", 512, "The size of the resulting deep zoom image (DZI) tiles in pixels.")
 var flagDZIOverlap = flag.Int("dzi-tile-overlap", 2, "The number of additional pixels around every deep zoom image (DZI) tile.")
+var flagWebPLevel = flag.Int("wepb-level", 8, "Compression level of WebP files, from 0 (fast) to 9 (slow, best compression).")
 var flagXMin = flag.Int("xmin", 0, "Left bound of the output rectangle. This coordinate is included in the output.")
 var flagYMin = flag.Int("ymin", 0, "Upper bound of the output rectangle. This coordinate is included in the output.")
 var flagXMax = flag.Int("xmax", 0, "Right bound of the output rectangle. This coordinate is not included in the output.")
@@ -287,11 +287,35 @@ func main() {
 		fmt.Sscanf(result, "%d", flagDZIOverlap)
 	}
 
-	startTime := time.Now()
+	// Query the user, if there were no cmd arguments given.
+	if flag.NFlag() == 0 && (fileExtension == ".dzi" || fileExtension == ".webp") {
+		prompt := promptui.Prompt{
+			Label:     "Enter WebP compression level:",
+			Default:   fmt.Sprint(*flagWebPLevel),
+			AllowEdit: true,
+			Validate: func(s string) error {
+				var num int
+				_, err := fmt.Sscanf(s, "%d", &num)
+				if err != nil {
+					return err
+				}
+				if int(num) < 0 {
+					return fmt.Errorf("level must be at least 0")
+				}
+				if int(num) > 9 {
+					return fmt.Errorf("level must not be larger than 9")
+				}
 
-	bar := pb.Full.New(0)
-	var wg sync.WaitGroup
-	done := make(chan struct{})
+				return nil
+			},
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			log.Panicf("Error while getting user input: %v.", err)
+		}
+		fmt.Sscanf(result, "%d", flagWebPLevel)
+	}
 
 	blendMethod := BlendMethodMedian{
 		BlendTileLimit: *flagBlendTileLimit, // Limit median blending to the n newest tiles by file modification time.
@@ -301,53 +325,31 @@ func main() {
 	if err != nil {
 		log.Panicf("NewStitchedImage() failed: %v.", err)
 	}
-	_, max := stitchedImage.Progress()
-	bar.SetTotal(int64(max)).Start().SetRefreshRate(250 * time.Millisecond)
 
-	// Query progress and draw progress bar.
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		ticker := time.NewTicker(250 * time.Millisecond)
-		for {
-			select {
-			case <-done:
-				value, _ := stitchedImage.Progress()
-				bar.SetCurrent(int64(value))
-				bar.Finish()
-				return
-			case <-ticker.C:
-				value, _ := stitchedImage.Progress()
-				bar.SetCurrent(int64(value))
-			}
-		}
-	}()
+	bar := pb.Full.New(0)
 
 	switch fileExtension {
 	case ".png":
-		if err := exportPNG(stitchedImage, *flagOutputPath); err != nil {
+		if err := exportPNGStitchedImage(stitchedImage, *flagOutputPath, bar); err != nil {
 			log.Panicf("Export of PNG file failed: %v", err)
 		}
 	case ".jpg", ".jpeg":
-		if err := exportJPEG(stitchedImage, *flagOutputPath); err != nil {
+		if err := exportJPEGStitchedImage(stitchedImage, *flagOutputPath, bar); err != nil {
 			log.Panicf("Export of JPEG file failed: %v", err)
 		}
 	case ".webp":
-		if err := exportWebP(stitchedImage, *flagOutputPath); err != nil {
+		if err := exportWebPStitchedImage(stitchedImage, *flagOutputPath, bar, *flagWebPLevel); err != nil {
 			log.Panicf("Export of WebP file failed: %v", err)
 		}
 	case ".dzi":
-		if err := exportDZI(stitchedImage, *flagOutputPath, *flagDZITileSize, *flagDZIOverlap); err != nil {
+		if err := exportDZIStitchedImage(stitchedImage, *flagOutputPath, bar, *flagDZITileSize, *flagDZIOverlap, *flagWebPLevel); err != nil {
 			log.Panicf("Export of DZI file failed: %v", err)
 		}
 	default:
 		log.Panicf("Unknown output format %q.", fileExtension)
 	}
 
-	done <- struct{}{}
-	wg.Wait()
-	log.Printf("Created output in %v.", time.Since(startTime))
+	log.Printf("Created output in %v.", time.Since(bar.StartTime()))
 
 	//fmt.Println("Press the enter key to terminate the console screen!")
 	//fmt.Scanln()

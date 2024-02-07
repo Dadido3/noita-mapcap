@@ -1,4 +1,4 @@
-// Copyright (c) 2023 David Vogel
+// Copyright (c) 2023-2024 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -10,9 +10,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
-func exportDZI(stitchedImage *StitchedImage, outputPath string, dziTileSize, dziOverlap int) error {
+func exportDZIStitchedImage(stitchedImage *StitchedImage, outputPath string, bar *pb.ProgressBar, dziTileSize, dziOverlap int, webPLevel int) error {
 	descriptorPath := outputPath
 	extension := filepath.Ext(outputPath)
 	outputTilesPath := strings.TrimSuffix(outputPath, extension) + "_files"
@@ -30,7 +32,7 @@ func exportDZI(stitchedImage *StitchedImage, outputPath string, dziTileSize, dzi
 	}
 
 	// Export DZI tiles.
-	if err := dzi.ExportDZITiles(outputTilesPath); err != nil {
+	if err := dzi.ExportDZITiles(outputTilesPath, bar, webPLevel); err != nil {
 		return fmt.Errorf("failed to export DZI tiles: %w", err)
 	}
 
