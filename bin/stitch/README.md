@@ -48,7 +48,7 @@ example list of files:
     The size of the resulting deep zoom image (DZI) tiles in pixels. Defaults to 512.
   - `dzi-tile-overlap`
     The number of additional pixels around every deep zoom image (DZI) tile. Defaults to 2.
-  - `wepb-level`
+  - `webp-level`
     Compression level of WebP files, from 0 (fast) to 9 (slow, best compression). Defaults to 8.
   - `xmax int`
     Right bound of the output rectangle. This coordinate is not included in the output.
