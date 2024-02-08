@@ -84,9 +84,10 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	if ctx then ctx.state.WaitFrames = 0 end
 
 	-- Wait some additional frames.
+	-- We will shake the screen a little bit so that Noita generates/populates chunks.
 	if captureDelay and captureDelay > 0 then
 		for _ = 1, captureDelay do
-			if pos then CameraAPI.SetPos(pos + Vec2(math.random(-10, 10), math.random(-10, 10))) end
+			if pos then CameraAPI.SetPos(pos + Vec2(math.random(-1, 1), math.random(-1, 1))) end
 			wait(0)
 			if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
 		end
@@ -107,6 +108,18 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 				delayFrames = delayFrames + 1
 				if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 1 end
 				if pos then CameraAPI.SetPos(pos) end
+			end
+
+			if delayFrames > 600 then
+				-- Shaking wasn't enough, we will just move somewhere else an try again.
+				if pos then CameraAPI.SetPos(pos + Vec2(math.random(-4000, 4000), math.random(-4000, 4000))) end
+				wait(50)
+				delayFrames = delayFrames + 50
+				if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 50 end
+				if pos then CameraAPI.SetPos(pos) end
+				wait(10)
+				delayFrames = delayFrames + 10
+				if ctx then ctx.state.WaitFrames = ctx.state.WaitFrames + 10 end
 			end
 
 			wait(0)
