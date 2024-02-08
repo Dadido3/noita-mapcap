@@ -62,7 +62,7 @@ func addPathToZip(zipWriter *zip.Writer, srcPath, archiveBasePath string, ignore
 			return err
 		}
 
-		header.Name = archivePath
+		header.Name = filepath.ToSlash(archivePath)
 		header.Method = zip.Deflate
 
 		writer, err := zipWriter.CreateHeader(header)
