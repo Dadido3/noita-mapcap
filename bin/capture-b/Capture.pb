@@ -3,6 +3,8 @@
 ; This software is released under the MIT License.
 ; https://opensource.org/licenses/MIT
 
+EnableExplicit
+
 UsePNGImageEncoder()
 
 Declare Worker(*Dummy)
@@ -25,6 +27,8 @@ EndStructure
 Structure WorkerInfo
 	workerNumber.i
 EndStructure
+
+#Workers = 8
 
 ; Returns the size of the main OpenGL rendering output.
 ProcedureDLL GetGLViewportSize(*dims.GLViewportDims)
@@ -61,16 +65,16 @@ ProcedureDLL AttachProcess(Instance)
 
 	CreateDirectory("mods/noita-mapcap/output/")
 
-	Static Workers = 8
-	Dim WorkerInfos.WorkerInfo(Workers-1)
-	For i = 0 To Workers-1
+	Static Dim WorkerInfos.WorkerInfo(#Workers-1)
+	Protected i
+	For i = 0 To #Workers-1
 		WorkerInfos(i)\workerNumber = i
 		CreateThread(@Worker(), @WorkerInfos(i))
 	Next
 EndProcedure
 
 Procedure Worker(*workerInfo.WorkerInfo)
-	Protected img, x, y
+	Protected img, x, y, sx, sy
 
 	Repeat
 		WaitSemaphore(Semaphore)
@@ -109,6 +113,8 @@ ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 	If Not GetRect(@viewportRect)
 		ProcedureReturn #False
 	EndIf
+
+	Protected imageID, hDC, *pixelBuffer
 
 	; Limit the desired capture area to the actual client area of the viewport.
 	If *capRect\left < 0 : *capRect\left = 0 : EndIf
@@ -182,8 +188,8 @@ EndProcedure
 
 ; IDE Options = PureBasic 6.04 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 94
-; FirstLine = 51
+; CursorPosition = 116
+; FirstLine = 99
 ; Folding = -
 ; Optimizer
 ; EnableThread
