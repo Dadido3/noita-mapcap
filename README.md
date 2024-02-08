@@ -146,8 +146,9 @@ The sliders are at their default values:
 
 There is not a lot you can do about it:
 
-- You can try to increase the usable address space of your `.../Noita/noita_dev.exe` or `.../Noita/noita.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
-  This will help with any crashes that are related to out of memory exceptions.
+- ~~You can try to increase the usable address space of your `.../Noita/noita_dev.exe` or `.../Noita/noita.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
+  This will help with any crashes that are related to out of memory exceptions.~~
+  `Large Address Aware` is already set in newer Noita builds.
 
 - You can disable the replay recorder.
 
