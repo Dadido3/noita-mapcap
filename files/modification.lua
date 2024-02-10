@@ -188,6 +188,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0111A5C2)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x0111A5C3)[0] = value end,
 				},
+				{_Offset = 0x00F8BA04, _BuildString = "Build Jan 18 2024 12:57:44", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x010F91FC+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x010F91FC+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x010F91FC+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x010F91FC+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x010F91FC+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x010F91FC+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x010F91FC+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x010F91FC+7)[0] = value end,
+				},
 				{_Offset = 0x0117091C, _BuildString = "Build Feb  2 2024 14:29:06", -- Steam dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x0130585C)[0] = value end,
 					mGuiDisabled = function(value) ffi.cast("char*", 0x0130585D)[0] = value end,
@@ -264,6 +274,13 @@ function Modification.SetMemoryOptions(memory)
 				{_Offset = 0x00E180E8, _BuildString = "Build Dec 30 2023 19:40:49", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x00626EFD)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x00E24E6C, _BuildString = "Build Jan 18 2024 13:01:21", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x00642A47+6)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
