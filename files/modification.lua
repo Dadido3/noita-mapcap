@@ -306,6 +306,13 @@ function Modification.SetMemoryOptions(memory)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
 				},
+				{_Offset = 0x00FF22D4, _BuildString = "Build Feb 12 2024 19:07:19", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006AE161+6)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
 			},
 		},
 	}
