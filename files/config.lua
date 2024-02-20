@@ -45,4 +45,10 @@ Config.CaptureArea = {
 		TopLeft = Vec2(-25600, -31744), -- in world coordinates.
 		BottomRight = Vec2(25600, 41984), -- in world coordinates. This pixel is not included in the rectangle.
 	},
+
+	-- Extended: Main world + each parallel world to the left and right.
+	["3x3"] = {
+		TopLeft = Vec2(-53760, -31744), -- in world coordinates.
+		BottomRight = Vec2(53760, 41984), -- in world coordinates. This pixel is not included in the rectangle.
+	},
 }

@@ -64,3 +64,16 @@ Bottom = 41984
 The end result will have a size of `51200 x 73728 pixels ~= 3775 megapixels`.
 
 ![Base layout](images/scale32_extended.png)
+
+## `3 Worlds`
+
+This area consists of `Main world` plus a full left and right parallel world.
+
+``` lua
+Left = -53760
+Top = -31744
+Right = 53760
+Bottom = 41984
+```
+
+The end result will have a size of `107520 x 73728 pixels ~= 7927 megapixels`.

@@ -95,7 +95,7 @@ modSettings = {
 		ui_name = "  Rectangle",
 		ui_description = "The area to be captured.\nSee documentation for more information.",
 		value_default = "1x1",
-		values = { { "1x1", "Base layout" }, { "1x3", "Main World" }, { "1.5x3", "Extended" }, { "custom", "Custom" } },
+		values = { { "1x1", "Base layout" }, { "1x3", "Main World" }, { "1.5x3", "Extended" }, { "3x3", "3 Worlds" }, { "custom", "Custom" } },
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 		show_fn = function() return modSettings:GetNextValue("capture-mode") == "area" end,
 	},
