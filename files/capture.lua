@@ -240,7 +240,7 @@ end
 ---Starts the capturing process of the given area using a hilbert curve.
 ---Use `Capture.MapCapturingCtx` to stop, control or view the process.
 ---@param topLeft Vec2 -- Top left of the to be captured rectangle.
----@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
+---@param bottomRight Vec2 -- Non inclusive bottom right coordinate of the to be captured rectangle.
 ---@param captureGridSize number -- The grid size in world pixels.
 ---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
 ---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
@@ -250,15 +250,19 @@ function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
 	if file ~= nil then file:close() end
 
-	---The rectangle in grid coordinates.
+	-- The capture offset which is needed to center the grid cells in the viewport.
+	local captureOffset = Vec2(captureGridSize / 2, captureGridSize / 2)
+
+	-- Get the extended capture rectangle that encloses all grid cells that need to be included in the capture.
+	-- In this case we only need to extend the capture area by the valid rendering rectangle.
+	local validTopLeft, validBottomRight = Coords:ValidRenderingRect()
+	local validTopLeftWorld, validBottomRightWorld = Coords:ToWorld(validTopLeft, topLeft + captureOffset), Coords:ToWorld(validBottomRight, bottomRight + captureOffset)
+
+	---The capture rectangle in grid coordinates.
 	---@type Vec2, Vec2
-	local gridTopLeft, gridBottomRight = (topLeft / captureGridSize):Rounded("floor"), (bottomRight / captureGridSize):Rounded("floor")
+	local gridTopLeft, gridBottomRight = (validTopLeftWorld / captureGridSize):Rounded("floor"), ((validBottomRightWorld) / captureGridSize):Rounded("ceil") - Vec2(1, 1)
 
-	-- Handle edge cases.
-	if topLeft.x == bottomRight.x then gridBottomRight.x = gridTopLeft.x end
-	if topLeft.y == bottomRight.y then gridBottomRight.y = gridTopLeft.y end
-
-	---Size of the rectangle in grid coordinates.
+	---Size of the rectangle in grid cells.
 	---@type Vec2
 	local gridSize = gridBottomRight - gridTopLeft
 
@@ -287,7 +291,7 @@ function Capture:StartCapturingAreaHilbert(topLeft, bottomRight, captureGridSize
 				---Position in world coordinates.
 				---@type Vec2
 				local pos = (hilbertPos + gridTopLeft) * captureGridSize
-				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
+				pos:Add(captureOffset) -- Move to center of grid cell.
 				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				ctx.state.Current = ctx.state.Current + 1
 			end
@@ -309,7 +313,7 @@ end
 ---Starts the capturing process of the given area by scanning from left to right, and top to bottom.
 ---Use `Capture.MapCapturingCtx` to stop, control or view the process.
 ---@param topLeft Vec2 -- Top left of the to be captured rectangle.
----@param bottomRight Vec2 -- Non included bottom left of the to be captured rectangle.
+---@param bottomRight Vec2 -- Non inclusive bottom right coordinate of the to be captured rectangle.
 ---@param captureGridSize number -- The grid size in world pixels.
 ---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
 ---@param captureDelay number? -- The number of additional frames to wait before a screen capture.
@@ -319,11 +323,19 @@ function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, o
 	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
 	if file ~= nil then file:close() end
 
-	---The rectangle in grid coordinates.
-	---@type Vec2, Vec2
-	local gridTopLeft, gridBottomRight = (topLeft / captureGridSize):Rounded("floor"), (bottomRight / captureGridSize):Rounded("floor")
+	-- The capture offset which is needed to center the grid cells in the viewport.
+	local captureOffset = Vec2(captureGridSize / 2, captureGridSize / 2)
 
-	---Size of the rectangle in grid coordinates.
+	-- Get the extended capture rectangle that encloses all grid cells that need to be included in the capture.
+	-- In this case we only need to extend the capture area by the valid rendering rectangle.
+	local validTopLeft, validBottomRight = Coords:ValidRenderingRect()
+	local validTopLeftWorld, validBottomRightWorld = Coords:ToWorld(validTopLeft, topLeft + captureOffset), Coords:ToWorld(validBottomRight, bottomRight + captureOffset)
+
+	---The capture rectangle in grid coordinates.
+	---@type Vec2, Vec2
+	local gridTopLeft, gridBottomRight = (validTopLeftWorld / captureGridSize):Rounded("floor"), ((validBottomRightWorld) / captureGridSize):Rounded("ceil") - Vec2(1, 1)
+
+	---Size of the rectangle in grid cells.
 	---@type Vec2
 	local gridSize = gridBottomRight - gridTopLeft
 
@@ -345,7 +357,7 @@ function Capture:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, o
 				---Position in world coordinates.
 				---@type Vec2
 				local pos = gridPos * captureGridSize
-				pos:Add(Vec2(captureGridSize / 2, captureGridSize / 2)) -- Move to center of grid cell.
+				pos:Add(captureOffset) -- Move to center of grid cell.
 				captureScreenshot(pos, true, true, ctx, outputPixelScale, captureDelay)
 				ctx.state.Current = ctx.state.Current + 1
 			end
