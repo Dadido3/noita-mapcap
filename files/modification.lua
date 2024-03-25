@@ -218,6 +218,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0130982C+6)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x0130982C+7)[0] = value end,
 				},
+				{_Offset = 0x01182F70, _BuildString = "Build Mar 25 2024 17:42:49", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x013198AC+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x013198AC+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x013198AC+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x013198AC+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x013198AC+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x013198AC+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x013198AC+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x013198AC+7)[0] = value end,
+				},
 			},
 		},
 		[false] = {
@@ -316,6 +326,13 @@ function Modification.SetMemoryOptions(memory)
 				{_Offset = 0x00E23E80, _BuildString = "Build Feb 14 2024 07:46:57", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x006427A7+6)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x00FFDB54, _BuildString = "Build Mar 25 2024 17:48:04", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006B1FD8+6)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
