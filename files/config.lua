@@ -40,13 +40,13 @@ Config.CaptureArea = {
 		BottomRight = Vec2(17920, 41984), -- in world coordinates. This pixel is not included in the rectangle.
 	},
 
-	-- Main -1 parallel world: The main world with 3 parts: sky, normal and hell.
+	-- -1 parallel world: The parallel world with 3 parts: sky, normal and hell.
 	["1x3 -1"] = {
 		TopLeft = Vec2(-17920, -31744) + Vec2(-35840, 0), -- in world coordinates.
 		BottomRight = Vec2(17920, 41984) + Vec2(-35840, 0), -- in world coordinates. This pixel is not included in the rectangle.
 	},
 
-	-- Main +1 parallel world: The main world with 3 parts: sky, normal and hell.
+	-- +1 parallel world: The parallel world with 3 parts: sky, normal and hell.
 	["1x3 +1"] = {
 		TopLeft = Vec2(-17920, -31744) + Vec2(35840, 0), -- in world coordinates.
 		BottomRight = Vec2(17920, 41984) + Vec2(35840, 0), -- in world coordinates. This pixel is not included in the rectangle.
