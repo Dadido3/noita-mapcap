@@ -1,4 +1,4 @@
--- Copyright (c) 2022 David Vogel
+-- Copyright (c) 2022-2024 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -38,6 +38,18 @@ Config.CaptureArea = {
 	["1x3"] = {
 		TopLeft = Vec2(-17920, -31744), -- in world coordinates.
 		BottomRight = Vec2(17920, 41984), -- in world coordinates. This pixel is not included in the rectangle.
+	},
+
+	-- Main -1 parallel world: The main world with 3 parts: sky, normal and hell.
+	["1x3 -1"] = {
+		TopLeft = Vec2(-17920, -31744) + Vec2(-35840, 0), -- in world coordinates.
+		BottomRight = Vec2(17920, 41984) + Vec2(-35840, 0), -- in world coordinates. This pixel is not included in the rectangle.
+	},
+
+	-- Main +1 parallel world: The main world with 3 parts: sky, normal and hell.
+	["1x3 +1"] = {
+		TopLeft = Vec2(-17920, -31744) + Vec2(35840, 0), -- in world coordinates.
+		BottomRight = Vec2(17920, 41984) + Vec2(35840, 0), -- in world coordinates. This pixel is not included in the rectangle.
 	},
 
 	-- Extended: Main world + a fraction of the parallel worlds to the left and right.
