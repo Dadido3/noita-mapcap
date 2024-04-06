@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/draw"
 	_ "image/png"
 	"log"
 	"os"
@@ -127,9 +128,16 @@ func (it *ImageTile) GetImage() *image.RGBA {
 		img = resize.Resize(uint(oldRect.Dx()), uint(oldRect.Dy()), img, resize.NearestNeighbor)
 	}
 
-	imgRGBA, ok := img.(*image.RGBA)
-	if !ok {
-		log.Printf("Expected an RGBA image for %q, got %T instead.", it.fileName, img)
+	var imgRGBA *image.RGBA
+	switch img := img.(type) {
+	case *image.RGBA:
+		imgRGBA = img
+	case *image.NRGBA:
+		bounds := img.Bounds()
+		imgRGBA = image.NewRGBA(image.Rect(0, 0, bounds.Dx(), bounds.Dy()))
+		draw.Draw(imgRGBA, imgRGBA.Bounds(), img, bounds.Min, draw.Src)
+	default:
+		log.Printf("Expected an RGBA or NRGBA image for %q, got %T instead.", it.fileName, img)
 		return nil
 	}
 
