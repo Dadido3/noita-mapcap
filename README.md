@@ -5,7 +5,10 @@ It works with the regular Noita build and the dev build.
 
 ![Title image](images/title.png)
 
-A resulting image with nearly 3.8 gigapixels can be [seen here](https://easyzoom.com/image/223556) (May contain spoilers).
+Map captures created with this mod can be viewed on [map.runfast.stream] (may contain spoilers).
+
+If you are interested in creating similar captures, or if you want to contribute your own captures to [map.runfast.stream], you can take a look at [github.com/acidflow-noita/noitamap].
+There you'll find detailed step-by-step instructions on how to quickly capture large parts of the Noita world with as little visual glitches and other issues as possible.
 
 ## System requirements
 
@@ -55,8 +58,7 @@ To the top left of the window are 3 buttons:
 - ![Output directory button](files/ui-gfx/open-output-16x16.png) Reveals the output directory in your file browser.
   This will contain raw screenshots and other recorded data that later can be stitched.
 
-- ![Stitch button](files/ui-gfx/stitch-16x16.png) Reveals the stitching tool 
-directory in your file browser.
+- ![Stitch button](files/ui-gfx/stitch-16x16.png) Reveals the stitching tool directory in your file browser.
 
 To stitch the final result, click ![Stitch button](files/ui-gfx/stitch-16x16.png) to open the directory of the stitching tool.
 Start `stitch.exe` and proceed with the default values.
@@ -146,7 +148,7 @@ The sliders are at their default values:
 
 There is not a lot you can do about it:
 
-- ~~You can try to increase the usable address space of your `.../Noita/noita_dev.exe` or `.../Noita/noita.exe` with [Large Address Aware](https://www.techpowerup.com/forums/threads/large-address-aware.112556/) or a similar tool.
+- ~~You can try to increase the usable address space of your `.../Noita/noita_dev.exe` or `.../Noita/noita.exe` with [Large Address Aware] or a similar tool.
   This will help with any crashes that are related to out of memory exceptions.~~
   `Large Address Aware` is already set in newer Noita builds.
 
@@ -190,17 +192,28 @@ This will cause fast moving objects to completely disappear, and slow moving obj
 To disable median blending, use the stitcher with `Blend tile limit` set to 1.
 This will cause the stitcher to only use the newest image tile for every resulting pixel.
 
-## Additional information
+## Viewing and hosting captures
 
 The resulting stitched images are quite big.
 You can read [this comment](https://github.com/Dadido3/noita-mapcap/issues/7#issuecomment-723591552) that addresses how you can view, convert or even self-host your images.
 
+You can use [github.com/Dadido3/noita-mapcap-openseadragon] if you want to host a browser based viewer on your own web space.
+
+If you want to make your captures available to a wider audience, you should check out the [github.com/acidflow-noita/noitamap] project, which aims to make maps of all game modes (including mods) available to the public.
+
 ## Acknowledgements
 
-This mod uses the [LuaNXML](https://github.com/zatherz/luanxml) library by [Zatherz](https://github.com/zatherz).
+This mod uses the [LuaNXML] library by [Zatherz].
 
 Thanks to [Daniel Niccoli](https://github.com/danielniccoli) for figuring out how to change some in-game options by manipulating process memory.
 
 ## License
 
 [MIT](LICENSE)
+
+[github.com/acidflow-noita/noitamap]: https://github.com/acidflow-noita/noitamap
+[github.com/Dadido3/noita-mapcap-openseadragon]: https://github.com/Dadido3/noita-mapcap-openseadragon
+[Large Address Aware]: https://www.techpowerup.com/forums/threads/large-address-aware.112556/
+[LuaNXML]: https://github.com/zatherz/luanxml
+[map.runfast.stream]: https://map.runfast.stream
+[Zatherz]: https://github.com/zatherz
