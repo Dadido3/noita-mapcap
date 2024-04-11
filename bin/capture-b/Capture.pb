@@ -132,8 +132,6 @@ ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 		ProcedureReturn #False
 	EndIf
 
-	;Protected *pixelBuf = AllocateMemory(3 * width * height)
-
 	hDC = StartDrawing(ImageOutput(imageID))
 	If Not hDC
 		FreeImage(imageID)
@@ -142,19 +140,11 @@ ProcedureDLL Capture(*capRect.RECT, x.l, y.l, sx.l, sy.l)
 
 	*pixelBuffer = DrawingBuffer()
 	glReadPixels_(*capRect\left, *capRect\top, capWidth, capHeight, #GL_BGR_EXT, #GL_UNSIGNED_BYTE, *pixelBuffer)
-
-;	For y = 0 To *capRect\height - 1
-;		*Line.Pixel = Buffer + Pitch * y
-;
-;		For x = 0 To *capRect\width - 1
-;
-;			*Line\Pixel = ColorTable(pos2) ; Write the pixel directly to the memory !
-;			*Line+Offset
-;
-;			; You can try with regular plot to see the speed difference
-;			; Plot(x, y, ColorTable(pos2))
-;		Next
-;	Next
+	If glGetError_() <> #GL_NO_ERROR
+		StopDrawing()
+		FreeImage(imageID)
+		ProcedureReturn #False
+	EndIf
 
 	StopDrawing()
 
@@ -188,8 +178,8 @@ EndProcedure
 
 ; IDE Options = PureBasic 6.04 LTS (Windows - x64)
 ; ExecutableFormat = Shared dll
-; CursorPosition = 116
-; FirstLine = 99
+; CursorPosition = 99
+; FirstLine = 72
 ; Folding = -
 ; Optimizer
 ; EnableThread
