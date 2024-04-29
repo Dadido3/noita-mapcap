@@ -1,6 +1,10 @@
 # Capture areas
 
 A list of available capture areas.
+Other game-modes or mods may use a different biome setup, and therefore the coordinates shown here are not valid for them.
+The values shown are for an unmodded `New Game` world.
+The noita-mapcap mod will always automatically determine the required coordinates so that it correctly captures the base layout or multiples of it.
+
 Coordinates are in in-game "virtual" or "world" pixels.
 `Right` and `Bottom` coordinates are not included in the rectangle.
 
