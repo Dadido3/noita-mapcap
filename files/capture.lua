@@ -770,8 +770,9 @@ function Capture:StartCapturing()
 
 				self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 			else
-				local predefinedArea = Config.CaptureArea[area]
-				if predefinedArea then
+				local predefinedAreaFunction = Config.CaptureArea[area]
+				if predefinedAreaFunction then
+					local predefinedArea = predefinedAreaFunction()
 					self:StartCapturingAreaScan(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale, captureDelay)
 				else
 					Message:ShowRuntimeError("PredefinedArea", string.format("Unknown predefined capturing area %q", tostring(area)))
