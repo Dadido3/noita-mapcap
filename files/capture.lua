@@ -770,10 +770,11 @@ function Capture:StartCapturing()
 
 				self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 			else
+				---@type fun():Vec2, Vec2
 				local predefinedAreaFunction = Config.CaptureArea[area]
 				if predefinedAreaFunction then
-					local predefinedArea = predefinedAreaFunction()
-					self:StartCapturingAreaScan(predefinedArea.TopLeft, predefinedArea.BottomRight, captureGridSize, outputPixelScale, captureDelay)
+					local topLeft, bottomRight = predefinedAreaFunction()
+					self:StartCapturingAreaScan(topLeft, bottomRight, captureGridSize, outputPixelScale, captureDelay)
 				else
 					Message:ShowRuntimeError("PredefinedArea", string.format("Unknown predefined capturing area %q", tostring(area)))
 				end
