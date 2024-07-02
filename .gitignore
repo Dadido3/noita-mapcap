@@ -109,3 +109,5 @@ $RECYCLE.BIN/
 /bin/stitch/*.dzi
 /bin/stitch/*_files/
 /files/magic-numbers/generated.xml
+
+/bin/stitch/captures/*

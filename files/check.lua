@@ -120,7 +120,7 @@ function Check:Regular(interval)
 	-- This is not perfect, as it doesn't take rounding and cropping into account, so the actual captured area may be a few pixels smaller.
 	local mode = ModSettingGet("noita-mapcap.capture-mode")
 	local captureGridSize = tonumber(ModSettingGet("noita-mapcap.grid-size"))
-	if mode ~= "live" and (Coords.VirtualResolution.x < captureGridSize or Coords.VirtualResolution.y < captureGridSize) then
+	if (mode ~= "live" and mode ~= "animation") and (Coords.VirtualResolution.x < captureGridSize or Coords.VirtualResolution.y < captureGridSize) then
 		Message:ShowGeneralSettingsProblem(
 			"The virtual resolution is smaller than the capture grid size.",
 			"This means that you will get black areas in your final stitched image.",

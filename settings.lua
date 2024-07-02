@@ -67,9 +67,9 @@ modSettings = {
 	{
 		id = "capture-mode",
 		ui_name = "Mode",
-		ui_description = "How the mod captures:\n- Live: Capture as you play along.\n- Area: Capture a defined area of the world.\n- Spiral: Capture in a spiral around a starting point indefinitely.",
+		ui_description = "How the mod captures:\n- Live: Capture as you play along.\n- Area: Capture a defined area of the world.\n- Spiral: Capture in a spiral around a starting point indefinitely.\n- Animation: Capture the screen frame by frame.",
 		value_default = "live",
-		values = { { "live", "Live" }, { "area", "Area" }, { "spiral", "Spiral" } },
+		values = { { "live", "Live" }, { "area", "Area" }, { "spiral", "Spiral" }, { "animation", "Animation"} },
 		scope = MOD_SETTING_SCOPE_RUNTIME,
 	},
 	{
@@ -143,7 +143,7 @@ modSettings = {
 				value_default = "512",
 				allowed_characters = "0123456789",
 				scope = MOD_SETTING_SCOPE_RUNTIME,
-				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "area" or modSettings:GetNextValue("capture-mode") == "spiral" end,
 			},
 			{
 				id = "pixel-scale",
@@ -167,7 +167,7 @@ modSettings = {
 				value_display_multiplier = 1,
 				value_display_formatting = " $0 frames",
 				scope = MOD_SETTING_SCOPE_RUNTIME,
-				show_fn = function() return modSettings:GetNextValue("capture-mode") ~= "live" end,
+				show_fn = function() return modSettings:GetNextValue("capture-mode") == "area" or modSettings:GetNextValue("capture-mode") == "spiral" end,
 			},
 			{
 				id = "custom-resolution-live",

@@ -81,6 +81,10 @@ After a few minutes the file `output.png` will be created.
   - `Spiral`: Will capture the world in a spiral.
     The center starting point of the spiral can either be your current viewport, the world center or some custom coordinates.
 
+  - `Animation`: Will capture an image sequence.
+    This will capture whatever you see frame by frame and stores it in the output folder by frame number.
+    You can't stitch the resulting images, but instead you can use something like ffmpeg to render the sequence into a video file.
+
 ### Advanced mod settings
 
 - `World seed`: If non empty, this will set the next new game to this seed.

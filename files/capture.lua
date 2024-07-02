@@ -166,6 +166,37 @@ local function captureScreenshot(pos, ensureLoaded, dontOverwrite, ctx, outputPi
 	MonitorStandby.ResetTimer()
 end
 
+---Captures a screenshot of the current viewport.
+---This is used to capture animations, therefore the resulting image may not be suitable for stitching.
+---@param outputPixelScale number? The resulting image pixel to world pixel ratio.
+---@param frameNumber integer The frame number of the animation.
+local function captureScreenshotAnimation(outputPixelScale, frameNumber)
+	if outputPixelScale == 0 or outputPixelScale == nil then
+		outputPixelScale = Coords:PixelScale()
+	end
+
+	local rectTopLeft, rectBottomRight = ScreenCapture.GetRect()
+	if not rectTopLeft or not rectBottomRight then
+		error(string.format("couldn't determine capturing rectangle"))
+	end
+	if Coords:InternalRectSize() ~= rectBottomRight - rectTopLeft then
+		error(string.format("internal rectangle size seems to have changed from %s to %s", Coords:InternalRectSize(), rectBottomRight - rectTopLeft))
+	end
+
+	local topLeftWorld, bottomRightWorld = Coords:ToWorld(rectTopLeft), Coords:ToWorld(rectBottomRight)
+
+	---We will use this to get our fame number into the filename.
+	---@type Vec2
+	local outputTopLeft = Vec2(frameNumber, 0)
+
+	if not ScreenCapture.Capture(rectTopLeft, rectBottomRight, outputTopLeft, (bottomRightWorld - topLeftWorld) * outputPixelScale) then
+		error(string.format("failed to capture screenshot"))
+	end
+
+	-- Reset monitor and PC standby every screenshot.
+	MonitorStandby.ResetTimer()
+end
+
 ---Map capture process runner context error handler callback. Just rolls off the tongue.
 ---@param err string
 ---@param scope "init"|"do"|"end"
@@ -750,6 +781,56 @@ function Capture:StartCapturingPlayerPath(interval, outputPixelScale)
 	self.PlayerPathCapturingCtx:Run(handleInit, handleDo, handleEnd, handleErr)
 end
 
+---Starts to capture an animation.
+---This stores sequences of images that can't be stitched, but can be rendered into a video instead.
+---Use `Capture.MapCapturingCtx` to stop, control or view the process.
+---@param outputPixelScale number? -- The resulting image pixel to world pixel ratio.
+function Capture:StartCapturingAnimation(outputPixelScale)
+
+	---Queries the mod settings for the live capture parameters.
+	---@return integer interval -- The interval length in frames.
+	local function querySettings()
+		local interval = 1--tonumber(ModSettingGet("noita-mapcap.live-interval")) or 30
+		return interval
+	end
+
+	-- Create file that signals that there are files in the output directory.
+	local file = io.open("mods/noita-mapcap/output/nonempty", "a")
+	if file ~= nil then file:close() end
+
+	---Process main callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleDo(ctx)
+		Modification.SetCameraFree(false)
+
+		local frame = 0
+
+		repeat
+			local interval = querySettings()
+
+			-- Wait until we are allowed to take a new screenshot.
+			local delayFrames = 0
+			repeat
+				wait(0)
+				delayFrames = delayFrames + 1
+			until ctx:IsStopping() or delayFrames >= interval
+
+			captureScreenshotAnimation(outputPixelScale, frame)
+
+			frame = frame + 1
+		until ctx:IsStopping()
+	end
+
+	---Process end callback.
+	---@param ctx ProcessRunnerCtx
+	local function handleEnd(ctx)
+		Modification.SetCameraFree()
+	end
+
+	-- Run process, if there is no other running right now.
+	self.MapCapturingCtx:Run(nil, handleDo, handleEnd, mapCapturingCtxErrHandler)
+end
+
 ---Starts the capturing process based on user/mod settings.
 function Capture:StartCapturing()
 	Message:CatchException("Capture:StartCapturing", function()
@@ -762,6 +843,8 @@ function Capture:StartCapturing()
 		if mode == "live" then
 			self:StartCapturingLive(outputPixelScale)
 			self:StartCapturingPlayerPath(5, outputPixelScale) -- Capture player path with an interval of 5 frames.
+		elseif mode == "animation" then
+			self:StartCapturingAnimation(outputPixelScale)
 		elseif mode == "area" then
 			local area = ModSettingGet("noita-mapcap.area")
 			if area == "custom" then
