@@ -248,6 +248,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0131D8DC+6)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x0131D8DC+7)[0] = value end,
 				},
+				{_Offset = 0x0118FD3C, _BuildString = "Build Aug 12 2024 21:43:22", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x01327D3C+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x01327D3C+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x01327D3C+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x01327D3C+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x01327D3C+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x01327D3C+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x01327D3C+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x01327D3C+7)[0] = value end,
+				},
 			},
 		},
 		[false] = {
