@@ -248,6 +248,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0131D8DC+6)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x0131D8DC+7)[0] = value end,
 				},
+				{_Offset = 0x0118FD3C, _BuildString = "Build Aug 12 2024 21:10:13", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x01327D3C+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x01327D3C+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x01327D3C+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x01327D3C+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x01327D3C+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x01327D3C+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x01327D3C+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x01327D3C+7)[0] = value end,
+				},
 				{_Offset = 0x0118FD3C, _BuildString = "Build Aug 12 2024 21:43:22", -- Steam dev build.
 					mPostFxDisabled = function(value) ffi.cast("char*", 0x01327D3C+0)[0] = value end,
 					mGuiDisabled = function(value) ffi.cast("char*", 0x01327D3C+1)[0] = value end,
@@ -382,6 +392,13 @@ function Modification.SetMemoryOptions(memory)
 					end,
 				},
 				{_Offset = 0x01007CA4, _BuildString = "Build Aug 12 2024 21:14:23", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006B3925+6)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x01007CA4, _BuildString = "Build Aug 12 2024 21:48:01", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x006B3925+6)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
