@@ -1,6 +1,7 @@
 module github.com/Dadido3/noita-mapcap
 
 go 1.22
+toolchain go1.23.7
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
@@ -36,8 +37,8 @@ require (
 	github.com/tdewolff/minify/v2 v2.20.10 // indirect
 	github.com/tdewolff/parse/v2 v2.7.7 // indirect
 	golang.org/x/image v0.18.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	star-tex.org/x/tex v0.4.0 // indirect
 )
