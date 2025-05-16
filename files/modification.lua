@@ -1,4 +1,4 @@
--- Copyright (c) 2022-2024 David Vogel
+-- Copyright (c) 2022-2025 David Vogel
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -268,6 +268,16 @@ function Modification.SetMemoryOptions(memory)
 					mPlayerNeverDies = function(value) ffi.cast("char*", 0x01327D3C+6)[0] = value end,
 					mFreezeAI = function(value) ffi.cast("char*", 0x01327D3C+7)[0] = value end,
 				},
+				{_Offset = 0x01191A34, _BuildString = "Build Jan 25 2025 15:51:09", -- Steam dev build.
+					mPostFxDisabled = function(value) ffi.cast("char*", 0x0132ADDC+0)[0] = value end,
+					mGuiDisabled = function(value) ffi.cast("char*", 0x0132ADDC+1)[0] = value end,
+					mGuiHalfSize = function(value) ffi.cast("char*", 0x0132ADDC+2)[0] = value end,
+					mFogOfWarOpenEverywhere = function(value) ffi.cast("char*", 0x0132ADDC+3)[0] = value end,
+					mTrailerMode = function(value) ffi.cast("char*", 0x0132ADDC+4)[0] = value end,
+					mDayTimeRotationPause = function(value) ffi.cast("char*", 0x0132ADDC+5)[0] = value end,
+					mPlayerNeverDies = function(value) ffi.cast("char*", 0x0132ADDC+6)[0] = value end,
+					mFreezeAI = function(value) ffi.cast("char*", 0x0132ADDC+7)[0] = value end,
+				},
 			},
 		},
 		[false] = {
@@ -401,6 +411,13 @@ function Modification.SetMemoryOptions(memory)
 				{_Offset = 0x01007CA4, _BuildString = "Build Aug 12 2024 21:48:01", -- Steam build.
 					enableModDetection = function(value)
 						local ptr = ffi.cast("char*", 0x006B3925+6)
+						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
+						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
+					end,
+				},
+				{_Offset = 0x01009D3C, _BuildString = "Build Jan 25 2025 15:55:41", -- Steam build.
+					enableModDetection = function(value)
+						local ptr = ffi.cast("char*", 0x006B3AD5+6)
 						Memory.VirtualProtect(ptr, 1, Memory.PAGE_EXECUTE_READWRITE)
 						ptr[0] = value -- This basically just changes the value that Noita forces to the "mods_have_been_active_during_this_run" member of the WorldStateComponent when any mod is enabled.
 					end,
